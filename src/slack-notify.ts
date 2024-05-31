@@ -1,6 +1,7 @@
+// src/slack-notify.ts
 import https from 'https';
 
-export const sendSlackMessage = (message: string): Promise<void> => {
+export const sendSlackMessage = (message: object): Promise<void> => {
     const slackWebhookUrl = process.env.SLACK_WEBHOOK_URL;
 
     if (!slackWebhookUrl) {
@@ -9,7 +10,7 @@ export const sendSlackMessage = (message: string): Promise<void> => {
 
     return new Promise((resolve, reject) => {
         const url = new URL(slackWebhookUrl);
-        const data = JSON.stringify({ text: message });
+        const data = JSON.stringify(message);
 
         const options = {
             hostname: url.hostname,

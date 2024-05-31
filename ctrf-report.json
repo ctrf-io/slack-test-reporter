@@ -74,6 +74,12 @@
         "flaky": true,
         "retries": 3
       }
-    ]
+    ],
+    "environment": {
+      "appName": "CtrfApp",
+      "buildUrl": "https://www.ctrf.io/",
+      "buildName": "CTRF Build",
+      "buildNumber": "1"
+    }
   }
 }

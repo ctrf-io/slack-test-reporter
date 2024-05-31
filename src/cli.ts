@@ -1,4 +1,4 @@
-// src/cli.ts
+#!/usr/bin/env node
 import yargs from 'yargs/yargs';
 import { hideBin } from 'yargs/helpers';
 import { parseCtrfFile } from './ctrf-parser';
@@ -41,8 +41,8 @@ const argv = yargs(hideBin(process.argv))
             try {
                 const ctrfData = parseCtrfFile(argv.path as string);
                 const message = formatFailedTestsMessage(ctrfData);
-                await sendSlackMessage(message);
-                console.log('Failed tests message sent to Slack.');
+                // await sendSlackMessage(message);
+                console.log('Coming soon!');
             } catch (error: any) {
                 console.error('Error:', error.message);
             }
@@ -62,8 +62,8 @@ const argv = yargs(hideBin(process.argv))
             try {
                 const ctrfData = parseCtrfFile(argv.path as string);
                 const message = formatFlakyTestsMessage(ctrfData);
-                await sendSlackMessage(message);
-                console.log('Flaky tests message sent to Slack.');
+                // await sendSlackMessage(message);
+                console.log('Coming soon!');
             } catch (error: any) {
                 console.error('Error:', error.message);
             }
