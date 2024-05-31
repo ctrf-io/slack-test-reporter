@@ -22,3 +22,7 @@ jobs:
       run: npx slack-ctrf results ctrf-report.json
       env:
         SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+    - name: Send Slack Notification
+      run: npx slack-ctrf flaky ctrf-report.json
+      env:
+        SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
