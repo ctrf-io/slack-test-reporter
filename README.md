@@ -9,6 +9,7 @@ It means a lot to us and helps us grow this open source library.
 ## Features
 
 - **Send Test Results to Slack**: Automatically send test results to a Slack channel.
+- **Send Flaky Test Details to Slack**: Automatically send flaky test details to a Slack channel.
 - **Conditional Notifications**: Use the `--onFailOnly` option to send notifications only if tests fail.
 
 ## Setup
@@ -41,6 +42,12 @@ To send the test results summary to Slack:
 
 ```sh
 npx slack-ctrf results /path/to/ctrf-report.json
+```
+
+To send flaky test report to Slack:
+
+```sh
+npx slack-ctrf flaky /path/to/ctrf-report.json
 ```
 
 ### Send Only on Failures

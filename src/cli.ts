@@ -60,7 +60,7 @@ const argv = yargs(hideBin(process.argv))
     }
   )
   .command(
-    'flaky-details <path>',
+    'flaky <path>',
     'Send flaky test results to Slack',
     (yargs) => {
       return yargs.positional('path', {
@@ -73,8 +73,12 @@ const argv = yargs(hideBin(process.argv))
       try {
         const ctrfData = parseCtrfFile(argv.path as string);
         const message = formatFlakyTestsMessage(ctrfData);
-        // await sendSlackMessage(message);
-        console.log('Coming soon!');
+        if (message) {
+          await sendSlackMessage(message);
+          console.log('Flaky tests message sent to Slack.');
+        } else {
+          console.log('No flaky tests detected. No message sent.');
+        }
       } catch (error: any) {
         console.error('Error:', error.message);
       }

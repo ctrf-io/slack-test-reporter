@@ -82,7 +82,6 @@ export const formatResultsMessage = (ctrf: CtrfReport): object => {
       });
     }
   
-    // Add link to plugin documentation or repository
     blocks.push({
       type: "context",
       elements: [
@@ -112,10 +111,97 @@ export const formatFailedTestsMessage = (ctrf: CtrfReport): string => {
     return `Failed Tests:\n${message}`;
 };
 
-export const formatFlakyTestsMessage = (ctrf: CtrfReport): string => {
-    const flakyTests = ctrf.results.tests.filter(test => test.flaky);
-    if (flakyTests.length === 0) return 'No flaky tests.';
-
-    const message = flakyTests.map(test => `Test: ${test.name}\nRetries: ${test.retries}\n`).join('\n');
-    return `Flaky Tests:\n${message}`;
-};
+export const formatFlakyTestsMessage = (ctrf: CtrfReport): object | null => {
+    const { summary, environment, tests } = ctrf.results;
+    const flakyTests = tests.filter(test => test.flaky);
+  
+    if (flakyTests.length === 0) {
+      return null;
+    }
+  
+    let title = "CTRF Flaky Test Report";
+    let missingEnvProperties: string[] = [];
+  
+    let buildInfo = "Build: No build information provided";
+    if (environment) {
+      const { buildName, buildNumber, buildUrl } = environment;
+  
+      if (buildName && buildNumber) {
+        const buildText = buildUrl ? `<${buildUrl}|${buildName} #${buildNumber}>` : `${buildName} #${buildNumber}`;
+        buildInfo = `*Build:* ${buildText}`;
+      } else if (buildName || buildNumber) {
+        buildInfo = `*Build:* ${buildName || ''} ${buildNumber || ''}`;
+      }
+  
+      if (!buildName) {
+        missingEnvProperties.push('buildName');
+      }
+  
+      if (!buildNumber) {
+        missingEnvProperties.push('buildNumber');
+      }
+  
+      if (!buildUrl) {
+        missingEnvProperties.push('buildUrl');
+      }
+    } else {
+      missingEnvProperties = ['buildName', 'buildNumber', 'buildUrl'];
+    }
+  
+    const flakyTestsText = flakyTests.map(test => `- ${test.name}`).join('\n');
+  
+    const blocks: any[] = [
+      {
+        type: "header",
+        text: {
+          type: "plain_text",
+          text: title,
+          emoji: true
+        }
+      },
+      {
+        type: "section",
+        text: {
+          type: "mrkdwn",
+          text: `:fallen_leaf: *Flaky tests detected*\n${buildInfo}`
+        }
+      },
+      {
+        type: "section",
+        text: {
+          type: "mrkdwn",
+          text: `*Flaky Tests*\n${flakyTestsText}`
+        }
+      }
+    ];
+  
+    if (missingEnvProperties.length > 0) {
+      blocks.push({
+        type: "section",
+        text: {
+          type: "mrkdwn",
+          text: `:warning: Missing environment properties: ${missingEnvProperties.join(', ')}. Add these to your CTRF report for a better experience.`
+        }
+      });
+    }
+  
+    // Add link to plugin documentation or repository
+    blocks.push({
+      type: "context",
+      elements: [
+        {
+          type: "mrkdwn",
+          text: "<https://github.com/ctrf-io/slack-ctrf|a CTRF plugin>"
+        }
+      ]
+    });
+  
+    return {
+      attachments: [
+        {
+          color: "#FFA500", // Orange color for flaky tests
+          blocks: blocks
+        }
+      ]
+    };
+  };
