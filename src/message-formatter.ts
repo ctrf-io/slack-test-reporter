@@ -8,16 +8,18 @@ export const formatResultsMessage = (ctrf: CtrfReport): object => {
     const pendingTests = summary.pending;
     const otherTests = summary.other;
   
-    let title = "CTRF Test Results - No build details provided";
+    let title = "CTRF Test Results";
     let missingEnvProperties: string[] = [];
   
+    let buildInfo = "*Build:* No build information provided";
     if (environment) {
       const { buildName, buildNumber, buildUrl } = environment;
   
       if (buildName && buildNumber) {
-        title = `CTRF Test Results - ${buildName} ${buildNumber}`;
+        const buildText = buildUrl ? `<${buildUrl}|${buildName} #${buildNumber}>` : `${buildName} #${buildNumber}`;
+        buildInfo = `*Build:* ${buildText}`;
       } else if (buildName || buildNumber) {
-        title = `Test Results - ${buildName || ''} ${buildNumber || ''}`;
+        buildInfo = `*Build:* ${buildName || ''} ${buildNumber || ''}`;
       }
   
       if (!buildName) {
@@ -35,10 +37,15 @@ export const formatResultsMessage = (ctrf: CtrfReport): object => {
       missingEnvProperties = ['buildName', 'buildNumber', 'buildUrl'];
     }
   
-    const color = failedTests > 0 ? '#FF0000' : '#36a64f'; 
+    const color = failedTests > 0 ? '#FF0000' : '#36a64f';
     const resultText = failedTests > 0
-      ? `*:x: ${failedTests} failed tests*`
-      : `*:white_check_mark: Passed*`;
+      ? `*Results:* ${failedTests} failed tests`
+      : `*Results:* Passed`;
+  
+    const duration = summary.stop - summary.start;
+    const durationText = `*Duration:* ${new Date(duration * 1000).toISOString().substr(11, 8)}`;
+  
+    const testSummary = `:white_check_mark: ${passedTests} | :x: ${failedTests} | :fast_forward: ${skippedTests} | :hourglass_flowing_sand: ${pendingTests} | :question: ${otherTests}`;
   
     const blocks: any[] = [
       {
@@ -51,45 +58,26 @@ export const formatResultsMessage = (ctrf: CtrfReport): object => {
       },
       {
         type: "section",
-        fields: [
-          {
-            type: "mrkdwn",
-            text: `:white_check_mark: ${passedTests} | :x: ${failedTests} | :fast_forward: ${skippedTests} | :hourglass_flowing_sand: ${pendingTests} | :question: ${otherTests}`
-          }
-        ]
+        text: {
+          type: "mrkdwn",
+          text: `${testSummary}`
+        }
       },
       {
         type: "section",
         text: {
           type: "mrkdwn",
-          text: resultText
+          text: `${resultText} | ${durationText}\n${buildInfo}`
         }
       }
     ];
-  
-    if (environment?.buildUrl) {
-      blocks.push({
-        type: "actions",
-        elements: [
-          {
-            type: "button",
-            text: {
-              type: "plain_text",
-              text: "View Build",
-              emoji: true
-            },
-            url: environment.buildUrl
-          }
-        ]
-      });
-    }
   
     if (missingEnvProperties.length > 0) {
       blocks.push({
         type: "section",
         text: {
           type: "mrkdwn",
-          text: `:warning: The following environment properties are missing from the CTRF report: ${missingEnvProperties.join(', ')}. Add these environment details to your report for a better experience.`
+          text: `:warning: Missing environment properties: ${missingEnvProperties.join(', ')}. Add these to your CTRF report for a better experience.`
         }
       });
     }
