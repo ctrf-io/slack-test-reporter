@@ -2,100 +2,119 @@ import { CtrfReport } from '../types/ctrf';
 
 export const formatResultsMessage = (ctrf: CtrfReport): object => {
     const { summary, environment } = ctrf.results;
-    const totalTests = summary.tests;
     const passedTests = summary.passed;
     const failedTests = summary.failed;
     const skippedTests = summary.skipped;
     const pendingTests = summary.pending;
     const otherTests = summary.other;
-
-    const passedPercentage = ((passedTests / totalTests) * 100).toFixed(2);
-    const failedPercentage = ((failedTests / totalTests) * 100).toFixed(2);
-    const skippedPercentage = ((skippedTests / totalTests) * 100).toFixed(2);
-    const pendingPercentage = ((pendingTests / totalTests) * 100).toFixed(2);
-    const otherPercentage = ((otherTests / totalTests) * 100).toFixed(2);
-
-    let title = "Test Results - No build details provided";
+  
+    let title = "CTRF Test Results - No build details provided";
     let missingEnvProperties: string[] = [];
-
-    const blocks: any[] = [
-        {
-            type: "header",
-            text: {
-                type: "plain_text",
-                text: title,
-                emoji: true
-            }
-        },
-        {
-            type: "section",
-            fields: [
-                {
-                    type: "mrkdwn",
-                    text: `:question: *Tests:* ${totalTests}
-  :white_check_mark: *Passed:* ${passedTests} (${passedPercentage}%)
-  :x: *Failed:* ${failedTests} (${failedPercentage}%)
-  :fast_forward: *Skipped:* ${skippedPercentage}
-  :hourglass_flowing_sand: *Pending:* ${pendingTests} (${pendingPercentage}%)
-  :question: *Other:* ${otherTests} (${otherPercentage}%)`
-                }
-            ]
-        }
-    ];
-
+  
     if (environment) {
-        const { buildName, buildNumber, buildUrl } = environment;
-
-        if (buildName && buildNumber) {
-            title = `Test Results - ${buildName} #${buildNumber}`;
-        } else if (buildName || buildNumber) {
-            title = `Test Results - ${buildName || ''} #${buildNumber || ''}`;
-        }
-
-        blocks[0].text.text = title;
-
-        if (!buildName) {
-            missingEnvProperties.push('buildName');
-        }
-
-        if (!buildNumber) {
-            missingEnvProperties.push('buildNumber');
-        }
-
-        if (buildUrl) {
-            blocks.push({
-                type: "actions",
-                elements: [
-                    {
-                        type: "button",
-                        text: {
-                            type: "plain_text",
-                            text: "View Build",
-                            emoji: true
-                        },
-                        url: buildUrl
-                    }
-                ]
-            });
-        } else {
-            missingEnvProperties.push('buildUrl');
-        }
+      const { buildName, buildNumber, buildUrl } = environment;
+  
+      if (buildName && buildNumber) {
+        title = `CTRF Test Results - ${buildName} ${buildNumber}`;
+      } else if (buildName || buildNumber) {
+        title = `Test Results - ${buildName || ''} ${buildNumber || ''}`;
+      }
+  
+      if (!buildName) {
+        missingEnvProperties.push('buildName');
+      }
+  
+      if (!buildNumber) {
+        missingEnvProperties.push('buildNumber');
+      }
+  
+      if (!buildUrl) {
+        missingEnvProperties.push('buildUrl');
+      }
     } else {
-        missingEnvProperties = ['buildName', 'buildNumber', 'buildUrl'];
+      missingEnvProperties = ['buildName', 'buildNumber', 'buildUrl'];
     }
-
-    if (missingEnvProperties.length > 0) {
-        blocks.push({
-            type: "section",
+  
+    const color = failedTests > 0 ? '#FF0000' : '#36a64f'; 
+    const resultText = failedTests > 0
+      ? `*:x: ${failedTests} failed tests*`
+      : `*:white_check_mark: Passed*`;
+  
+    const blocks: any[] = [
+      {
+        type: "header",
+        text: {
+          type: "plain_text",
+          text: title,
+          emoji: true
+        }
+      },
+      {
+        type: "section",
+        fields: [
+          {
+            type: "mrkdwn",
+            text: `:white_check_mark: ${passedTests} | :x: ${failedTests} | :fast_forward: ${skippedTests} | :hourglass_flowing_sand: ${pendingTests} | :question: ${otherTests}`
+          }
+        ]
+      },
+      {
+        type: "section",
+        text: {
+          type: "mrkdwn",
+          text: resultText
+        }
+      }
+    ];
+  
+    if (environment?.buildUrl) {
+      blocks.push({
+        type: "actions",
+        elements: [
+          {
+            type: "button",
             text: {
-                type: "mrkdwn",
-                text: `:warning: The following environment properties are missing: ${missingEnvProperties.join(', ')}. Add these environment details to your CTRF report for a better experience.`
-            }
-        });
+              type: "plain_text",
+              text: "View Build",
+              emoji: true
+            },
+            url: environment.buildUrl
+          }
+        ]
+      });
     }
+  
+    if (missingEnvProperties.length > 0) {
+      blocks.push({
+        type: "section",
+        text: {
+          type: "mrkdwn",
+          text: `:warning: The following environment properties are missing from the CTRF report: ${missingEnvProperties.join(', ')}. Add these environment details to your report for a better experience.`
+        }
+      });
+    }
+  
+    // Add link to plugin documentation or repository
+    blocks.push({
+      type: "context",
+      elements: [
+        {
+          type: "mrkdwn",
+          text: "<https://github.com/ctrf-io/slack-ctrf|a CTRF plugin>"
+        }
+      ]
+    });
+  
+    return {
+      attachments: [
+        {
+          color: color,
+          blocks: blocks
+        }
+      ]
+    };
+  };
 
-    return { blocks };
-};
 
 export const formatFailedTestsMessage = (ctrf: CtrfReport): string => {
     const failedTests = ctrf.results.tests.filter(test => test.status === 'failed');
