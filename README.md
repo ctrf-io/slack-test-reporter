@@ -1,6 +1,6 @@
-# Slack Notification and Publish Test Results
+# Slack Test Results Notification
 
-> Send test result notifications from popular testing frameworks to Slack.
+> Send Slack message with test result from popular testing frameworks
 
 ⭐ **If you find this project useful, consider giving it a GitHub star** ⭐
 
