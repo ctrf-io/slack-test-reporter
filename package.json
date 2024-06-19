@@ -9,6 +9,7 @@
   "bin": {
     "slack-ctrf": "./dist/cli.js"
   },
+  "repository": "github:ctrf-io/slack-ctrf",
   "files": [
     "dist/",
     "README.md"
