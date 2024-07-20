@@ -80,6 +80,20 @@ npx slack-ctrf results /path/to/ctrf-file.json -f
 
 - `--onFailOnly, -f`: Send notification only if there are failed tests.
 
+## Merge reports
+
+You can merge reports if your chosen reporter generates multiple reports through design, parallelisation or otherwise.
+
+The [ctrf-cli](https://github.com/ctrf-io/ctrf-cli) package provides a method to merge multiple ctrf json files into a single file.
+
+After executing your tests, use the following command:
+
+```sh
+npx ctrf merge <directory>
+```
+
+Replace directory with the path to the directory containing the CTRF reports you want to merge.
+
 ## What is CTRF?
 
 CTRF is a universal JSON test report schema that addresses the lack of a standardized format for JSON test reports.
