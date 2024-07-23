@@ -42,8 +42,10 @@ export const formatResultsMessage = (ctrf: CtrfReport): object => {
       ? `*Results:* ${failedTests} failed tests`
       : `*Results:* Passed`;
   
-    const duration = summary.stop - summary.start;
-    const durationText = `*Duration:* ${new Date(duration * 1000).toISOString().substr(11, 8)}`;
+    const durationInSeconds = (summary.stop - summary.start) / 1000;
+    const durationText = durationInSeconds < 1
+      ? "*Duration:* <1s"
+      : `*Duration:* ${new Date(durationInSeconds * 1000).toISOString().substr(11, 8)}`;
   
     const testSummary = `:white_check_mark: ${passedTests} | :x: ${failedTests} | :fast_forward: ${skippedTests} | :hourglass_flowing_sand: ${pendingTests} | :question: ${otherTests}`;
   
