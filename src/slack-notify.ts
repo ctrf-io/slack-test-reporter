@@ -22,18 +22,21 @@ export const sendSlackMessage = (message: object): Promise<void> => {
             },
         };
 
-        const req = https.request(options, (res) => {
-            let response = '';
-            res.on('data', (chunk) => {
-                response += chunk;
-            });
-            res.on('end', () => {
-                if (res.statusCode === 200) {
-                    resolve();
-                } else {
-                    reject(new Error(`Failed to send message, status code: ${res.statusCode}, response: ${response}`));
-                }
-            });
+        const req = https.request(options);
+
+        let response = '';
+
+        req.on('data', (chunk) => {
+            response += chunk;
+        });
+
+        req.on('end', (res) => {
+            if (res.statusCode === 200) {
+                resolve();
+            }
+            else {
+                reject(new Error(`Failed to send message, status code: ${res.statusCode}, response: ${response}`));
+            }
         });
 
         req.on('error', (error) => {
@@ -41,6 +44,7 @@ export const sendSlackMessage = (message: object): Promise<void> => {
         });
 
         req.write(data);
+
         req.end();
     });
 };
