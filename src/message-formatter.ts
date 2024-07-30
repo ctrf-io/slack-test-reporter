@@ -1,6 +1,11 @@
 import { CtrfReport } from '../types/ctrf';
 
-export const formatResultsMessage = (ctrf: CtrfReport): object => {
+type Options = 
+{
+  title: string
+}
+
+export const formatResultsMessage = (ctrf: CtrfReport, options?: Options): object => {
     const { summary, environment } = ctrf.results;
     const passedTests = summary.passed;
     const failedTests = summary.failed;
@@ -8,7 +13,7 @@ export const formatResultsMessage = (ctrf: CtrfReport): object => {
     const pendingTests = summary.pending;
     const otherTests = summary.other;
   
-    let title = "CTRF Test Results";
+    let title = options?.title ? options?.title : "Test Results";
     let missingEnvProperties: string[] = [];
   
     let buildInfo = "*Build:* No build information provided";
@@ -105,15 +110,17 @@ export const formatResultsMessage = (ctrf: CtrfReport): object => {
   };
 
 
-export const formatFailedTestsMessage = (ctrf: CtrfReport): string => {
+export const formatFailedTestsMessage = (ctrf: CtrfReport, options?: Options): string => {
     const failedTests = ctrf.results.tests.filter(test => test.status === 'failed');
     if (failedTests.length === 0) return 'No failed tests.';
+
+    let title = options?.title ? options?.title : "Failed Tests";
 
     const message = failedTests.map(test => `Test: ${test.name}\nMessage: ${test.message}\n`).join('\n');
     return `Failed Tests:\n${message}`;
 };
 
-export const formatFlakyTestsMessage = (ctrf: CtrfReport): object | null => {
+export const formatFlakyTestsMessage = (ctrf: CtrfReport, options?: Options): object | null => {
     const { summary, environment, tests } = ctrf.results;
     const flakyTests = tests.filter(test => test.flaky);
   
@@ -121,7 +128,7 @@ export const formatFlakyTestsMessage = (ctrf: CtrfReport): object | null => {
       return null;
     }
   
-    let title = "CTRF Flaky Test Report";
+    let title = options?.title ? options?.title : "Flaky Tests";
     let missingEnvProperties: string[] = [];
   
     let buildInfo = "Build: No build information provided";

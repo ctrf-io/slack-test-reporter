@@ -76,9 +76,24 @@ or using the alias:
 npx slack-ctrf results /path/to/ctrf-file.json -f
 ```
 
+### Custom Notification Title
+
+You can choose a custom title for your notification, use the `--title` option:
+
+```sh
+npx slack-ctrf results /path/to/ctrf-file.json --title "Custom Title"
+```
+
+or using the alias:
+
+```sh
+npx slack-ctrf results /path/to/ctrf-file.json -t "Custom Title"
+```
+
 ## Options
 
 - `--onFailOnly, -f`: Send notification only if there are failed tests.
+- `--title, -t`: Title of the notification.
 
 ## Merge reports
 
