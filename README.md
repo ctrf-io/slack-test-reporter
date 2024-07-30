@@ -78,7 +78,7 @@ npx slack-ctrf results /path/to/ctrf-file.json -f
 
 ### Custom Notification Title
 
-To can choose a custom title for your notification, use the `--title` option:
+You can choose a custom title for your notification, use the `--title` option:
 
 ```sh
 npx slack-ctrf results /path/to/ctrf-file.json --title "Custom Title"
