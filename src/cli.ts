@@ -21,6 +21,12 @@ const argv = yargs(hideBin(process.argv))
           type: 'boolean',
           description: 'Send message only if there are failed tests',
           default: false,
+        })
+        .option('title', {
+          alias: 't',
+          type: 'string',
+          description: 'Title of notification',
+          default: "Test Results",
         });
     },
     async (argv) => {
@@ -30,7 +36,7 @@ const argv = yargs(hideBin(process.argv))
           console.log('No failed tests. Message not sent.');
           return;
         }
-        const message = formatResultsMessage(ctrfData);
+        const message = formatResultsMessage(ctrfData, {title: argv.title});
         await sendSlackMessage(message);
         console.log('Results message sent to Slack.');
       } catch (error: any) {
@@ -46,12 +52,18 @@ const argv = yargs(hideBin(process.argv))
         describe: 'Path to the CTRF file',
         type: 'string',
         demandOption: true,
+      })
+      .option('title', {
+        alias: 't',
+        type: 'string',
+        description: 'Title of notification',
+        default: "Failed Tests",
       });
     },
     async (argv) => {
       try {
         const ctrfData = parseCtrfFile(argv.path as string);
-        const message = formatFailedTestsMessage(ctrfData);
+        const message = formatFailedTestsMessage(ctrfData, {title: argv.title});
         // await sendSlackMessage(message);
         console.log('Coming soon!');
       } catch (error: any) {
@@ -67,12 +79,18 @@ const argv = yargs(hideBin(process.argv))
         describe: 'Path to the CTRF file',
         type: 'string',
         demandOption: true,
+      })
+      .option('title', {
+        alias: 't',
+        type: 'string',
+        description: 'Title of notification',
+        default: "Flaky Tests",
       });
     },
     async (argv) => {
       try {
         const ctrfData = parseCtrfFile(argv.path as string);
-        const message = formatFlakyTestsMessage(ctrfData);
+        const message = formatFlakyTestsMessage(ctrfData, {title: argv.title});
         if (message) {
           await sendSlackMessage(message);
           console.log('Flaky tests message sent to Slack.');
