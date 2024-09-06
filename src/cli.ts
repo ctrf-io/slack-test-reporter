@@ -2,7 +2,7 @@
 import yargs from 'yargs/yargs';
 import { hideBin } from 'yargs/helpers';
 import { parseCtrfFile } from './ctrf-parser';
-import { formatResultsMessage, formatFailedTestsMessage, formatFlakyTestsMessage } from './message-formatter';
+import { formatResultsMessage, formatFailedTestsMessage, formatFlakyTestsMessage, formatAiTestSummary } from './message-formatter';
 import { sendSlackMessage } from './slack-notify';
 
 const argv = yargs(hideBin(process.argv))
@@ -96,6 +96,41 @@ const argv = yargs(hideBin(process.argv))
           console.log('Flaky tests message sent to Slack.');
         } else {
           console.log('No flaky tests detected. No message sent.');
+        }
+      } catch (error: any) {
+        console.error('Error:', error.message);
+      }
+    }
+  )
+  .command(
+    'ai <path>',
+    'Send ai failed test summary to Slack',
+    (yargs) => {
+      return yargs.positional('path', {
+        describe: 'Path to the CTRF file',
+        type: 'string',
+        demandOption: true,
+      })
+      .option('title', {
+        alias: 't',
+        type: 'string',
+        description: 'Title of notification',
+        default: "AI Summary",
+      });
+    },
+    async (argv) => {
+      try {
+        const ctrfData = parseCtrfFile(argv.path as string);
+        for (const test of ctrfData.results.tests) {
+          if (test.status === "failed") {
+            const message = formatAiTestSummary(test, ctrfData.results.environment, {title: argv.title});
+            if (message) {
+              await sendSlackMessage(message);
+              console.log('AI test summary sent to Slack.');
+            } else {
+              console.log('No AI summary detected. No message sent.');
+            }
+          }
         }
       } catch (error: any) {
         console.error('Error:', error.message);

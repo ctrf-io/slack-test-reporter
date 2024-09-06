@@ -46,6 +46,8 @@ You might want to store the webhook URL as a secret.
 
 ## Usage
 
+### Results
+
 To send the test results summary to Slack:
 
 ```sh
@@ -53,6 +55,20 @@ npx slack-ctrf results /path/to/ctrf-report.json
 ```
 
 ![Results view](assets/results.png)
+
+### AI Summary
+
+To send AI failed test summary to Slack:
+
+```sh
+npx slack-ctrf ai /path/to/ctrf-report.json
+```
+
+![AI view](assets/ai.png)
+
+See the [AI Test Reporter](https://github.com/ctrf-io/ai-test-reporter) to add AI summaries to your CTRF report
+
+### Flaky
 
 To send flaky test report to Slack:
 

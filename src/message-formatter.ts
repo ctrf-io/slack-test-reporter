@@ -1,4 +1,4 @@
-import { CtrfReport } from '../types/ctrf';
+import { CtrfEnvironment, CtrfReport, CtrfTest } from '../types/ctrf';
 
 type Options = 
 {
@@ -94,7 +94,7 @@ export const formatResultsMessage = (ctrf: CtrfReport, options?: Options): objec
       elements: [
         {
           type: "mrkdwn",
-          text: "<https://github.com/ctrf-io/slack-ctrf|a CTRF plugin>"
+          text: "<https://github.com/ctrf-io/slack-ctrf|Slack CTRF Test Reporter>"
         }
       ]
     });
@@ -194,13 +194,12 @@ export const formatFlakyTestsMessage = (ctrf: CtrfReport, options?: Options): ob
       });
     }
   
-    // Add link to plugin documentation or repository
     blocks.push({
       type: "context",
       elements: [
         {
           type: "mrkdwn",
-          text: "<https://github.com/ctrf-io/slack-ctrf|a CTRF plugin>"
+          text: "<https://github.com/ctrf-io/slack-ctrf|Slack CTRF Test Reporter>"
         }
       ]
     });
@@ -214,3 +213,105 @@ export const formatFlakyTestsMessage = (ctrf: CtrfReport, options?: Options): ob
       ]
     };
   };
+
+  export const formatAiTestSummary = (test: CtrfTest, environment: CtrfEnvironment | undefined, options?: Options):  object | null => {
+    const { name, ai, status } = test
+
+    if (!ai || status === "passed") { return null}
+
+    let title = options?.title ? options?.title : `AI Test summary`;
+    let missingEnvProperties: string[] = [];
+  
+    let buildInfo = "*Build:* No build information provided";
+    if (environment) {
+      const { buildName, buildNumber, buildUrl } = environment;
+  
+      if (buildName && buildNumber) {
+        const buildText = buildUrl ? `<${buildUrl}|${buildName} #${buildNumber}>` : `${buildName} #${buildNumber}`;
+        buildInfo = `*Build:* ${buildText}`;
+      } else if (buildName || buildNumber) {
+        buildInfo = `*Build:* ${buildName || ''} ${buildNumber || ''}`;
+      }
+  
+      if (!buildName) {
+        missingEnvProperties.push('buildName');
+      }
+  
+      if (!buildNumber) {
+        missingEnvProperties.push('buildNumber');
+      }
+  
+      if (!buildUrl) {
+        missingEnvProperties.push('buildUrl');
+      }
+    } else {
+      missingEnvProperties = ['buildName', 'buildNumber', 'buildUrl'];
+    }
+  
+    const color = '#800080' 
+    const resultText = `*Status:* Failed`
+  
+    const aiSummaryText = `*:sparkles: AI Summary:* ${ai}`;
+  
+    const blocks: any[] = [
+      {
+        type: "header",
+        text: {
+          type: "plain_text",
+          text: title,
+          emoji: true
+        }
+      },
+      {
+        type: "section",
+        text: {
+          type: "mrkdwn",
+          text: `*Test Name:* ${name}\n${resultText}`
+        }
+      },
+      {
+        type: "section",
+        text: {
+          type: "mrkdwn",
+          text: `${aiSummaryText}`
+        }
+      },
+      {
+        type: "section",
+        text: {
+          type: "mrkdwn",
+          text: `${buildInfo}`
+        }
+      }
+    ];
+  
+    if (missingEnvProperties.length > 0) {
+      blocks.push({
+        type: "section",
+        text: {
+          type: "mrkdwn",
+          text: `:warning: Missing environment properties: ${missingEnvProperties.join(', ')}. Add these to your test for a better experience.`
+        }
+      });
+    }
+  
+    blocks.push({
+      type: "context",
+      elements: [
+        {
+          type: "mrkdwn",
+          text: "<https://github.com/ctrf-io/slack-ctrf|Slack CTRF Test Reporter>"
+        }
+      ]
+    });
+  
+    return {
+      attachments: [
+        {
+          color: color,
+          blocks: blocks
+        }
+      ]
+    };
+  };
+  
