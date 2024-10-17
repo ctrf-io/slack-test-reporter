@@ -64,6 +64,12 @@ To send AI failed test summary to Slack:
 npx slack-ctrf ai /path/to/ctrf-report.json
 ```
 
+Use `--consolidated` argumement to send a single message with all AI summaries
+
+```sh
+npx slack-ctrf ai /path/to/ctrf-report.json --consolidated
+```
+
 ![AI view](assets/ai.png)
 
 See the [AI Test Reporter](https://github.com/ctrf-io/ai-test-reporter) to add AI summaries to your CTRF report
