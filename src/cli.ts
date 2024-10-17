@@ -2,7 +2,7 @@
 import yargs from 'yargs/yargs';
 import { hideBin } from 'yargs/helpers';
 import { parseCtrfFile } from './ctrf-parser';
-import { formatResultsMessage, formatFailedTestsMessage, formatFlakyTestsMessage, formatAiTestSummary } from './message-formatter';
+import { formatResultsMessage, formatFailedTestsMessage, formatFlakyTestsMessage, formatAiTestSummary, formatConsolidatedAiTestSummary } from './message-formatter';
 import { sendSlackMessage } from './slack-notify';
 
 const argv = yargs(hideBin(process.argv))
@@ -104,7 +104,7 @@ const argv = yargs(hideBin(process.argv))
   )
   .command(
     'ai <path>',
-    'Send ai failed test summary to Slack',
+    'Send ai failed test summary for each failed test to Slack',
     (yargs) => {
       return yargs.positional('path', {
         describe: 'Path to the CTRF file',
@@ -116,11 +116,26 @@ const argv = yargs(hideBin(process.argv))
         type: 'string',
         description: 'Title of notification',
         default: "AI Summary",
+      })
+      .option('consolidated', {
+        alias: 'c',
+        type: 'boolean',
+        description: 'Consolidate all failure summaries into a single message',
+        default: false,
       });
     },
     async (argv) => {
       try {
         const ctrfData = parseCtrfFile(argv.path as string);
+        if (argv.consolidated) {
+            const message = formatConsolidatedAiTestSummary(ctrfData.results.tests, ctrfData.results.environment, {title: argv.title})
+            if (message) {
+              await sendSlackMessage(message);
+              console.log('AI test summary sent to Slack.');
+            } else {
+              console.log('No AI summary detected. No message sent.');
+            }
+        } else {
         for (const test of ctrfData.results.tests) {
           if (test.status === "failed") {
             const message = formatAiTestSummary(test, ctrfData.results.environment, {title: argv.title});
@@ -128,10 +143,11 @@ const argv = yargs(hideBin(process.argv))
               await sendSlackMessage(message);
               console.log('AI test summary sent to Slack.');
             } else {
-              console.log('No AI summary detected. No message sent.');
+              console.log('No AI summary detected. No message sent');
             }
           }
         }
+      }
       } catch (error: any) {
         console.error('Error:', error.message);
       }
