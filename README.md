@@ -84,6 +84,22 @@ npx slack-ctrf flaky /path/to/ctrf-report.json
 
 ![Flaky view](assets/flaky.png)
 
+## Failed
+
+To send failed test report to Slack:
+
+```sh
+npx slack-ctrf failed /path/to/ctrf-report.json
+```
+
+Use `--consolidated` argumement to send a single message with all AI summaries
+
+```sh
+npx slack-ctrf failed /path/to/ctrf-report.json --consolidated
+```
+
+![Failed view](assets/failed.png)
+
 ### Send Only on Failures
 
 To send the test results summary to Slack only if there are failed tests, use the `--onFailOnly` option:
