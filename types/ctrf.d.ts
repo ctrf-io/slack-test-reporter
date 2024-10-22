@@ -49,6 +49,7 @@ export interface CtrfTest {
 }
 
 export interface CtrfEnvironment {
+  reportName?: string
   appName?: string
   appVersion?: string
   osPlatform?: string
