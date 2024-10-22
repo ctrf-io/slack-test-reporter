@@ -2,8 +2,9 @@
 import yargs from 'yargs/yargs';
 import { hideBin } from 'yargs/helpers';
 import { parseCtrfFile } from './ctrf-parser';
-import { formatResultsMessage, formatFailedTestsMessage, formatFlakyTestsMessage, formatAiTestSummary, formatConsolidatedAiTestSummary } from './message-formatter';
+import { formatResultsMessage, formatFlakyTestsMessage, formatAiTestSummary, formatConsolidatedAiTestSummary, formatConsolidatedFailedTestSummary, formatFailedTestSummary } from './message-formatter';
 import { sendSlackMessage } from './slack-notify';
+import { stripAnsiFromErrors } from './utils/common';
 
 const argv = yargs(hideBin(process.argv))
   .command(
@@ -45,7 +46,7 @@ const argv = yargs(hideBin(process.argv))
     }
   )
   .command(
-    'fail-details <path>',
+    'failed <path>',
     'Send failed test results to Slack',
     (yargs) => {
       return yargs.positional('path', {
@@ -57,20 +58,43 @@ const argv = yargs(hideBin(process.argv))
         alias: 't',
         type: 'string',
         description: 'Title of notification',
-        default: "Failed Tests",
+        default: ":x: Failed Test",
+      })
+      .option('consolidated', {
+        alias: 'c',
+        type: 'boolean',
+        description: 'Consolidate all failure summaries into a single message',
+        default: false,
       });
     },
     async (argv) => {
       try {
-        const ctrfData = parseCtrfFile(argv.path as string);
-        const message = formatFailedTestsMessage(ctrfData, {title: argv.title});
-        // await sendSlackMessage(message);
-        console.log('Coming soon!');
+        const ctrfData = stripAnsiFromErrors(parseCtrfFile(argv.path as string))
+        if (argv.consolidated) {
+            const message = formatConsolidatedFailedTestSummary(ctrfData.results.tests, ctrfData.results.environment, {title: argv.title})
+            if (message) {
+              await sendSlackMessage(message);
+              console.log('Failed test summary sent to Slack.');
+            } else {
+              console.log('No failed test summary detected. No message sent.');
+            }
+        } else {
+        for (const test of ctrfData.results.tests) {
+          if (test.status === "failed") {
+            const message = formatFailedTestSummary(test, ctrfData.results.environment, {title: argv.title});
+            if (message) {
+              await sendSlackMessage(message);
+              console.log('Failed test summary sent to Slack.');
+            } else {
+              console.log('No failed test summary detected. No message sent');
+            }
+          }
+        }
+      }
       } catch (error: any) {
         console.error('Error:', error.message);
       }
-    }
-  )
+    })
   .command(
     'flaky <path>',
     'Send flaky test results to Slack',
