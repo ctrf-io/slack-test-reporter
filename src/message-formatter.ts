@@ -2,7 +2,8 @@ import { CtrfEnvironment, CtrfReport, CtrfTest } from '../types/ctrf';
 
 type Options =
   {
-    title: string
+    title: string,
+    azureReportUrl?: string
   }
 
 export const formatResultsMessage = (ctrf: CtrfReport, options?: Options): object => {
@@ -89,12 +90,22 @@ export const formatResultsMessage = (ctrf: CtrfReport, options?: Options): objec
     });
   }
 
+  if (options?.azureReportUrl) {
+    blocks.push({
+      type: "section",
+      text: {
+        type: "mrkdwn",
+        text: `<${options.azureReportUrl}|Azure Report>`
+      }
+    });
+  }
+
   blocks.push({
     type: "context",
     elements: [
       {
         type: "mrkdwn",
-        text: "<https://github.com/ctrf-io/slack-ctrf|Slack CTRF Test Reporter>"
+        text: "<https://github.com/ctrf-io/slack-ctrf|Slack CTRF Test Reporter V2>"
       }
     ]
   });
@@ -185,12 +196,22 @@ export const formatFlakyTestsMessage = (ctrf: CtrfReport, options?: Options): ob
     });
   }
 
+  if (options?.azureReportUrl) {
+    blocks.push({
+      type: "section",
+      text: {
+        type: "mrkdwn",
+        text: `<${options.azureReportUrl}|Azure Report>`
+      }
+    });
+  }
+
   blocks.push({
     type: "context",
     elements: [
       {
         type: "mrkdwn",
-        text: "<https://github.com/ctrf-io/slack-ctrf|Slack CTRF Test Reporter>"
+        text: "<https://github.com/ctrf-io/slack-ctrf|Slack CTRF Test Reporter V2>"
       }
     ]
   });
@@ -286,12 +307,22 @@ export const formatAiTestSummary = (test: CtrfTest, environment: CtrfEnvironment
     });
   }
 
+  if (options?.azureReportUrl) {
+    blocks.push({
+      type: "section",
+      text: {
+        type: "mrkdwn",
+        text: `<${options.azureReportUrl}|Azure Report>`
+      }
+    });
+  }
+
   blocks.push({
     type: "context",
     elements: [
       {
         type: "mrkdwn",
-        text: "<https://github.com/ctrf-io/slack-ctrf|Slack CTRF Test Reporter>"
+        text: "<https://github.com/ctrf-io/slack-ctrf|Slack CTRF Test Reporter V2>"
       }
     ]
   });
@@ -397,6 +428,16 @@ export const formatConsolidatedAiTestSummary = (
     });
   }
 
+  if (options?.azureReportUrl) {
+    blocks.push({
+      type: "section",
+      text: {
+        type: "mrkdwn",
+        text: `<${options.azureReportUrl}|Azure Report>`
+      }
+    });
+  }
+
   if (failedTests.length > MAX_FAILED_TESTS) {
     blocks.push({
       type: "section",
@@ -412,7 +453,7 @@ export const formatConsolidatedAiTestSummary = (
     elements: [
       {
         type: "mrkdwn",
-        text: "<https://github.com/ctrf-io/slack-ctrf|Slack CTRF Test Reporter>"
+        text: "<https://github.com/ctrf-io/slack-ctrf|Slack CTRF Test Reporter V2>"
       }
     ]
   });
@@ -522,6 +563,16 @@ export const formatConsolidatedFailedTestSummary = (
     });
   }
 
+  if (options?.azureReportUrl) {
+    blocks.push({
+      type: "section",
+      text: {
+        type: "mrkdwn",
+        text: `<${options.azureReportUrl}|Azure Report>`
+      }
+    });
+  }
+
   if (failedTests.length > MAX_FAILED_TESTS) {
     blocks.push({
       type: "section",
@@ -537,7 +588,7 @@ export const formatConsolidatedFailedTestSummary = (
     elements: [
       {
         type: "mrkdwn",
-        text: "<https://github.com/ctrf-io/slack-ctrf|Slack CTRF Test Reporter>"
+        text: "<https://github.com/ctrf-io/slack-ctrf|Slack CTRF Test Reporter V2>"
       }
     ]
   });
@@ -639,12 +690,22 @@ export const formatFailedTestSummary = (test: CtrfTest, environment: CtrfEnviron
     });
   }
 
+  if (options?.azureReportUrl) {
+    blocks.push({
+      type: "section",
+      text: {
+        type: "mrkdwn",
+        text: `<${options.azureReportUrl}|Azure Report>`
+      }
+    });
+  }
+
   blocks.push({
     type: "context",
     elements: [
       {
         type: "mrkdwn",
-        text: "<https://github.com/ctrf-io/slack-ctrf|Slack CTRF Test Reporter>"
+        text: "<https://github.com/ctrf-io/slack-ctrf|Slack CTRF Test Reporter V2>"
       }
     ]
   });
@@ -658,9 +719,3 @@ export const formatFailedTestSummary = (test: CtrfTest, environment: CtrfEnviron
     ]
   };
 };
-
-
-
-
-
-
