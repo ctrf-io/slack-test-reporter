@@ -100,16 +100,6 @@ export const formatResultsMessage = (ctrf: CtrfReport, options?: Options): objec
     });
   }
 
-  blocks.push({
-    type: "context",
-    elements: [
-      {
-        type: "mrkdwn",
-        text: "<https://github.com/ctrf-io/slack-ctrf|Slack CTRF Test Reporter>"
-      }
-    ]
-  });
-
   return {
     attachments: [
       {
@@ -205,16 +195,6 @@ export const formatFlakyTestsMessage = (ctrf: CtrfReport, options?: Options): ob
       }
     });
   }
-
-  blocks.push({
-    type: "context",
-    elements: [
-      {
-        type: "mrkdwn",
-        text: "<https://github.com/ctrf-io/slack-ctrf|Slack CTRF Test Reporter>"
-      }
-    ]
-  });
 
   return {
     attachments: [
@@ -316,16 +296,6 @@ export const formatAiTestSummary = (test: CtrfTest, environment: CtrfEnvironment
       }
     });
   }
-
-  blocks.push({
-    type: "context",
-    elements: [
-      {
-        type: "mrkdwn",
-        text: "<https://github.com/ctrf-io/slack-ctrf|Slack CTRF Test Reporter>"
-      }
-    ]
-  });
 
   return {
     attachments: [
@@ -447,16 +417,6 @@ export const formatConsolidatedAiTestSummary = (
       }
     });
   }
-
-  blocks.push({
-    type: "context",
-    elements: [
-      {
-        type: "mrkdwn",
-        text: "<https://github.com/ctrf-io/slack-ctrf|Slack CTRF Test Reporter>"
-      }
-    ]
-  });
 
   return {
     attachments: [
@@ -583,16 +543,6 @@ export const formatConsolidatedFailedTestSummary = (
     });
   }
 
-  blocks.push({
-    type: "context",
-    elements: [
-      {
-        type: "mrkdwn",
-        text: "<https://github.com/ctrf-io/slack-ctrf|Slack CTRF Test Reporter>"
-      }
-    ]
-  });
-
   return {
     attachments: [
       {
@@ -699,16 +649,6 @@ export const formatFailedTestSummary = (test: CtrfTest, environment: CtrfEnviron
       }
     });
   }
-
-  blocks.push({
-    type: "context",
-    elements: [
-      {
-        type: "mrkdwn",
-        text: "<https://github.com/ctrf-io/slack-ctrf|Slack CTRF Test Reporter>"
-      }
-    ]
-  });
 
   return {
     attachments: [
