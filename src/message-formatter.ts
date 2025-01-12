@@ -95,7 +95,7 @@ export const formatResultsMessage = (ctrf: CtrfReport, options?: Options): objec
       type: "section",
       text: {
         type: "mrkdwn",
-        text: `<${options.azureReportUrl}|Azure Report>`
+        text: `Report: <${options.azureReportUrl}|View Report>`
       }
     });
   }
@@ -105,7 +105,7 @@ export const formatResultsMessage = (ctrf: CtrfReport, options?: Options): objec
     elements: [
       {
         type: "mrkdwn",
-        text: "<https://github.com/ctrf-io/slack-ctrf|Slack CTRF Test Reporter V2>"
+        text: "<https://github.com/ctrf-io/slack-ctrf|Slack CTRF Test Reporter>"
       }
     ]
   });
@@ -201,7 +201,7 @@ export const formatFlakyTestsMessage = (ctrf: CtrfReport, options?: Options): ob
       type: "section",
       text: {
         type: "mrkdwn",
-        text: `<${options.azureReportUrl}|Azure Report>`
+        text: `Report: <${options.azureReportUrl}|View Report>`
       }
     });
   }
@@ -211,7 +211,7 @@ export const formatFlakyTestsMessage = (ctrf: CtrfReport, options?: Options): ob
     elements: [
       {
         type: "mrkdwn",
-        text: "<https://github.com/ctrf-io/slack-ctrf|Slack CTRF Test Reporter V2>"
+        text: "<https://github.com/ctrf-io/slack-ctrf|Slack CTRF Test Reporter>"
       }
     ]
   });
@@ -312,7 +312,7 @@ export const formatAiTestSummary = (test: CtrfTest, environment: CtrfEnvironment
       type: "section",
       text: {
         type: "mrkdwn",
-        text: `<${options.azureReportUrl}|Azure Report>`
+        text: `Report: <${options.azureReportUrl}|View Report>`
       }
     });
   }
@@ -322,7 +322,7 @@ export const formatAiTestSummary = (test: CtrfTest, environment: CtrfEnvironment
     elements: [
       {
         type: "mrkdwn",
-        text: "<https://github.com/ctrf-io/slack-ctrf|Slack CTRF Test Reporter V2>"
+        text: "<https://github.com/ctrf-io/slack-ctrf|Slack CTRF Test Reporter>"
       }
     ]
   });
@@ -433,7 +433,7 @@ export const formatConsolidatedAiTestSummary = (
       type: "section",
       text: {
         type: "mrkdwn",
-        text: `<${options.azureReportUrl}|Azure Report>`
+        text: `Report: <${options.azureReportUrl}|View Report>`
       }
     });
   }
@@ -453,7 +453,7 @@ export const formatConsolidatedAiTestSummary = (
     elements: [
       {
         type: "mrkdwn",
-        text: "<https://github.com/ctrf-io/slack-ctrf|Slack CTRF Test Reporter V2>"
+        text: "<https://github.com/ctrf-io/slack-ctrf|Slack CTRF Test Reporter>"
       }
     ]
   });
@@ -568,7 +568,7 @@ export const formatConsolidatedFailedTestSummary = (
       type: "section",
       text: {
         type: "mrkdwn",
-        text: `<${options.azureReportUrl}|Azure Report>`
+        text: `Report: <${options.azureReportUrl}|View Report>`
       }
     });
   }
@@ -588,7 +588,7 @@ export const formatConsolidatedFailedTestSummary = (
     elements: [
       {
         type: "mrkdwn",
-        text: "<https://github.com/ctrf-io/slack-ctrf|Slack CTRF Test Reporter V2>"
+        text: "<https://github.com/ctrf-io/slack-ctrf|Slack CTRF Test Reporter>"
       }
     ]
   });
@@ -695,7 +695,7 @@ export const formatFailedTestSummary = (test: CtrfTest, environment: CtrfEnviron
       type: "section",
       text: {
         type: "mrkdwn",
-        text: `<${options.azureReportUrl}|Azure Report>`
+        text: `Report: <${options.azureReportUrl}|View Report>`
       }
     });
   }
@@ -705,7 +705,7 @@ export const formatFailedTestSummary = (test: CtrfTest, environment: CtrfEnviron
     elements: [
       {
         type: "mrkdwn",
-        text: "<https://github.com/ctrf-io/slack-ctrf|Slack CTRF Test Reporter V2>"
+        text: "<https://github.com/ctrf-io/slack-ctrf|Slack CTRF Test Reporter>"
       }
     ]
   });

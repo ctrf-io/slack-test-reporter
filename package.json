@@ -9,7 +9,7 @@
   "bin": {
     "slack-ctrf": "./dist/cli.js"
   },
-  "repository": "github:jameshiscott/slack-test-reporter-v2",
+  "repository": "github:ctrf-io/slack-test-reporter",
   "files": [
     "dist/",
     "README.md"
