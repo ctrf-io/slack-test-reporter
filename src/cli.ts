@@ -28,6 +28,11 @@ const argv = yargs(hideBin(process.argv))
           type: 'string',
           description: 'Title of notification',
           default: "Test Results",
+        })
+        .option('azureReportUrl', {
+          alias: 'a',
+          type: 'string',
+          description: 'URL to the Azure report',
         });
     },
     async (argv) => {
@@ -37,7 +42,7 @@ const argv = yargs(hideBin(process.argv))
           console.log('No failed tests. Message not sent.');
           return;
         }
-        const message = formatResultsMessage(ctrfData, {title: argv.title});
+        const message = formatResultsMessage(ctrfData, {title: argv.title, azureReportUrl: argv.azureReportUrl});
         await sendSlackMessage(message);
         console.log('Results message sent to Slack.');
       } catch (error: any) {
@@ -65,13 +70,18 @@ const argv = yargs(hideBin(process.argv))
         type: 'boolean',
         description: 'Consolidate all failure summaries into a single message',
         default: false,
+      })
+      .option('azureReportUrl', {
+        alias: 'a',
+        type: 'string',
+        description: 'URL to the Azure report',
       });
     },
     async (argv) => {
       try {
         const ctrfData = stripAnsiFromErrors(parseCtrfFile(argv.path as string))
         if (argv.consolidated) {
-            const message = formatConsolidatedFailedTestSummary(ctrfData.results.tests, ctrfData.results.environment, {title: argv.title})
+            const message = formatConsolidatedFailedTestSummary(ctrfData.results.tests, ctrfData.results.environment, {title: argv.title, azureReportUrl: argv.azureReportUrl})
             if (message) {
               await sendSlackMessage(message);
               console.log('Failed test summary sent to Slack.');
@@ -81,7 +91,7 @@ const argv = yargs(hideBin(process.argv))
         } else {
         for (const test of ctrfData.results.tests) {
           if (test.status === "failed") {
-            const message = formatFailedTestSummary(test, ctrfData.results.environment, {title: argv.title});
+            const message = formatFailedTestSummary(test, ctrfData.results.environment, {title: argv.title, azureReportUrl: argv.azureReportUrl});
             if (message) {
               await sendSlackMessage(message);
               console.log('Failed test summary sent to Slack.');
@@ -109,12 +119,17 @@ const argv = yargs(hideBin(process.argv))
         type: 'string',
         description: 'Title of notification',
         default: "Flaky Tests",
+      })
+      .option('azureReportUrl', {
+        alias: 'a',
+        type: 'string',
+        description: 'URL to the Azure report',
       });
     },
     async (argv) => {
       try {
         const ctrfData = parseCtrfFile(argv.path as string);
-        const message = formatFlakyTestsMessage(ctrfData, {title: argv.title});
+        const message = formatFlakyTestsMessage(ctrfData, {title: argv.title, azureReportUrl: argv.azureReportUrl});
         if (message) {
           await sendSlackMessage(message);
           console.log('Flaky tests message sent to Slack.');
@@ -146,13 +161,18 @@ const argv = yargs(hideBin(process.argv))
         type: 'boolean',
         description: 'Consolidate all failure summaries into a single message',
         default: false,
+      })
+      .option('azureReportUrl', {
+        alias: 'a',
+        type: 'string',
+        description: 'URL to the Azure report',
       });
     },
     async (argv) => {
       try {
         const ctrfData = parseCtrfFile(argv.path as string);
         if (argv.consolidated) {
-            const message = formatConsolidatedAiTestSummary(ctrfData.results.tests, ctrfData.results.environment, {title: argv.title})
+            const message = formatConsolidatedAiTestSummary(ctrfData.results.tests, ctrfData.results.environment, {title: argv.title, azureReportUrl: argv.azureReportUrl})
             if (message) {
               await sendSlackMessage(message);
               console.log('AI test summary sent to Slack.');
@@ -162,7 +182,7 @@ const argv = yargs(hideBin(process.argv))
         } else {
         for (const test of ctrfData.results.tests) {
           if (test.status === "failed") {
-            const message = formatAiTestSummary(test, ctrfData.results.environment, {title: argv.title});
+            const message = formatAiTestSummary(test, ctrfData.results.environment, {title: argv.title, azureReportUrl: argv.azureReportUrl});
             if (message) {
               await sendSlackMessage(message);
               console.log('AI test summary sent to Slack.');

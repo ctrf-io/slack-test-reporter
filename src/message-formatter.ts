@@ -2,7 +2,8 @@ import { CtrfEnvironment, CtrfReport, CtrfTest } from '../types/ctrf';
 
 type Options =
   {
-    title: string
+    title: string,
+    azureReportUrl?: string
   }
 
 export const formatResultsMessage = (ctrf: CtrfReport, options?: Options): object => {
@@ -89,15 +90,15 @@ export const formatResultsMessage = (ctrf: CtrfReport, options?: Options): objec
     });
   }
 
-  blocks.push({
-    type: "context",
-    elements: [
-      {
+  if (options?.azureReportUrl) {
+    blocks.push({
+      type: "section",
+      text: {
         type: "mrkdwn",
-        text: "<https://github.com/ctrf-io/slack-ctrf|Slack CTRF Test Reporter>"
+        text: `Report: <${options.azureReportUrl}|View Report>`
       }
-    ]
-  });
+    });
+  }
 
   return {
     attachments: [
@@ -185,15 +186,15 @@ export const formatFlakyTestsMessage = (ctrf: CtrfReport, options?: Options): ob
     });
   }
 
-  blocks.push({
-    type: "context",
-    elements: [
-      {
+  if (options?.azureReportUrl) {
+    blocks.push({
+      type: "section",
+      text: {
         type: "mrkdwn",
-        text: "<https://github.com/ctrf-io/slack-ctrf|Slack CTRF Test Reporter>"
+        text: `Report: <${options.azureReportUrl}|View Report>`
       }
-    ]
-  });
+    });
+  }
 
   return {
     attachments: [
@@ -286,15 +287,15 @@ export const formatAiTestSummary = (test: CtrfTest, environment: CtrfEnvironment
     });
   }
 
-  blocks.push({
-    type: "context",
-    elements: [
-      {
+  if (options?.azureReportUrl) {
+    blocks.push({
+      type: "section",
+      text: {
         type: "mrkdwn",
-        text: "<https://github.com/ctrf-io/slack-ctrf|Slack CTRF Test Reporter>"
+        text: `Report: <${options.azureReportUrl}|View Report>`
       }
-    ]
-  });
+    });
+  }
 
   return {
     attachments: [
@@ -397,6 +398,16 @@ export const formatConsolidatedAiTestSummary = (
     });
   }
 
+  if (options?.azureReportUrl) {
+    blocks.push({
+      type: "section",
+      text: {
+        type: "mrkdwn",
+        text: `Report: <${options.azureReportUrl}|View Report>`
+      }
+    });
+  }
+
   if (failedTests.length > MAX_FAILED_TESTS) {
     blocks.push({
       type: "section",
@@ -406,16 +417,6 @@ export const formatConsolidatedAiTestSummary = (
       }
     });
   }
-
-  blocks.push({
-    type: "context",
-    elements: [
-      {
-        type: "mrkdwn",
-        text: "<https://github.com/ctrf-io/slack-ctrf|Slack CTRF Test Reporter>"
-      }
-    ]
-  });
 
   return {
     attachments: [
@@ -522,6 +523,16 @@ export const formatConsolidatedFailedTestSummary = (
     });
   }
 
+  if (options?.azureReportUrl) {
+    blocks.push({
+      type: "section",
+      text: {
+        type: "mrkdwn",
+        text: `Report: <${options.azureReportUrl}|View Report>`
+      }
+    });
+  }
+
   if (failedTests.length > MAX_FAILED_TESTS) {
     blocks.push({
       type: "section",
@@ -531,16 +542,6 @@ export const formatConsolidatedFailedTestSummary = (
       }
     });
   }
-
-  blocks.push({
-    type: "context",
-    elements: [
-      {
-        type: "mrkdwn",
-        text: "<https://github.com/ctrf-io/slack-ctrf|Slack CTRF Test Reporter>"
-      }
-    ]
-  });
 
   return {
     attachments: [
@@ -639,15 +640,15 @@ export const formatFailedTestSummary = (test: CtrfTest, environment: CtrfEnviron
     });
   }
 
-  blocks.push({
-    type: "context",
-    elements: [
-      {
+  if (options?.azureReportUrl) {
+    blocks.push({
+      type: "section",
+      text: {
         type: "mrkdwn",
-        text: "<https://github.com/ctrf-io/slack-ctrf|Slack CTRF Test Reporter>"
+        text: `Report: <${options.azureReportUrl}|View Report>`
       }
-    ]
-  });
+    });
+  }
 
   return {
     attachments: [
@@ -658,9 +659,3 @@ export const formatFailedTestSummary = (test: CtrfTest, environment: CtrfEnviron
     ]
   };
 };
-
-
-
-
-
-
