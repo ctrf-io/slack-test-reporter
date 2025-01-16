@@ -1,9 +1,10 @@
 import { CtrfEnvironment, CtrfReport, CtrfTest } from '../types/ctrf';
 
-type Options =
-  {
-    title: string
-  }
+type Options = {
+  title: string;
+  prefix?: string;
+  suffix?: string;
+};
 
 export const formatResultsMessage = (ctrf: CtrfReport, options?: Options): object => {
   const { summary, environment } = ctrf.results;
@@ -14,6 +15,9 @@ export const formatResultsMessage = (ctrf: CtrfReport, options?: Options): objec
   const otherTests = summary.other;
 
   let title = options?.title ? options?.title : "Test Results";
+  let prefix = options?.prefix ? options.prefix : null;
+  let suffix = options?.suffix ? options.suffix : null;
+
   let missingEnvProperties: string[] = [];
 
   let buildInfo = "*Build:* No build information provided";
@@ -54,30 +58,52 @@ export const formatResultsMessage = (ctrf: CtrfReport, options?: Options): objec
 
   const testSummary = `:white_check_mark: ${passedTests} | :x: ${failedTests} | :fast_forward: ${skippedTests} | :hourglass_flowing_sand: ${pendingTests} | :question: ${otherTests}`;
 
-  const blocks: any[] = [
-    {
-      type: "header",
-      text: {
-        type: "plain_text",
-        text: title,
-        emoji: true
-      }
-    },
-    {
-      type: "section",
-      text: {
-        type: "mrkdwn",
-        text: `${testSummary}`
-      }
-    },
-    {
-      type: "section",
-      text: {
-        type: "mrkdwn",
-        text: `${resultText} | ${durationText}\n${buildInfo}`
-      }
+  const blocks: any[] = [];
+
+  blocks.push({
+    type: "header",
+    text: {
+      type: "plain_text",
+      text: title,
+      emoji: true
     }
-  ];
+  });
+
+  if (prefix) {
+    blocks.push({
+      type: "section",
+      text: {
+        type: "mrkdwn",
+        text: prefix
+      }
+    });
+  }
+
+  blocks.push({
+    type: "section",
+    text: {
+      type: "mrkdwn",
+      text: `${testSummary}`
+    }
+  });
+
+  blocks.push({
+    type: "section",
+    text: {
+      type: "mrkdwn",
+      text: `${resultText} | ${durationText}\n${buildInfo}`
+    }
+  });
+
+  if (suffix) {
+    blocks.push({
+      type: "section",
+      text: {
+        type: "mrkdwn",
+        text: suffix
+      }
+    });
+  }
 
   if (missingEnvProperties.length > 0) {
     blocks.push({
@@ -109,8 +135,6 @@ export const formatResultsMessage = (ctrf: CtrfReport, options?: Options): objec
   };
 };
 
-
-
 export const formatFlakyTestsMessage = (ctrf: CtrfReport, options?: Options): object | null => {
   const { summary, environment, tests } = ctrf.results;
   const flakyTests = tests.filter(test => test.flaky);
@@ -120,6 +144,8 @@ export const formatFlakyTestsMessage = (ctrf: CtrfReport, options?: Options): ob
   }
 
   let title = options?.title ? options?.title : "Flaky Tests";
+  let prefix = options?.prefix ? options.prefix : null;
+  let suffix = options?.suffix ? options.suffix : null;
   let missingEnvProperties: string[] = [];
 
   let buildInfo = "Build: No build information provided";
@@ -158,22 +184,44 @@ export const formatFlakyTestsMessage = (ctrf: CtrfReport, options?: Options): ob
         text: title,
         emoji: true
       }
-    },
-    {
-      type: "section",
-      text: {
-        type: "mrkdwn",
-        text: `:fallen_leaf: *Flaky tests detected*\n${buildInfo}`
-      }
-    },
-    {
-      type: "section",
-      text: {
-        type: "mrkdwn",
-        text: `*Flaky Tests*\n${flakyTestsText}`
-      }
     }
   ];
+
+  if (prefix) {
+    blocks.push({
+      type: "section",
+      text: {
+        type: "mrkdwn",
+        text: prefix
+      }
+    });
+  }
+
+  blocks.push({
+    type: "section",
+    text: {
+      type: "mrkdwn",
+      text: `:fallen_leaf: *Flaky tests detected*\n${buildInfo}`
+    }
+  });
+
+  blocks.push({
+    type: "section",
+    text: {
+      type: "mrkdwn",
+      text: `*Flaky Tests*\n${flakyTestsText}`
+    }
+  });
+
+  if (suffix) {
+    blocks.push({
+      type: "section",
+      text: {
+        type: "mrkdwn",
+        text: suffix
+      }
+    });
+  }
 
   if (missingEnvProperties.length > 0) {
     blocks.push({
@@ -211,6 +259,8 @@ export const formatAiTestSummary = (test: CtrfTest, environment: CtrfEnvironment
   if (!ai || status === "passed") { return null }
 
   let title = options?.title ? options?.title : `AI Test summary`;
+  let prefix = options?.prefix ? options.prefix : null;
+  let suffix = options?.suffix ? options.suffix : null;
   let missingEnvProperties: string[] = [];
 
   let buildInfo = "*Build:* No build information provided";
@@ -253,28 +303,51 @@ export const formatAiTestSummary = (test: CtrfTest, environment: CtrfEnvironment
         emoji: true
       }
     },
-    {
+  ]
+
+  if (prefix) {
+    blocks.push({
       type: "section",
       text: {
         type: "mrkdwn",
-        text: `*Test Name:* ${name}\n${resultText}`
+        text: prefix
       }
-    },
-    {
-      type: "section",
-      text: {
-        type: "mrkdwn",
-        text: `${aiSummaryText}`
-      }
-    },
-    {
-      type: "section",
-      text: {
-        type: "mrkdwn",
-        text: `${buildInfo}`
-      }
+    });
+  }
+
+  blocks.push({
+    type: "section",
+    text: {
+      type: "mrkdwn",
+      text: `*Test Name:* ${name}\n${resultText}`
     }
-  ];
+  });
+
+  blocks.push({
+    type: "section",
+    text: {
+      type: "mrkdwn",
+      text: `${aiSummaryText}`
+    }
+  });
+
+  blocks.push({
+    type: "section",
+    text: {
+      type: "mrkdwn",
+      text: `${buildInfo}`
+    }
+  });
+
+  if (suffix) {
+    blocks.push({
+      type: "section",
+      text: {
+        type: "mrkdwn",
+        text: suffix
+      }
+    });
+  }
 
   if (missingEnvProperties.length > 0) {
     blocks.push({
@@ -321,6 +394,8 @@ export const formatConsolidatedAiTestSummary = (
   }
 
   const title = options?.title ? options.title : `:sparkles: AI Test Reporter`;
+  let prefix = options?.prefix ? options.prefix : null;
+  let suffix = options?.suffix ? options.suffix : null;
 
   let buildInfo = "*Build:* No build information provided";
   if (environment) {
@@ -344,25 +419,38 @@ export const formatConsolidatedAiTestSummary = (
         text: title,
         emoji: true
       }
-    },
-    {
-      type: "section",
-      text: {
-        type: "mrkdwn",
-        text: buildInfo
-      }
-    },
-    {
-      type: "section",
-      text: {
-        type: "mrkdwn",
-        text: `*Total Failed Tests:* ${failedTests.length}`
-      }
-    },
-    {
-      type: "divider"
     }
   ];
+
+  if (prefix) {
+    blocks.push({
+      type: "section",
+      text: {
+        type: "mrkdwn",
+        text: prefix
+      }
+    });
+  }
+
+  blocks.push({
+    type: "section",
+    text: {
+      type: "mrkdwn",
+      text: buildInfo
+    }
+  });
+
+  blocks.push({
+    type: "section",
+    text: {
+      type: "mrkdwn",
+      text: `*Total Failed Tests:* ${failedTests.length}`
+    }
+  });
+
+  blocks.push({
+    type: "divider"
+  });
 
   const limitedFailedTests = failedTests.slice(0, MAX_FAILED_TESTS);
 
@@ -386,6 +474,16 @@ export const formatConsolidatedAiTestSummary = (
       }
     });
   });
+
+  if (suffix) {
+    blocks.push({
+      type: "section",
+      text: {
+        type: "mrkdwn",
+        text: suffix
+      }
+    });
+  }
 
   if (missingEnvProperties.length > 0) {
     blocks.push({
@@ -438,6 +536,8 @@ export const formatConsolidatedFailedTestSummary = (
   const charLimit = 2950;
   const trimmedNotice = "\n:warning: Message trimmed as too long for Slack";
   const failedTests = tests.filter(test => test.status === "failed");
+  let prefix = options?.prefix ? options.prefix : null;
+  let suffix = options?.suffix ? options.suffix : null;
 
   if (failedTests.length === 0) {
     return null;
@@ -467,25 +567,41 @@ export const formatConsolidatedFailedTestSummary = (
         text: title,
         emoji: true
       }
-    },
+    }
+  ]
+
+  blocks.push(
     {
       type: "section",
       text: {
         type: "mrkdwn",
         text: buildInfo
       }
-    },
+    })
+
+    if (prefix) {
+      blocks.push({
+        type: "section",
+        text: {
+          type: "mrkdwn",
+          text: prefix
+        }
+      });
+    }
+
+    blocks.push(
     {
       type: "section",
       text: {
         type: "mrkdwn",
         text: `*Total Failed Tests:* ${failedTests.length}`
       }
-    },
+    })
+
+    blocks.push(
     {
       type: "divider"
-    }
-  ];
+    })
 
   const limitedFailedTests = failedTests.slice(0, MAX_FAILED_TESTS);
 
@@ -511,6 +627,16 @@ export const formatConsolidatedFailedTestSummary = (
       }
     });
   });
+
+  if (suffix) {
+    blocks.push({
+      type: "section",
+      text: {
+        type: "mrkdwn",
+        text: suffix
+      }
+    });
+  }
 
   if (missingEnvProperties.length > 0) {
     blocks.push({
@@ -564,6 +690,8 @@ export const formatFailedTestSummary = (test: CtrfTest, environment: CtrfEnviron
 
   let title = options?.title ? options?.title : `Failed Test summary`;
   let missingEnvProperties: string[] = [];
+  let prefix = options?.prefix ? options.prefix : null;
+  let suffix = options?.suffix ? options.suffix : null;
 
   let buildInfo = "*Build:* No build information provided";
   if (environment) {
@@ -597,7 +725,8 @@ export const formatFailedTestSummary = (test: CtrfTest, environment: CtrfEnviron
 
   const failSummaryText = `*Message:* ${enrichedMessage}`;
 
-  const blocks: any[] = [
+  const blocks: any[] = []
+  blocks.push(
     {
       type: "header",
       text: {
@@ -605,29 +734,54 @@ export const formatFailedTestSummary = (test: CtrfTest, environment: CtrfEnviron
         text: title,
         emoji: true
       }
-    },
+    })
+
+    if (prefix) {
+      blocks.push({
+        type: "section",
+        text: {
+          type: "mrkdwn",
+          text: prefix
+        }
+      });
+    }
+
+    blocks.push(
     {
       type: "section",
       text: {
         type: "mrkdwn",
         text: `*Test Name:* ${name}`
       }
-    },
+    })
+
+    blocks.push(
     {
       type: "section",
       text: {
         type: "mrkdwn",
         text: `${failSummaryText}`
       }
-    },
+    })
+
+    blocks.push(
     {
       type: "section",
       text: {
         type: "mrkdwn",
         text: `${buildInfo}`
       }
+    })
+
+    if (suffix) {
+      blocks.push({
+        type: "section",
+        text: {
+          type: "mrkdwn",
+          text: suffix
+        }
+      });
     }
-  ];
 
   if (missingEnvProperties.length > 0) {
     blocks.push({

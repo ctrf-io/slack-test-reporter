@@ -128,10 +128,22 @@ or using the alias:
 npx slack-ctrf results /path/to/ctrf-file.json -t "Custom Title"
 ```
 
+### Add Prefix and Suffix
+
+Add custom markdown text to as a prefix, or suffix to the message:
+
+```sh
+npx slack-ctrf results /path/to/ctrf-file.json -p "prefix" -s "suffix"
+```
+
+Read about compatible [markdown](https://api.slack.com/reference/surfaces/formatting#basic-formatting) 
+
 ## Options
 
 - `--onFailOnly, -f`: Send notification only if there are failed tests.
 - `--title, -t`: Title of the notification.
+- `--prefix, -p`: Custom markdown text to add as a prefix to the message
+- `--suffix, -p`: Custom markdown text to add as a prefix to the message
 
 ## Merge reports
 
