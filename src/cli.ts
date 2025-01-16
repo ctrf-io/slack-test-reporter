@@ -28,6 +28,18 @@ const argv = yargs(hideBin(process.argv))
           type: 'string',
           description: 'Title of notification',
           default: "Test Results",
+        })
+        .option('prefix', {
+          alias: 'p',
+          type: 'string',
+          description: 'Custom text to add as a prefix to the message',
+          default: '',
+        })
+        .option('suffix', {
+          alias: 's',
+          type: 'string',
+          description: 'Custom text to add as a suffix to the message',
+          default: '',
         });
     },
     async (argv) => {
@@ -37,7 +49,7 @@ const argv = yargs(hideBin(process.argv))
           console.log('No failed tests. Message not sent.');
           return;
         }
-        const message = formatResultsMessage(ctrfData, {title: argv.title});
+        const message = formatResultsMessage(ctrfData, { title: argv.title, prefix: argv.prefix, suffix: argv.suffix });
         await sendSlackMessage(message);
         console.log('Results message sent to Slack.');
       } catch (error: any) {
@@ -60,6 +72,18 @@ const argv = yargs(hideBin(process.argv))
         description: 'Title of notification',
         default: ":x: Failed Test",
       })
+      .option('prefix', {
+        alias: 'p',
+        type: 'string',
+        description: 'Custom text to add as a prefix to the message',
+        default: '',
+      })
+      .option('suffix', {
+        alias: 's',
+        type: 'string',
+        description: 'Custom text to add as a suffix to the message',
+        default: '',
+      })
       .option('consolidated', {
         alias: 'c',
         type: 'boolean',
@@ -71,7 +95,7 @@ const argv = yargs(hideBin(process.argv))
       try {
         const ctrfData = stripAnsiFromErrors(parseCtrfFile(argv.path as string))
         if (argv.consolidated) {
-            const message = formatConsolidatedFailedTestSummary(ctrfData.results.tests, ctrfData.results.environment, {title: argv.title})
+            const message = formatConsolidatedFailedTestSummary(ctrfData.results.tests, ctrfData.results.environment, { title: argv.title, prefix: argv.prefix, suffix: argv.suffix });
             if (message) {
               await sendSlackMessage(message);
               console.log('Failed test summary sent to Slack.');
@@ -81,7 +105,7 @@ const argv = yargs(hideBin(process.argv))
         } else {
         for (const test of ctrfData.results.tests) {
           if (test.status === "failed") {
-            const message = formatFailedTestSummary(test, ctrfData.results.environment, {title: argv.title});
+            const message = formatFailedTestSummary(test, ctrfData.results.environment, { title: argv.title, prefix: argv.prefix, suffix: argv.suffix });
             if (message) {
               await sendSlackMessage(message);
               console.log('Failed test summary sent to Slack.');
@@ -109,12 +133,24 @@ const argv = yargs(hideBin(process.argv))
         type: 'string',
         description: 'Title of notification',
         default: "Flaky Tests",
+      })
+      .option('prefix', {
+        alias: 'p',
+        type: 'string',
+        description: 'Custom text to add as a prefix to the message',
+        default: '',
+      })
+      .option('suffix', {
+        alias: 's',
+        type: 'string',
+        description: 'Custom text to add as a suffix to the message',
+        default: '',
       });
     },
     async (argv) => {
       try {
         const ctrfData = parseCtrfFile(argv.path as string);
-        const message = formatFlakyTestsMessage(ctrfData, {title: argv.title});
+        const message = formatFlakyTestsMessage(ctrfData, { title: argv.title, prefix: argv.prefix, suffix: argv.suffix });
         if (message) {
           await sendSlackMessage(message);
           console.log('Flaky tests message sent to Slack.');
@@ -141,6 +177,18 @@ const argv = yargs(hideBin(process.argv))
         description: 'Title of notification',
         default: "AI Summary",
       })
+      .option('prefix', {
+        alias: 'p',
+        type: 'string',
+        description: 'Custom text to add as a prefix to the message',
+        default: '',
+      })
+      .option('suffix', {
+        alias: 's',
+        type: 'string',
+        description: 'Custom text to add as a suffix to the message',
+        default: '',
+      })
       .option('consolidated', {
         alias: 'c',
         type: 'boolean',
@@ -152,26 +200,26 @@ const argv = yargs(hideBin(process.argv))
       try {
         const ctrfData = parseCtrfFile(argv.path as string);
         if (argv.consolidated) {
-            const message = formatConsolidatedAiTestSummary(ctrfData.results.tests, ctrfData.results.environment, {title: argv.title})
-            if (message) {
-              await sendSlackMessage(message);
-              console.log('AI test summary sent to Slack.');
-            } else {
-              console.log('No AI summary detected. No message sent.');
-            }
+          const message = formatConsolidatedAiTestSummary(ctrfData.results.tests, ctrfData.results.environment, { title: argv.title, prefix: argv.prefix, suffix: argv.suffix });
+          if (message) {
+            await sendSlackMessage(message);
+            console.log('AI test summary sent to Slack.');
+          } else {
+            console.log('No AI summary detected. No message sent.');
+          }
         } else {
-        for (const test of ctrfData.results.tests) {
-          if (test.status === "failed") {
-            const message = formatAiTestSummary(test, ctrfData.results.environment, {title: argv.title});
-            if (message) {
-              await sendSlackMessage(message);
-              console.log('AI test summary sent to Slack.');
-            } else {
-              console.log('No AI summary detected. No message sent');
+          for (const test of ctrfData.results.tests) {
+            if (test.status === "failed") {
+              const message = formatAiTestSummary(test, ctrfData.results.environment, { title: argv.title, prefix: argv.prefix, suffix: argv.suffix });
+              if (message) {
+                await sendSlackMessage(message);
+                console.log('AI test summary sent to Slack.');
+              } else {
+                console.log('No AI summary detected. No message sent');
+              }
             }
           }
         }
-      }
       } catch (error: any) {
         console.error('Error:', error.message);
       }
