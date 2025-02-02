@@ -1,8 +1,9 @@
 {
   "name": "slack-ctrf",
-  "version": "0.0.16",
-  "description": "Send Slack notifications with test results from popular testing frameworks using a single command in your CI/CD",
-  "main": "index.js",
+  "version": "0.0.17",
+  "description": "Send Slack notifications with test results from popular testing frameworks",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
