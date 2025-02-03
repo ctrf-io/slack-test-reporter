@@ -1,10 +1,5 @@
 import { CtrfEnvironment, CtrfReport, CtrfTest } from '../types/ctrf';
-
-type Options = {
-  title: string;
-  prefix?: string;
-  suffix?: string;
-};
+import { Options } from '../types/reporter';
 
 export const formatResultsMessage = (ctrf: CtrfReport, options?: Options): object => {
   const { summary, environment } = ctrf.results;
@@ -120,7 +115,7 @@ export const formatResultsMessage = (ctrf: CtrfReport, options?: Options): objec
     elements: [
       {
         type: "mrkdwn",
-        text: "<https://github.com/ctrf-io/slack-ctrf|Slack CTRF Test Reporter>"
+        text: "<https://github.com/ctrf-io/slack-ctrf|Slack Test Reporter> by <https://ctrf.io|CTRF  :green_heart:>"
       }
     ]
   });
@@ -238,7 +233,7 @@ export const formatFlakyTestsMessage = (ctrf: CtrfReport, options?: Options): ob
     elements: [
       {
         type: "mrkdwn",
-        text: "<https://github.com/ctrf-io/slack-ctrf|Slack CTRF Test Reporter>"
+        text: "<https://github.com/ctrf-io/slack-ctrf|Slack Test Reporter> by <https://ctrf.io|CTRF  :green_heart:>"
       }
     ]
   });
@@ -364,7 +359,7 @@ export const formatAiTestSummary = (test: CtrfTest, environment: CtrfEnvironment
     elements: [
       {
         type: "mrkdwn",
-        text: "<https://github.com/ctrf-io/slack-ctrf|Slack CTRF Test Reporter>"
+        text: "<https://github.com/ctrf-io/slack-ctrf|Slack Test Reporter> by <https://ctrf.io|CTRF  :green_heart:>"
       }
     ]
   });
@@ -510,7 +505,7 @@ export const formatConsolidatedAiTestSummary = (
     elements: [
       {
         type: "mrkdwn",
-        text: "<https://github.com/ctrf-io/slack-ctrf|Slack CTRF Test Reporter>"
+        text: "<https://github.com/ctrf-io/slack-ctrf|Slack Test Reporter> by <https://ctrf.io|CTRF  :green_heart:>"
       }
     ]
   });
@@ -663,7 +658,7 @@ export const formatConsolidatedFailedTestSummary = (
     elements: [
       {
         type: "mrkdwn",
-        text: "<https://github.com/ctrf-io/slack-ctrf|Slack CTRF Test Reporter>"
+        text: "<https://github.com/ctrf-io/slack-ctrf|Slack Test Reporter> by <https://ctrf.io|CTRF  :green_heart:>"
       }
     ]
   });
@@ -798,7 +793,7 @@ export const formatFailedTestSummary = (test: CtrfTest, environment: CtrfEnviron
     elements: [
       {
         type: "mrkdwn",
-        text: "<https://github.com/ctrf-io/slack-ctrf|Slack CTRF Test Reporter>"
+        text: "<https://github.com/ctrf-io/slack-ctrf|Slack Test Reporter> by <https://ctrf.io|CTRF  :green_heart:>"
       }
     ]
   });

@@ -1,19 +1,35 @@
 # Slack Test Results Notification
 
-> Send Slack message with test result from popular testing frameworks
+> Send Slack message with test results from popular testing frameworks
+
+A Slack test reporting tool that supports all major testing frameworks.
+Generate, publish and alert your team with detailed test results, including
+summaries, in-depth reports, failed test analyses, flaky test detection and AI
+analyses directly to your chosen Slack channel.
 
 ![Example view](assets/results.png)
 
-## Help us grow CTRF
+## **⭐⭐ If you find this project useful, consider giving it a GitHub star ⭐⭐**
 
-⭐ **If you find this project useful, please consider following the [CTRF organisation](https://github.com/ctrf-io) and giving this repository a star** ⭐
+Support our mission to enhance test reporting in Slack by:
 
-**It means a lot to us and helps us grow this open source library.**
+- **⭐ Starring this repository to show your support. ⭐**
+- **🙌 Following our [GitHub page here](https://github.com/ctrf-io) 🙌**
+
+Building for the community takes time, and a small gesture of support is a
+rewarding boost that makes it all worthwhile.
+
+Thank you! Your support is invaluable to us! 💙
+
+Built and maintained by [Matthew Thomas](https://github.com/ma11hewthomas)
+
+Contributions are very welcome!
 
 ## Features
 
 - **Send Test Results to Slack**: Automatically send test results to a Slack channel.
 - **Send Flaky Test Details to Slack**: Automatically send flaky test details to a Slack channel.
+- **Send AI Test Summary to Slack**: Automatically send AI test summary to a Slack channel.
 - **Conditional Notifications**: Use the `--onFailOnly` option to send notifications only if tests fail.
 
 ## Setup
@@ -158,6 +174,27 @@ npx ctrf merge <directory>
 ```
 
 Replace directory with the path to the directory containing the CTRF reports you want to merge.
+
+## Programmatic Usage
+
+You can use the package programmatically to send notifications to Slack. To install the package, run:
+
+```sh
+npm install slack-ctrf
+```
+
+The package exports the following functions:
+
+- `sendTestResultsToSlack`
+- `sendFlakyResultsToSlack`
+- `sendFailedResultsToSlack`
+- `sendAISummaryToSlack`
+
+```ts
+import { sendTestResultsToSlack } from 'slack-ctrf';
+
+sendTestResultsToSlack(report);
+```
 
 ## What is CTRF?
 

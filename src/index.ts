@@ -1,20 +1,8 @@
-import { sendSlackMessage } from './slack-notify';
-import {
-  formatResultsMessage,
-  formatFlakyTestsMessage,
-  formatAiTestSummary,
-  formatConsolidatedAiTestSummary,
-  formatFailedTestSummary,
-  formatConsolidatedFailedTestSummary
-} from './message-formatter';
+import { sendTestResultsToSlack, sendFailedResultsToSlack, sendFlakyResultsToSlack, sendAISummaryToSlack } from './slack-reporter';
 
 export {
-  sendSlackMessage,
-  
-  formatResultsMessage,
-  formatFlakyTestsMessage,
-  formatAiTestSummary,
-  formatConsolidatedAiTestSummary,
-  formatFailedTestSummary,
-  formatConsolidatedFailedTestSummary,
+  sendTestResultsToSlack,
+  sendFailedResultsToSlack,
+  sendFlakyResultsToSlack,
+  sendAISummaryToSlack
 };
