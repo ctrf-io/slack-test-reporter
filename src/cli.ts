@@ -55,7 +55,7 @@ const argv = yargs(hideBin(process.argv))
     async (argv) => {
       try {
         const report = parseCtrfFile(argv.path as string);
-        await sendTestResultsToSlack(report, { title: argv.title, prefix: argv.prefix, suffix: argv.suffix });
+        await sendTestResultsToSlack(report, { title: argv.title, prefix: argv.prefix, suffix: argv.suffix }, true);
       } catch (error: any) {
         console.error('Error:', error.message);
       }
@@ -76,7 +76,7 @@ const argv = yargs(hideBin(process.argv))
     async (argv) => {
       try {
         const report = parseCtrfFile(argv.path as string)
-        await sendFailedResultsToSlack(report, { title: argv.title, prefix: argv.prefix, suffix: argv.suffix, consolidated: argv.consolidated });
+        await sendFailedResultsToSlack(report, { title: argv.title, prefix: argv.prefix, suffix: argv.suffix, consolidated: argv.consolidated }, true);
       } catch (error: any) {
         console.error('Error:', error.message);
       }
@@ -95,7 +95,7 @@ const argv = yargs(hideBin(process.argv))
     async (argv) => {
       try {
         const report = parseCtrfFile(argv.path as string);
-        await sendFlakyResultsToSlack(report, { title: argv.title, prefix: argv.prefix, suffix: argv.suffix });
+        await sendFlakyResultsToSlack(report, { title: argv.title, prefix: argv.prefix, suffix: argv.suffix }, true);
       } catch (error: any) {
         console.error('Error:', error.message);
       }
@@ -116,7 +116,7 @@ const argv = yargs(hideBin(process.argv))
     async (argv) => {
       try {
         const report = parseCtrfFile(argv.path as string);
-        await sendAISummaryToSlack(report, { title: argv.title, prefix: argv.prefix, suffix: argv.suffix, consolidated: argv.consolidated });
+        await sendAISummaryToSlack(report, { title: argv.title, prefix: argv.prefix, suffix: argv.suffix, consolidated: argv.consolidated }, true);
       } catch (error: any) {
         console.error('Error:', error.message);
       }
