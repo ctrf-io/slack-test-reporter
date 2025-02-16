@@ -7,23 +7,27 @@ Generate, publish and alert your team with detailed test results, including
 summaries, in-depth reports, failed test analyses, flaky test detection and AI
 analyses directly to your chosen Slack channel.
 
-![Example view](assets/results.png)
+<div align="center">
+<div style="padding: 1.5rem; border-radius: 8px; margin: 1rem 0; border: 1px solid #30363d;">
+<span style="font-size: 23px;">💚</span>
+<h3 style="margin: 1rem 0;">CTRF tooling is open source and free to use</h3>
+<p style="font-size: 16px;">You can support the project with a follow and a star</p>
 
-## **⭐⭐ If you find this project useful, consider giving it a GitHub star ⭐⭐**
+<div style="margin-top: 1.5rem;">
+<a href="https://github.com/ctrf-io/slack-test-reporter">
+<img src="https://img.shields.io/github/stars/ctrf-io/slack-test-reporter?style=for-the-badge&color=2ea043" alt="GitHub stars">
+</a>
+<a href="https://github.com/ctrf-io">
+<img src="https://img.shields.io/github/followers/ctrf-io?style=for-the-badge&color=2ea043" alt="GitHub followers">
+</a>
+</div>
+</div>
 
-Support our mission to enhance test reporting in Slack by:
-
-- **⭐ Starring this repository to show your support. ⭐**
-- **🙌 Following our [GitHub page here](https://github.com/ctrf-io) 🙌**
-
-Building for the community takes time, and a small gesture of support is a
-rewarding boost that makes it all worthwhile.
-
-Thank you! Your support is invaluable to us! 💙
-
-Built and maintained by [Matthew Thomas](https://github.com/ma11hewthomas)
-
-Contributions are very welcome!
+<p style="font-size: 14px; margin: 1rem 0;">
+Maintained by <a href="https://github.com/ma11hewthomas">Matthew Thomas</a><br/>
+Contributions are very welcome! <br/>
+</p>
+</div>
 
 ## Features
 
@@ -31,6 +35,8 @@ Contributions are very welcome!
 - **Send Flaky Test Details to Slack**: Automatically send flaky test details to a Slack channel.
 - **Send AI Test Summary to Slack**: Automatically send AI test summary to a Slack channel.
 - **Conditional Notifications**: Use the `--onFailOnly` option to send notifications only if tests fail.
+
+![Example view](assets/results.png)
 
 ## Setup
 
