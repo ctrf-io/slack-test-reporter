@@ -2,7 +2,7 @@ import { formatResultsMessage, formatAiTestSummary, formatFailedTestSummary, for
 import { sendSlackMessage } from './slack-notify';
 import { Options } from '../types/reporter';
 import { CtrfReport } from '../types/ctrf';
-
+import { stripAnsiFromErrors } from './utils/common';
 export async function sendTestResultsToSlack(
     report: CtrfReport,
     options: Options = {},
@@ -40,6 +40,8 @@ export async function sendFailedResultsToSlack(
     if (report.results.summary.failed === 0) {
         return;
     }
+    
+    report = stripAnsiFromErrors(report);
 
     if (options.consolidated) {
         const message = formatConsolidatedFailedTestSummary(report.results.tests, report.results.environment, {

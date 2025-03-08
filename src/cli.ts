@@ -55,7 +55,7 @@ const argv = yargs(hideBin(process.argv))
     async (argv) => {
       try {
         const report = parseCtrfFile(argv.path as string);
-        await sendTestResultsToSlack(report, { title: argv.title, prefix: argv.prefix, suffix: argv.suffix }, true);
+        await sendTestResultsToSlack(report, { title: argv.title, prefix: argv.prefix, suffix: argv.suffix, onFailOnly: argv.onFailOnly }, true);
       } catch (error: any) {
         console.error('Error:', error.message);
       }
