@@ -120,9 +120,26 @@ export const formatResultsMessage = (ctrf: CtrfReport, options?: Options): objec
     ]
   });
 
+  const notification: string[] = [];
+  notification.push(title);
+
+  if (environment) {
+    const { buildName, buildNumber } = environment;
+    if (buildName && buildNumber) {
+      notification.push(`${buildName} #${buildNumber}`)
+    }
+  }
+
+  const message = failedTests > 0 
+    ? `Failed: ${failedTests}`
+    : 'Passed';
+ 
+  notification.push(message)
+
   return {
     attachments: [
       {
+        fallback: notification.join('\n'),
         color: color,
         blocks: blocks
       }
@@ -238,9 +255,22 @@ export const formatFlakyTestsMessage = (ctrf: CtrfReport, options?: Options): ob
     ]
   });
 
+  const notification: string[] = []
+  notification.push(title)
+
+  if (environment) {
+    const { buildName, buildNumber } = environment;
+    if (buildName && buildNumber) {
+      notification.push(`${buildName} #${buildNumber}`)
+    }
+  }
+
+  notification.push('Flaky tests detected')
+
   return {
     attachments: [
       {
+        fallback: notification.join('\n'),
         color: "#FFA500", // Orange color for flaky tests
         blocks: blocks
       }
@@ -364,9 +394,22 @@ export const formatAiTestSummary = (test: CtrfTest, environment: CtrfEnvironment
     ]
   });
 
+  const notification: string[] = []
+  notification.push(title)
+
+  if (environment) {
+    const { buildName, buildNumber } = environment;
+    if (buildName && buildNumber) {
+      notification.push(`${buildName} #${buildNumber}`)
+    }
+  }
+
+  notification.push(name)
+
   return {
     attachments: [
       {
+        fallback: notification.join('\n'),
         color: color,
         blocks: blocks
       }
@@ -510,9 +553,20 @@ export const formatConsolidatedAiTestSummary = (
     ]
   });
 
+  const notification: string[] = []
+  notification.push(title)
+
+  if (environment) {
+    const { buildName, buildNumber } = environment;
+    if (buildName && buildNumber) {
+      notification.push(`${buildName} #${buildNumber}`)
+    }
+  }
+
   return {
     attachments: [
       {
+        fallback: notification.join('\n'),
         color: color,
         blocks: blocks
       }
@@ -663,9 +717,20 @@ export const formatConsolidatedFailedTestSummary = (
     ]
   });
 
+  const notification: string[] = []
+  notification.push(title)
+
+  if (environment) {
+    const { buildName, buildNumber } = environment;
+    if (buildName && buildNumber) {
+      notification.push(`${buildName} #${buildNumber}`)
+    }
+  }
+
   return {
     attachments: [
       {
+        fallback: notification.join('\n'),
         color: color,
         blocks: blocks
       }
@@ -798,9 +863,22 @@ export const formatFailedTestSummary = (test: CtrfTest, environment: CtrfEnviron
     ]
   });
 
+  const notification: string[] = []
+  notification.push(title)
+
+  if (environment) {
+    const { buildName, buildNumber } = environment;
+    if (buildName && buildNumber) {
+      notification.push(`${buildName} #${buildNumber}`)
+    }
+  }
+
+  notification.push(name)
+
   return {
     attachments: [
       {
+        fallback: notification.join('\n'),
         color: color,
         blocks: blocks
       }
