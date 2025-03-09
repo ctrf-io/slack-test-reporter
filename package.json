@@ -1,6 +1,6 @@
 {
   "name": "slack-ctrf",
-  "version": "0.0.23",
+  "version": "0.0.24",
   "description": "Send Slack notifications with test results from popular testing frameworks",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -19,6 +19,7 @@
   "author": "Matthew Thomas",
   "license": "MIT",
   "dependencies": {
+    "ctrf": "^0.0.12",
     "typescript": "^5.4.5",
     "yargs": "^17.7.2"
   },
