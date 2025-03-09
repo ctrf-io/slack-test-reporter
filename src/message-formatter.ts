@@ -8,6 +8,7 @@ export const formatResultsMessage = (ctrf: CtrfReport, options?: Options): objec
   const skippedTests = summary.skipped;
   const pendingTests = summary.pending;
   const otherTests = summary.other;
+  const totalTests = summary.tests;
 
   let title = options?.title ? options?.title : "Test Results";
   let prefix = options?.prefix ? options.prefix : null;
@@ -43,15 +44,15 @@ export const formatResultsMessage = (ctrf: CtrfReport, options?: Options): objec
 
   const color = failedTests > 0 ? '#FF0000' : '#36a64f';
   const resultText = failedTests > 0
-    ? `*Results:* ${failedTests} failed tests`
-    : `*Results:* Passed`;
+    ? `*Result:* ${failedTests} failed tests`
+    : `*Result:* Passed`;
 
   const durationInSeconds = (summary.stop - summary.start) / 1000;
   const durationText = durationInSeconds < 1
     ? "*Duration:* <1s"
     : `*Duration:* ${new Date(durationInSeconds * 1000).toISOString().substr(11, 8)}`;
 
-  const testSummary = `:white_check_mark: ${passedTests} | :x: ${failedTests} | :fast_forward: ${skippedTests} | :hourglass_flowing_sand: ${pendingTests} | :question: ${otherTests}`;
+  const testSummary = `:test_tube: ${totalTests} | :white_check_mark: ${passedTests} | :x: ${failedTests} | :fast_forward: ${skippedTests} | :hourglass_flowing_sand: ${pendingTests} | :question: ${otherTests}`;
 
   const blocks: any[] = [];
 

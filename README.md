@@ -35,6 +35,7 @@ Explore more <a href="https://www.ctrf.io/integrations">integrations</a>
 - **Send Test Results to Slack**: Automatically send test results to a Slack channel.
 - **Send Flaky Test Details to Slack**: Automatically send flaky test details to a Slack channel.
 - **Send AI Test Summary to Slack**: Automatically send AI test summary to a Slack channel.
+- **Tagging**: Tag users, channels and groups in the message.
 - **Conditional Notifications**: Use the `--onFailOnly` option to send notifications only if tests fail.
 
 ![Example view](assets/results.png)
@@ -159,7 +160,37 @@ Add custom markdown text to as a prefix, or suffix to the message:
 npx slack-ctrf results /path/to/ctrf-file.json -p "prefix" -s "suffix"
 ```
 
-Read about compatible [markdown](https://api.slack.com/reference/surfaces/formatting#basic-formatting) 
+Read about compatible [markdown](https://api.slack.com/reference/surfaces/formatting#basic-formatting)
+
+### Tagging a user, channel or group
+
+You can tag users, channels or groups in the message by using the `--prefix` or `--suffix` options.
+
+You need to a Slack user ID, channel ID or group ID. 
+
+You can find your user ID by:
+
+- Clicking on your profile picture in Slack
+- Clicking the three dots (...)
+- Selecting "Copy member ID"
+
+Once you have your user ID (which will look something like U01ABC123DE), use that in your command instead of your display name:
+
+```sh
+npx slack-ctrf results /path/to/ctrf-file.json -s "<@U0123456789> please review the results"
+```
+
+You can also tag a channel by using the `#` symbol with the channel ID:
+
+```sh
+npx slack-ctrf results /path/to/ctrf-file.json -s "<#C0123456789> please review the results"
+```
+
+And finally, you can tag a group by using the `\!subteam^` symbol with the group ID:
+
+```sh
+npx slack-ctrf results /path/to/ctrf-file.json -s "<\!subteam^0123456789> please review the results"
+```
 
 ## Options
 
