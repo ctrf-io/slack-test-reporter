@@ -70,12 +70,20 @@ You might want to store the webhook URL as a secret.
 
 ## Usage
 
+You can use a glob pattern or a single file path to send the test results summary to Slack.
+
 ### Results
 
 To send the test results summary to Slack:
 
 ```sh
 npx slack-ctrf results /path/to/ctrf-report.json
+```
+
+You can use a glob pattern with multiple files which will be merged together:
+
+```sh
+npx slack-ctrf results "ctrf/*.json"
 ```
 
 ![Results view](assets/results.png)
@@ -203,7 +211,9 @@ npx slack-ctrf results /path/to/ctrf-file.json -s "<\!subteam^0123456789> please
 
 You can merge reports if your chosen reporter generates multiple reports through design, parallelisation or otherwise.
 
-The [ctrf-cli](https://github.com/ctrf-io/ctrf-cli) package provides a method to merge multiple ctrf json files into a single file.
+If you use a glob pattern, the reports will be merged automatically.
+
+Otherwise, the [ctrf-cli](https://github.com/ctrf-io/ctrf-cli) package provides a method to merge multiple ctrf json files into a single file.
 
 After executing your tests, use the following command:
 
