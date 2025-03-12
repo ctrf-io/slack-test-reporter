@@ -42,7 +42,7 @@ export const MESSAGES = {
   TOTAL_FAILED_TESTS: '*Total Failed Tests:* {0}',
   MESSAGE_PREFIX: '*Message:* ',
   BUILD_PREFIX: '*Build:* ',
-  MISSING_ENV_WARNING: `${EMOJIS.WARNING}: Missing environment properties: {0}. Add these to your test for a better experience.`,
+  MISSING_ENV_WARNING: `${EMOJIS.WARNING} Missing environment properties: {0}. Add these to your CTRF report for a better experience.`,
   FOOTER_TEXT: `<https://github.com/ctrf-io/slack-ctrf|Slack Test Reporter> by <https://ctrf.io|CTRF ${EMOJIS.GREEN_HEART}>`,
 };
 
@@ -52,8 +52,8 @@ export const LIMITS = {
 };
 
 export const NOTICES = {
-  TRIMMED_MESSAGE: `\n${EMOJIS.WARNING}: Message trimmed as too long for Slack`,
-  MAX_TESTS_EXCEEDED: `${EMOJIS.INFO}: Only the first {0} failed tests are displayed. {1} additional failed tests were not included.`,
+  TRIMMED_MESSAGE: `\n${EMOJIS.WARNING} Message trimmed as too long for Slack`,
+  MAX_TESTS_EXCEEDED: `${EMOJIS.INFO} Only the first {0} failed tests are displayed. {1} additional failed tests were not included.`,
 };
 
 export const TEST_STATUS = {

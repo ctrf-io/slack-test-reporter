@@ -1,6 +1,6 @@
 import { CtrfEnvironment, CtrfReport, CtrfTest } from '../types/ctrf';
 import { Options } from '../types/reporter';
-import { BLOCK_TYPES, COLORS, EMOJIS, MESSAGES, TEXT_TYPES, TITLES, formatString } from './constants';
+import { BLOCK_TYPES, COLORS, EMOJIS, LIMITS, MESSAGES, NOTICES, TEST_STATUS, TEXT_TYPES, TITLES, formatString } from './constants';
 
 export const formatResultsMessage = (ctrf: CtrfReport, options?: Options): object => {
   const { summary, environment } = ctrf.results;
@@ -18,7 +18,7 @@ export const formatResultsMessage = (ctrf: CtrfReport, options?: Options): objec
       type: TEXT_TYPES.MRKDWN,
       text: testSummary
     }
-  },{
+  }, {
     type: BLOCK_TYPES.SECTION,
     text: {
       type: TEXT_TYPES.MRKDWN,
@@ -129,30 +129,24 @@ export const formatFlakyTestsMessage = (ctrf: CtrfReport, options?: Options): ob
 
 export const formatAiTestSummary = (test: CtrfTest, environment: CtrfEnvironment | undefined, options?: Options): object | null => {
   const { name, ai, status } = test
-
-
-  if (!ai || status === "passed") { return null }
-
-  let title = options?.title ? options?.title : `AI Test summary`;
-  let prefix = options?.prefix ? options.prefix : null;
-  let suffix = options?.suffix ? options.suffix : null;
-
+  const { title = TITLES.AI_TEST_SUMMARY, prefix = null, suffix = null } = options || {};
   const { buildInfo, missingEnvProperties } = handleBuildInfo(environment);
+  const aiSummaryText = formatString(MESSAGES.AI_SUMMARY, ai);
 
-  const aiSummaryText = `*:sparkles: AI Summary:* ${ai}`;
+  if (!ai || status === TEST_STATUS.PASSED) { return null }
 
   const customBlocks = [
     {
-      type: "section",
+      type: BLOCK_TYPES.SECTION,
       text: {
-        type: "mrkdwn",
-        text: `*Test Name:* ${name}\n${MESSAGES.STATUS_FAILED}`
+        type: TEXT_TYPES.MRKDWN,
+        text: `${formatString(MESSAGES.TEST_NAME, name)}\n${MESSAGES.STATUS_FAILED}`
       }
     },
     {
-      type: "section",
+      type: BLOCK_TYPES.SECTION,
       text: {
-        type: "mrkdwn",
+        type: TEXT_TYPES.MRKDWN,
         text: `${aiSummaryText}`
       }
     }
@@ -198,66 +192,59 @@ export const formatConsolidatedAiTestSummary = (
   environment: CtrfEnvironment | undefined,
   options?: Options
 ): object | null => {
-
-  const color = '#800080';
-  const MAX_FAILED_TESTS = 20;
-  const failedTests = tests.filter(test => test.ai && test.status === "failed");
+  const failedTests = tests.filter(test => test.ai && test.status === TEST_STATUS.FAILED);
+  const { title = TITLES.AI_TEST_REPORTER, prefix = null, suffix = null } = options || {};
+  const { buildInfo, missingEnvProperties } = handleBuildInfo(environment);
 
   if (failedTests.length === 0) {
     return null;
   }
 
-  const title = options?.title ? options.title : `:sparkles: AI Test Reporter`;
-  let prefix = options?.prefix ? options.prefix : null;
-  let suffix = options?.suffix ? options.suffix : null;
-
-  const { buildInfo, missingEnvProperties } = handleBuildInfo(environment);
-
   const customBlocks: any[] = [{
-    type: "section",
+    type: BLOCK_TYPES.SECTION,
     text: {
-      type: "mrkdwn",
+      type: TEXT_TYPES.MRKDWN,
       text: buildInfo
     }
   }, {
-    type: "section",
+    type: BLOCK_TYPES.SECTION,
     text: {
-      type: "mrkdwn",
+      type: TEXT_TYPES.MRKDWN,
       text: `*Total Failed Tests:* ${failedTests.length}`
     }
   }, {
-    type: "divider"
+    type: BLOCK_TYPES.DIVIDER
   }];
 
-  const limitedFailedTests = failedTests.slice(0, MAX_FAILED_TESTS);
+  const limitedFailedTests = failedTests.slice(0, LIMITS.MAX_FAILED_TESTS);
 
   limitedFailedTests.forEach(test => {
     const aiSummary = `${test.ai}`;
 
     customBlocks.push({
-      type: "header",
+      type: BLOCK_TYPES.HEADER,
       text: {
-        type: "plain_text",
-        text: `:x: ${test.name}`,
+        type: TEXT_TYPES.PLAIN_TEXT,
+        text: `${EMOJIS.X_MARK} ${test.name}`,
         emoji: true
       }
     });
 
     customBlocks.push({
-      type: "section",
+      type: BLOCK_TYPES.SECTION,
       text: {
-        type: "mrkdwn",
-        text: `*:sparkles: AI Summary:* ${aiSummary}`
+        type: TEXT_TYPES.MRKDWN,
+        text: `${formatString(MESSAGES.AI_SUMMARY, aiSummary)}`
       }
     });
   });
 
-  if (failedTests.length > MAX_FAILED_TESTS) {
+  if (failedTests.length > LIMITS.MAX_FAILED_TESTS) {
     customBlocks.push({
-      type: "section",
+      type: BLOCK_TYPES.SECTION,
       text: {
-        type: "mrkdwn",
-        text: `:information_source: Only the first ${MAX_FAILED_TESTS} failed tests are displayed. ${failedTests.length - MAX_FAILED_TESTS} additional failed tests were not included.`
+        type: TEXT_TYPES.MRKDWN,
+        text: formatString(NOTICES.MAX_TESTS_EXCEEDED, LIMITS.MAX_FAILED_TESTS, failedTests.length - LIMITS.MAX_FAILED_TESTS)
       }
     });
   }
@@ -287,7 +274,7 @@ export const formatConsolidatedAiTestSummary = (
     attachments: [
       {
         fallback: notification.join('\n'),
-        color: color,
+        color: COLORS.AI,
         blocks: blocks
       }
     ]
@@ -299,79 +286,64 @@ export const formatConsolidatedFailedTestSummary = (
   environment: CtrfEnvironment | undefined,
   options?: Options
 ): object | null => {
-
-  const color = '#FF0000';
-  const MAX_FAILED_TESTS = 20;
-  const charLimit = 2950;
-  const trimmedNotice = "\n:warning: Message trimmed as too long for Slack";
-  const failedTests = tests.filter(test => test.status === "failed");
-  let prefix = options?.prefix ? options.prefix : null;
-  let suffix = options?.suffix ? options.suffix : null;
+  const failedTests = tests.filter(test => test.status === TEST_STATUS.FAILED);
+  const { title = options?.title ? options.title : TITLES.FAILED_TEST_REPORT, prefix = null, suffix = null } = options || {};
+  const { buildInfo, missingEnvProperties } = handleBuildInfo(environment);
 
   if (failedTests.length === 0) {
     return null;
   }
 
-  const title = options?.title ? options.title : `:x: Failed Test Report`;
-
-  const { buildInfo, missingEnvProperties } = handleBuildInfo(environment);
-
-  const customBlocks: any[] = []
-
-  customBlocks.push(
+  const customBlocks: any[] = [
     {
-      type: "section",
+      type: BLOCK_TYPES.SECTION,
       text: {
-        type: "mrkdwn",
+        type: TEXT_TYPES.MRKDWN,
         text: buildInfo
       }
-    })
-
-  customBlocks.push(
+    },
     {
-      type: "section",
+      type: BLOCK_TYPES.SECTION,
       text: {
-        type: "mrkdwn",
-        text: `*Total Failed Tests:* ${failedTests.length}`
+        type: TEXT_TYPES.MRKDWN,
+        text: formatString(MESSAGES.TOTAL_FAILED_TESTS, failedTests.length)
       }
-    })
-
-  customBlocks.push(
+    },
     {
-      type: "divider"
-    })
+      type: BLOCK_TYPES.DIVIDER
+    }]
 
-  const limitedFailedTests = failedTests.slice(0, MAX_FAILED_TESTS);
+  const limitedFailedTests = failedTests.slice(0, LIMITS.MAX_FAILED_TESTS);
 
   limitedFailedTests.forEach(test => {
-    const failSummary = test.message && test.message.length > charLimit
-      ? test.message.substring(0, charLimit - trimmedNotice.length) + trimmedNotice
-      : test.message || "No message provided";
+    const failSummary = test.message && test.message.length > LIMITS.CHAR_LIMIT
+      ? test.message.substring(0, LIMITS.CHAR_LIMIT - NOTICES.TRIMMED_MESSAGE.length) + NOTICES.TRIMMED_MESSAGE
+      : test.message || MESSAGES.NO_MESSAGE_PROVIDED;
 
     customBlocks.push({
-      type: "header",
+      type: BLOCK_TYPES.HEADER,
       text: {
-        type: "plain_text",
-        text: `:x: ${test.name}`,
+        type: TEXT_TYPES.PLAIN_TEXT,
+        text: `${EMOJIS.X_MARK} ${test.name}`,
         emoji: true
       }
     });
 
     customBlocks.push({
-      type: "section",
+      type: BLOCK_TYPES.SECTION,
       text: {
-        type: "mrkdwn",
+        type: TEXT_TYPES.MRKDWN,
         text: `${failSummary}`
       }
     });
   });
 
-  if (failedTests.length > MAX_FAILED_TESTS) {
+  if (failedTests.length > LIMITS.MAX_FAILED_TESTS) {
     customBlocks.push({
-      type: "section",
+      type: BLOCK_TYPES.SECTION,
       text: {
-        type: "mrkdwn",
-        text: `:information_source: Only the first ${MAX_FAILED_TESTS} failed tests are displayed. ${failedTests.length - MAX_FAILED_TESTS} additional failed tests were not included.`
+        type: TEXT_TYPES.MRKDWN,
+        text: formatString(NOTICES.MAX_TESTS_EXCEEDED, LIMITS.MAX_FAILED_TESTS, failedTests.length - LIMITS.MAX_FAILED_TESTS)
       }
     });
   }
@@ -401,7 +373,7 @@ export const formatConsolidatedFailedTestSummary = (
     attachments: [
       {
         fallback: notification.join('\n'),
-        color: color,
+        color: COLORS.FAILED,
         blocks: blocks
       }
     ]
@@ -411,54 +383,41 @@ export const formatConsolidatedFailedTestSummary = (
 export const formatFailedTestSummary = (test: CtrfTest, environment: CtrfEnvironment | undefined, options?: Options): object | null => {
   const { name, message, status } = test;
   const { buildInfo, missingEnvProperties } = handleBuildInfo(environment);
+  const { title = TITLES.FAILED_TEST_SUMMARY, prefix = null, suffix = null } = options || {};
 
-  if (status !== "failed") {
+  if (status !== TEST_STATUS.FAILED) {
     return null;
   }
 
-  const charLimit = 2950;
-  const trimmedNotice = "\n:warning: Message trimmed as too long for Slack";
-  const color = '#FF0000';
-
-  let title = options?.title ? options?.title : `Failed Test summary`;
-  let prefix = options?.prefix ? options.prefix : null;
-  let suffix = options?.suffix ? options.suffix : null;
-
-
-  const enrichedMessage = message && message.length > charLimit
-    ? message.substring(0, charLimit - trimmedNotice.length) + trimmedNotice
-    : (message || "No message provided");
+  const enrichedMessage = message && message.length > LIMITS.CHAR_LIMIT
+    ? message.substring(0, LIMITS.CHAR_LIMIT - NOTICES.TRIMMED_MESSAGE.length) + NOTICES.TRIMMED_MESSAGE
+    : (message || MESSAGES.NO_MESSAGE_PROVIDED);
 
   const failSummaryText = `*Message:* ${enrichedMessage}`;
 
-  const customBlocks: any[] = []
-
-  customBlocks.push(
+  const customBlocks: any[] = [
     {
-      type: "section",
+      type: BLOCK_TYPES.SECTION,
       text: {
-        type: "mrkdwn",
-        text: `*Test Name:* ${name}`
+        type: TEXT_TYPES.MRKDWN,
+        text: `${formatString(MESSAGES.TEST_NAME, name)}`
       }
-    })
-
-  customBlocks.push(
+    },
     {
-      type: "section",
+      type: BLOCK_TYPES.SECTION,
       text: {
-        type: "mrkdwn",
+        type: TEXT_TYPES.MRKDWN,
         text: `${failSummaryText}`
       }
-    })
-
-  customBlocks.push(
+    },
     {
-      type: "section",
+      type: BLOCK_TYPES.SECTION,
       text: {
-        type: "mrkdwn",
+        type: TEXT_TYPES.MRKDWN,
         text: `${buildInfo}`
       }
-    })
+    }
+  ];
 
   const blocks = blockBuilder([], {
     title: title,
@@ -487,7 +446,7 @@ export const formatFailedTestSummary = (test: CtrfTest, environment: CtrfEnviron
     attachments: [
       {
         fallback: notification.join('\n'),
-        color: color,
+        color: COLORS.FAILED,
         blocks: blocks
       }
     ]
@@ -499,7 +458,7 @@ function handleBuildInfo(environment: CtrfEnvironment | undefined): { buildInfo:
 
   if (!environment) {
     return {
-      buildInfo: "*Build:* No build information provided",
+      buildInfo: MESSAGES.NO_BUILD_INFO,
       missingEnvProperties: ['buildName', 'buildNumber', 'buildUrl']
     };
   }
@@ -516,18 +475,18 @@ function handleBuildInfo(environment: CtrfEnvironment | undefined): { buildInfo:
       : `${buildName} #${buildNumber}`;
 
     return {
-      buildInfo: `*Build:* ${buildText}`,
+      buildInfo: `${MESSAGES.BUILD_PREFIX}${buildText}`,
       missingEnvProperties
     };
   } else if (buildName || buildNumber) {
     return {
-      buildInfo: `*Build:* ${buildName || ''} ${buildNumber || ''}`,
+      buildInfo: `${MESSAGES.BUILD_PREFIX} ${buildName || ''} ${buildNumber || ''}`,
       missingEnvProperties
     };
   }
 
   return {
-    buildInfo: "*Build:* No build information provided",
+    buildInfo: MESSAGES.NO_BUILD_INFO,
     missingEnvProperties
   };
 }
@@ -563,9 +522,9 @@ function blockBuilder(blocks: any[], options: Partial<BlockBuilderOptions>): any
 
   if (mergedOptions.titleBlock) {
     blocks.push({
-      type: "header",
+      type: BLOCK_TYPES.HEADER,
       text: {
-        type: "plain_text",
+        type: TEXT_TYPES.PLAIN_TEXT,
         text: mergedOptions.title,
         emoji: true
       }
@@ -574,9 +533,9 @@ function blockBuilder(blocks: any[], options: Partial<BlockBuilderOptions>): any
 
   if (mergedOptions.prefixBlock && mergedOptions.prefix) {
     blocks.push({
-      type: "section",
+      type: BLOCK_TYPES.SECTION,
       text: {
-        type: "mrkdwn",
+        type: TEXT_TYPES.MRKDWN,
         text: mergedOptions.prefix
       }
     });
@@ -589,9 +548,9 @@ function blockBuilder(blocks: any[], options: Partial<BlockBuilderOptions>): any
 
   if (mergedOptions.suffixBlock && mergedOptions.suffix) {
     blocks.push({
-      type: "section",
+      type: BLOCK_TYPES.SECTION,
       text: {
-        type: "mrkdwn",
+        type: TEXT_TYPES.MRKDWN,
         text: mergedOptions.suffix
       }
     });
@@ -599,20 +558,20 @@ function blockBuilder(blocks: any[], options: Partial<BlockBuilderOptions>): any
 
   if (mergedOptions.missingEnvPropertiesBlock && mergedOptions.missingEnvProperties.length > 0) {
     blocks.push({
-      type: "section",
+      type: BLOCK_TYPES.SECTION,
       text: {
-        type: "mrkdwn",
-        text: `:warning: Missing environment properties: ${mergedOptions.missingEnvProperties.join(', ')}. Add these to your test for a better experience.`
+        type: TEXT_TYPES.MRKDWN,
+        text: formatString(MESSAGES.MISSING_ENV_WARNING, mergedOptions.missingEnvProperties.join(', '))
       }
     });
   }
 
   blocks.push({
-    type: "context",
+    type: BLOCK_TYPES.CONTEXT,
     elements: [
       {
-        type: "mrkdwn",
-        text: "<https://github.com/ctrf-io/slack-ctrf|Slack Test Reporter> by <https://ctrf.io|CTRF  :green_heart:>"
+        type: TEXT_TYPES.MRKDWN,
+        text: MESSAGES.FOOTER_TEXT
       }
     ]
   });
