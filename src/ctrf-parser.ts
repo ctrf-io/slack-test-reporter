@@ -1,4 +1,4 @@
-import { CtrfReport } from '../types/ctrf';
+import { CtrfReport } from './types/ctrf';
 import { stripAnsiFromErrors } from './utils/common';
 import { mergeReports, readReportsFromGlobPattern } from 'ctrf'
 

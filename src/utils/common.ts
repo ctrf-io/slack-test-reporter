@@ -1,5 +1,5 @@
 import fs from 'fs'
-import { CtrfReport, CtrfTest } from '../../types/ctrf'
+import { CtrfReport, CtrfTest } from '../types/ctrf'
 
 export function ansiRegex({ onlyFirst = false } = {}) {
     const pattern = [

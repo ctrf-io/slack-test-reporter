@@ -1,5 +1,5 @@
-import { CtrfEnvironment, CtrfReport, CtrfTest } from '../types/ctrf';
-import { Options } from '../types/reporter';
+import { CtrfEnvironment, CtrfReport, CtrfTest } from './types/ctrf';
+import { Options } from './types/reporter';
 import { BLOCK_TYPES, COLORS, EMOJIS, LIMITS, MESSAGES, NOTICES, TEST_STATUS, TEXT_TYPES, TITLES, formatString } from './constants';
 
 export const formatResultsMessage = (ctrf: CtrfReport, options?: Options): object => {

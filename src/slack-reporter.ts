@@ -1,8 +1,9 @@
 import { formatResultsMessage, formatAiTestSummary, formatFailedTestSummary, formatFlakyTestsMessage, formatConsolidatedAiTestSummary, formatConsolidatedFailedTestSummary } from './message-formatter';
-import { sendSlackMessage } from './slack-notify';
-import { Options } from '../types/reporter';
-import { CtrfReport } from '../types/ctrf';
+import { sendSlackMessage } from './client';
+import { Options } from './types/reporter';
+import { CtrfReport } from './types/ctrf';
 import { stripAnsiFromErrors } from './utils/common';
+
 export async function sendTestResultsToSlack(
     report: CtrfReport,
     options: Options = {},
