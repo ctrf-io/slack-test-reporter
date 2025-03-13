@@ -11,16 +11,26 @@ import { type Options } from './types/reporter'
 import { type CtrfReport } from './types/ctrf'
 import { stripAnsiFromErrors } from './utils/common'
 
+/**
+ * Send the test results to Slack
+ * @param report - The CTRF report
+ * @param options - The options for the message
+ * @param logs - Whether to log the message
+ */
 export async function sendTestResultsToSlack(
   report: CtrfReport,
   options: Options = {},
   logs: boolean = false
 ): Promise<void> {
-  if (options.token) {
+  if (options.token !== undefined) {
     process.env.SLACK_WEBHOOK_URL = options.token
   }
 
-  if (options.onFailOnly && report.results.summary.failed === 0) {
+  if (
+    options.onFailOnly !== undefined &&
+    options.onFailOnly &&
+    report.results.summary.failed === 0
+  ) {
     logs && console.log('No failed tests. Message not sent.')
     return
   }
@@ -31,12 +41,18 @@ export async function sendTestResultsToSlack(
   logs && console.log('Test results message sent to Slack.')
 }
 
+/**
+ * Send the failed test results to Slack
+ * @param report - The CTRF report
+ * @param options - The options for the message
+ * @param logs - Whether to log the message
+ */
 export async function sendFailedResultsToSlack(
   report: CtrfReport,
   options: Options = {},
   logs: boolean = false
 ): Promise<void> {
-  if (options.token) {
+  if (options.token !== undefined) {
     process.env.SLACK_WEBHOOK_URL = options.token
   }
 
@@ -46,13 +62,13 @@ export async function sendFailedResultsToSlack(
 
   report = stripAnsiFromErrors(report)
 
-  if (options.consolidated) {
+  if (options.consolidated !== undefined && options.consolidated) {
     const message = formatConsolidatedFailedTestSummary(
       report.results.tests,
       report.results.environment,
       options
     )
-    if (message) {
+    if (message !== null) {
       await sendSlackMessage(message)
       logs && console.log('Failed test summary sent to Slack.')
     } else {
@@ -66,7 +82,7 @@ export async function sendFailedResultsToSlack(
           report.results.environment,
           options
         )
-        if (message) {
+        if (message !== null) {
           await sendSlackMessage(message)
           logs && console.log('Failed test summary sent to Slack.')
         } else {
@@ -78,17 +94,23 @@ export async function sendFailedResultsToSlack(
   }
 }
 
+/**
+ * Send the flaky test results to Slack
+ * @param report - The CTRF report
+ * @param options - The options for the message
+ * @param logs - Whether to log the message
+ */
 export async function sendFlakyResultsToSlack(
   report: CtrfReport,
   options: Options = {},
   logs: boolean = false
 ): Promise<void> {
-  if (options.token) {
+  if (options.token !== undefined) {
     process.env.SLACK_WEBHOOK_URL = options.token
   }
 
   const message = formatFlakyTestsMessage(report, options)
-  if (message) {
+  if (message !== null) {
     await sendSlackMessage(message)
     logs && console.log('Flaky tests message sent to Slack.')
   } else {
@@ -96,22 +118,28 @@ export async function sendFlakyResultsToSlack(
   }
 }
 
+/**
+ * Send the AI test summary to Slack
+ * @param report - The CTRF report
+ * @param options - The options for the message
+ * @param logs - Whether to log the message
+ */
 export async function sendAISummaryToSlack(
   report: CtrfReport,
   options: Options = {},
   logs: boolean = false
 ): Promise<void> {
-  if (options.token) {
+  if (options.token !== undefined) {
     process.env.SLACK_WEBHOOK_URL = options.token
   }
 
-  if (options.consolidated) {
+  if (options.consolidated !== undefined) {
     const message = formatConsolidatedAiTestSummary(
       report.results.tests,
       report.results.environment,
       options
     )
-    if (message) {
+    if (message !== null) {
       await sendSlackMessage(message)
       logs && console.log('AI test summary sent to Slack.')
     } else {
@@ -125,7 +153,7 @@ export async function sendAISummaryToSlack(
           report.results.environment,
           options
         )
-        if (message) {
+        if (message !== null) {
           await sendSlackMessage(message)
           logs && console.log('AI test summary sent to Slack.')
         } else {

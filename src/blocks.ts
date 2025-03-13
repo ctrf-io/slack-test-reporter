@@ -7,9 +7,18 @@ import {
   LIMITS,
   NOTICES,
 } from './constants'
-import { type CtrfTest } from './types/ctrf'
+import { type Summary, type CtrfTest } from './types/ctrf'
 
-export function createTestResultBlocks(summary: any, buildInfo: string): any[] {
+/**
+ * Create blocks for test result summary
+ * @param summary - The summary of the test results
+ * @param buildInfo - The build information
+ * @returns The blocks for the test result summary
+ */
+export function createTestResultBlocks(
+  summary: Summary,
+  buildInfo: string
+): any[] {
   const { passed, failed, skipped, pending, other, tests } = summary
   const resultText =
     failed > 0
@@ -21,7 +30,7 @@ export function createTestResultBlocks(summary: any, buildInfo: string): any[] {
       ? MESSAGES.DURATION_LESS_THAN_ONE
       : formatString(
           MESSAGES.DURATION_FORMAT,
-          new Date(durationInSeconds * 1000).toISOString().substr(11, 8)
+          new Date(durationInSeconds * 1000).toISOString().substring(11, 19)
         )
   const testSummary = `${EMOJIS.TEST_TUBE} ${tests} | ${EMOJIS.CHECK_MARK} ${passed} | ${EMOJIS.X_MARK} ${failed} | ${EMOJIS.FAST_FORWARD} ${skipped} | ${EMOJIS.HOURGLASS} ${pending} | ${EMOJIS.QUESTION} ${other}`
 
@@ -43,6 +52,12 @@ export function createTestResultBlocks(summary: any, buildInfo: string): any[] {
   ]
 }
 
+/**
+ * Create blocks for failed tests
+ * @param failedTests - The failed tests
+ * @param buildInfo - The build information
+ * @returns The blocks for the failed tests
+ */
 export function createFailedTestBlocks(
   failedTests: CtrfTest[],
   buildInfo: string
@@ -71,12 +86,12 @@ export function createFailedTestBlocks(
 
   limitedFailedTests.forEach((test) => {
     const failSummary =
-      test.message && test.message.length > LIMITS.CHAR_LIMIT
+      test.message !== undefined && test.message.length > LIMITS.CHAR_LIMIT
         ? test.message.substring(
             0,
             LIMITS.CHAR_LIMIT - NOTICES.TRIMMED_MESSAGE.length
           ) + NOTICES.TRIMMED_MESSAGE
-        : test.message || MESSAGES.NO_MESSAGE_PROVIDED
+        : (test.message ?? MESSAGES.NO_MESSAGE_PROVIDED)
 
     blocks.push({
       type: BLOCK_TYPES.HEADER,
@@ -113,6 +128,12 @@ export function createFailedTestBlocks(
   return blocks
 }
 
+/**
+ * Create blocks for AI tests
+ * @param failedTests - The failed tests
+ * @param buildInfo - The build information
+ * @returns The blocks for the AI tests
+ */
 export function createAiTestBlocks(
   failedTests: CtrfTest[],
   buildInfo: string
@@ -177,6 +198,11 @@ export function createAiTestBlocks(
   return blocks
 }
 
+/**
+ * Create blocks for a all messages
+ * @param options - The options for the message
+ * @returns The blocks for the message
+ */
 export function createMessageBlocks(options: {
   title: string
   prefix?: string | null
@@ -203,7 +229,7 @@ export function createMessageBlocks(options: {
     },
   })
 
-  if (prefix) {
+  if (prefix !== '' && prefix !== null) {
     blocks.push({
       type: BLOCK_TYPES.SECTION,
       text: {
@@ -217,7 +243,7 @@ export function createMessageBlocks(options: {
     blocks.push(...customBlocks)
   }
 
-  if (suffix) {
+  if (suffix !== '' && suffix !== null) {
     blocks.push({
       type: BLOCK_TYPES.SECTION,
       text: {
@@ -253,6 +279,12 @@ export function createMessageBlocks(options: {
   return blocks
 }
 
+/**
+ * Create blocks for flaky tests
+ * @param flakyTests - The flaky tests
+ * @param buildInfo - The build information
+ * @returns The blocks for the flaky tests
+ */
 export function createFlakyTestBlocks(
   flakyTests: CtrfTest[],
   buildInfo: string
@@ -277,6 +309,12 @@ export function createFlakyTestBlocks(
   ]
 }
 
+/**
+ * Create blocks for a single AI test
+ * @param testName - The name of the test
+ * @param aiSummary - The summary of the AI test
+ * @returns The blocks for the single AI test
+ */
 export function createSingleAiTestBlocks(
   testName: string,
   aiSummary: string
@@ -301,18 +339,25 @@ export function createSingleAiTestBlocks(
   ]
 }
 
+/**
+ * Create blocks for a single failed test
+ * @param testName - The name of the test
+ * @param message - The message of the test
+ * @param buildInfo - The build information
+ * @returns The blocks for the single failed test
+ */
 export function createSingleFailedTestBlocks(
   testName: string,
   message: string | undefined,
   buildInfo: string
 ): any[] {
   const enrichedMessage =
-    message && message.length > LIMITS.CHAR_LIMIT
+    message !== undefined && message.length > LIMITS.CHAR_LIMIT
       ? message.substring(
           0,
           LIMITS.CHAR_LIMIT - NOTICES.TRIMMED_MESSAGE.length
         ) + NOTICES.TRIMMED_MESSAGE
-      : message || MESSAGES.NO_MESSAGE_PROVIDED
+      : (message ?? MESSAGES.NO_MESSAGE_PROVIDED)
 
   const failSummaryText = `*Message:* ${enrichedMessage}`
 

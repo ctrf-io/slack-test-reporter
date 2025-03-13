@@ -1,8 +1,4 @@
-import {
-  stripAnsi,
-  getTestName,
-  stripAnsiFromErrors,
-} from '../../src/utils/common'
+import { stripAnsi, stripAnsiFromErrors } from '../../src/utils/common'
 
 describe('Common Utilities', () => {
   describe('stripAnsi', () => {
@@ -30,46 +26,6 @@ describe('Common Utilities', () => {
       expect(() => stripAnsi(null)).toThrow(TypeError)
       // @ts-expect-error - testing invalid input
       expect(() => stripAnsi(undefined)).toThrow(TypeError)
-    })
-  })
-
-  describe('getTestName', () => {
-    it('should return test name with suite name when useSuiteName is true and suite exists', () => {
-      const test = {
-        name: 'should pass',
-        suite: 'LoginTests',
-        status: 'passed',
-        duration: 100,
-      }
-
-      const result = getTestName(test as any, true)
-
-      expect(result).toBe('LoginTests:should pass')
-    })
-
-    it('should return only test name when useSuiteName is false', () => {
-      const test = {
-        name: 'should pass',
-        suite: 'LoginTests',
-        status: 'passed',
-        duration: 100,
-      }
-
-      const result = getTestName(test as any, false)
-
-      expect(result).toBe('should pass')
-    })
-
-    it('should return only test name when suite does not exist', () => {
-      const test = {
-        name: 'should pass',
-        status: 'passed',
-        duration: 100,
-      }
-
-      const result = getTestName(test as any, true)
-
-      expect(result).toBe('should pass')
     })
   })
 

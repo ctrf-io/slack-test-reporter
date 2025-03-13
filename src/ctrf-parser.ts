@@ -2,6 +2,11 @@ import { type CtrfReport } from './types/ctrf'
 import { stripAnsiFromErrors } from './utils/common'
 import { mergeReports, readReportsFromGlobPattern } from 'ctrf'
 
+/**
+ * Parse a CTRF file
+ * @param pattern - The pattern to read the CTRF reports from
+ * @returns The parsed CTRF report
+ */
 export function parseCtrfFile(pattern: string): CtrfReport {
   console.log(`Reading CTRF reports from ${pattern}`)
   const reports: CtrfReport[] = readReportsFromGlobPattern(

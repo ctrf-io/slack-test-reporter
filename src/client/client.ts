@@ -1,5 +1,5 @@
 // src/client/client.ts
-import { WebClient } from '@slack/web-api'
+import { type ChatPostMessageResponse, WebClient } from '@slack/web-api'
 import { IncomingWebhook } from '@slack/webhook'
 
 /**
@@ -8,9 +8,9 @@ import { IncomingWebhook } from '@slack/webhook'
  * @returns A WebClient instance
  */
 export const createSlackClient = (token?: string): WebClient => {
-  const apiToken = token || process.env.SLACK_API_TOKEN
+  const apiToken = token ?? process.env.SLACK_API_TOKEN
 
-  if (!apiToken) {
+  if (apiToken === undefined) {
     throw new Error('Slack API token is required')
   }
 
@@ -23,9 +23,9 @@ export const createSlackClient = (token?: string): WebClient => {
  * @returns An IncomingWebhook instance
  */
 export const createSlackWebhook = (url?: string): IncomingWebhook => {
-  const webhookUrl = url || process.env.SLACK_WEBHOOK_URL
+  const webhookUrl = url ?? process.env.SLACK_WEBHOOK_URL
 
-  if (!webhookUrl) {
+  if (webhookUrl === undefined) {
     throw new Error('Slack webhook URL is required')
   }
 
@@ -59,7 +59,7 @@ export const postMessage = async (
   client: WebClient,
   channel: string,
   message: string | object
-) => {
+): Promise<ChatPostMessageResponse> => {
   try {
     return await client.chat.postMessage({
       channel,

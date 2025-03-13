@@ -38,6 +38,7 @@ const consolidatedOption = {
   },
 } as const
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const argv = yargs(hideBin(process.argv))
   .command(
     'results <path>',

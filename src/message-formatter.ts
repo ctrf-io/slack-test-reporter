@@ -15,6 +15,12 @@ import {
   createSingleFailedTestBlocks,
 } from './blocks'
 
+/**
+ * Format the results message
+ * @param ctrf - The CTRF report
+ * @param options - The options for the message
+ * @returns The formatted message
+ */
 export const formatResultsMessage = (
   ctrf: CtrfReport,
   options?: Options
@@ -48,6 +54,12 @@ export const formatResultsMessage = (
   )
 }
 
+/**
+ * Format the flaky tests message
+ * @param ctrf - The CTRF report
+ * @param options - The options for the message
+ * @returns The formatted message
+ */
 export const formatFlakyTestsMessage = (
   ctrf: CtrfReport,
   options?: Options
@@ -83,6 +95,13 @@ export const formatFlakyTestsMessage = (
   )
 }
 
+/**
+ * Format the AI test summary message
+ * @param test - The test
+ * @param environment - The environment
+ * @param options - The options for the message
+ * @returns The formatted message
+ */
 export const formatAiTestSummary = (
   test: CtrfTest,
   environment: CtrfEnvironment | undefined,
@@ -93,9 +112,9 @@ export const formatAiTestSummary = (
     TITLES.AI_TEST_SUMMARY,
     options
   )
-  const { buildInfo, missingEnvProperties } = handleBuildInfo(environment)
+  const { missingEnvProperties } = handleBuildInfo(environment)
 
-  if (!ai || status === TEST_STATUS.PASSED) {
+  if (ai === undefined || status === TEST_STATUS.PASSED) {
     return null
   }
 
@@ -112,13 +131,20 @@ export const formatAiTestSummary = (
   return createSlackMessage(blocks, COLORS.AI, title, environment, name)
 }
 
+/**
+ * Format the consolidated AI test summary message
+ * @param tests - The tests
+ * @param environment - The environment
+ * @param options - The options for the message
+ * @returns The formatted message
+ */
 export const formatConsolidatedAiTestSummary = (
   tests: CtrfTest[],
   environment: CtrfEnvironment | undefined,
   options?: Options
 ): object | null => {
   const failedTests = tests.filter(
-    (test) => test.ai && test.status === TEST_STATUS.FAILED
+    (test) => test.ai !== undefined && test.status === TEST_STATUS.FAILED
   )
   const { title, prefix, suffix } = normalizeOptions(
     TITLES.AI_TEST_REPORTER,
@@ -149,9 +175,7 @@ export const formatConsolidatedFailedTestSummary = (
   options?: Options
 ): object | null => {
   const failedTests = tests.filter((test) => test.status === TEST_STATUS.FAILED)
-  const defaultTitle = options?.title
-    ? options.title
-    : TITLES.FAILED_TEST_REPORT
+  const defaultTitle = options?.title ?? TITLES.FAILED_TEST_REPORT
   const { title, prefix, suffix } = normalizeOptions(defaultTitle, options)
   const { buildInfo, missingEnvProperties } = handleBuildInfo(environment)
 
@@ -211,14 +235,14 @@ export function createSlackMessage(
   const notification: string[] = []
   notification.push(title)
 
-  if (environment) {
+  if (environment !== undefined) {
     const { buildName, buildNumber } = environment
-    if (buildName && buildNumber) {
+    if (buildName !== undefined && buildNumber !== undefined) {
       notification.push(`${buildName} #${buildNumber}`)
     }
   }
 
-  if (additionalInfo) {
+  if (additionalInfo !== undefined) {
     notification.push(additionalInfo)
   }
 
@@ -233,13 +257,18 @@ export function createSlackMessage(
   }
 }
 
+/**
+ * Handle the build info
+ * @param environment - The environment
+ * @returns The build info
+ */
 function handleBuildInfo(environment: CtrfEnvironment | undefined): {
   buildInfo: string
   missingEnvProperties: string[]
 } {
   const missingEnvProperties: string[] = []
 
-  if (!environment) {
+  if (environment === undefined) {
     return {
       buildInfo: MESSAGES.NO_BUILD_INFO,
       missingEnvProperties: ['buildName', 'buildNumber', 'buildUrl'],
@@ -248,22 +277,23 @@ function handleBuildInfo(environment: CtrfEnvironment | undefined): {
 
   const { buildName, buildNumber, buildUrl } = environment
 
-  if (!buildName) missingEnvProperties.push('buildName')
-  if (!buildNumber) missingEnvProperties.push('buildNumber')
-  if (!buildUrl) missingEnvProperties.push('buildUrl')
+  if (buildName === undefined) missingEnvProperties.push('buildName')
+  if (buildNumber === undefined) missingEnvProperties.push('buildNumber')
+  if (buildUrl === undefined) missingEnvProperties.push('buildUrl')
 
-  if (buildName && buildNumber) {
-    const buildText = buildUrl
-      ? `<${buildUrl}|${buildName} #${buildNumber}>`
-      : `${buildName} #${buildNumber}`
+  if (buildName !== undefined && buildNumber !== undefined) {
+    const buildText =
+      buildUrl !== undefined
+        ? `<${buildUrl}|${buildName} #${buildNumber}>`
+        : `${buildName} #${buildNumber}`
 
     return {
       buildInfo: `${MESSAGES.BUILD_PREFIX}${buildText}`,
       missingEnvProperties,
     }
-  } else if (buildName || buildNumber) {
+  } else if (buildName !== undefined || buildNumber !== undefined) {
     return {
-      buildInfo: `${MESSAGES.BUILD_PREFIX} ${buildName || ''} ${buildNumber || ''}`,
+      buildInfo: `${MESSAGES.BUILD_PREFIX} ${buildName ?? ''} ${buildNumber ?? ''}`,
       missingEnvProperties,
     }
   }
@@ -274,10 +304,16 @@ function handleBuildInfo(environment: CtrfEnvironment | undefined): {
   }
 }
 
+/**
+ * Normalize the options
+ * @param defaultTitle - The default title
+ * @param options - The options
+ * @returns The normalized options
+ */
 function normalizeOptions(
   defaultTitle: string,
   options?: Options
 ): { title: string; prefix: string | null; suffix: string | null } {
-  const { title = defaultTitle, prefix = null, suffix = null } = options || {}
+  const { title = defaultTitle, prefix = null, suffix = null } = options ?? {}
   return { title, prefix, suffix }
 }
