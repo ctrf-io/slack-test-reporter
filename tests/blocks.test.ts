@@ -7,13 +7,7 @@ import {
   createSingleAiTestBlocks,
   createSingleFailedTestBlocks,
 } from '../src/blocks'
-import {
-  BLOCK_TYPES,
-  TEXT_TYPES,
-  EMOJIS,
-  MESSAGES,
-  TITLES,
-} from '../src/constants'
+import { BLOCK_TYPES, TEXT_TYPES, EMOJIS, MESSAGES } from '../src/constants'
 import { CtrfTest } from '../src/types/ctrf'
 
 describe('Blocks', () => {
