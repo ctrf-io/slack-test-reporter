@@ -13,11 +13,13 @@ import { type Summary, type CtrfTest } from './types/ctrf'
  * Create blocks for test result summary
  * @param summary - The summary of the test results
  * @param buildInfo - The build information
+ * @param flakyCount - The number of flaky tests
  * @returns The blocks for the test result summary
  */
 export function createTestResultBlocks(
   summary: Summary,
-  buildInfo: string
+  buildInfo: string,
+  flakyCount: number = 0
 ): any[] {
   const { passed, failed, skipped, pending, other, tests } = summary
   const resultText =
@@ -32,7 +34,7 @@ export function createTestResultBlocks(
           MESSAGES.DURATION_FORMAT,
           new Date(durationInSeconds * 1000).toISOString().substring(11, 19)
         )
-  const testSummary = `${EMOJIS.TEST_TUBE} ${tests} | ${EMOJIS.CHECK_MARK} ${passed} | ${EMOJIS.X_MARK} ${failed} | ${EMOJIS.FAST_FORWARD} ${skipped} | ${EMOJIS.HOURGLASS} ${pending} | ${EMOJIS.QUESTION} ${other}`
+  const testSummary = `${EMOJIS.TEST_TUBE} ${tests} | ${EMOJIS.CHECK_MARK} ${passed} | ${EMOJIS.X_MARK} ${failed} | ${EMOJIS.FAST_FORWARD} ${skipped} | ${EMOJIS.HOURGLASS} ${pending} | ${EMOJIS.QUESTION} ${other}${flakyCount > 0 ? ` | ${EMOJIS.FALLEN_LEAF} ${flakyCount}` : ''}`
 
   return [
     {

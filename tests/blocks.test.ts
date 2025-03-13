@@ -34,6 +34,7 @@ describe('Blocks', () => {
       expect(blocks[0].text.type).toBe(TEXT_TYPES.MRKDWN)
       expect(blocks[0].text.text).toContain(`${EMOJIS.TEST_TUBE} 13`)
       expect(blocks[0].text.text).toContain(`${EMOJIS.CHECK_MARK} 10`)
+      expect(blocks[0].text.text).not.toContain(EMOJIS.FALLEN_LEAF)
 
       expect(blocks[1].type).toBe(BLOCK_TYPES.SECTION)
       expect(blocks[1].text.type).toBe(TEXT_TYPES.MRKDWN)
@@ -77,6 +78,24 @@ describe('Blocks', () => {
       const blocks = createTestResultBlocks(mockSummary, mockBuildInfo)
 
       expect(blocks[1].text.text).toContain(MESSAGES.DURATION_LESS_THAN_ONE)
+    })
+
+    it('should include flaky tests count when provided', () => {
+      const mockSummary = {
+        passed: 8,
+        failed: 2,
+        skipped: 1,
+        pending: 0,
+        other: 0,
+        tests: 11,
+        start: 1706644023000,
+        stop: 1706644024000,
+      }
+      
+      const flakyCount = 3
+      const blocks = createTestResultBlocks(mockSummary, mockBuildInfo, flakyCount)
+
+      expect(blocks[0].text.text).toContain(`${EMOJIS.FALLEN_LEAF} ${flakyCount}`)
     })
   })
 

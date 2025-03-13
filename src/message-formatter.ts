@@ -25,7 +25,7 @@ export const formatResultsMessage = (
   ctrf: CtrfReport,
   options?: Options
 ): object => {
-  const { summary, environment } = ctrf.results
+  const { summary, environment, tests = [] } = ctrf.results
   const { failed } = summary
   const { title, prefix, suffix } = normalizeOptions(
     TITLES.TEST_RESULTS,
@@ -33,7 +33,9 @@ export const formatResultsMessage = (
   )
   const { buildInfo, missingEnvProperties } = handleBuildInfo(environment)
 
-  const customBlocks = createTestResultBlocks(summary, buildInfo)
+  const flakyCount = tests.filter(test => test.flaky).length
+
+  const customBlocks = createTestResultBlocks(summary, buildInfo, flakyCount)
 
   const blocks = createMessageBlocks({
     title,
