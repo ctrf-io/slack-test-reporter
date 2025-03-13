@@ -12,17 +12,17 @@ jobs:
   testing:
     runs-on: ubuntu-latest
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-    - name: Install dependencies
-      run: npm install
-    - name: Build
-      run: npx tsc
-    - name: Send Slack Notification
-      run: npx slack-ctrf results ctrf-report.json
-      env:
-        SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
-    - name: Send Slack Notification
-      run: npx slack-ctrf flaky ctrf-report.json
-      env:
-        SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Install dependencies
+        run: npm install
+      - name: Build
+        run: npx tsc
+      - name: Send Slack Notification
+        run: npx slack-ctrf results ctrf-report.json
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+      - name: Send Slack Notification
+        run: npx slack-ctrf flaky ctrf-report.json
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}

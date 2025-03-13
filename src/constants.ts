@@ -3,7 +3,7 @@ export const COLORS = {
   FAILED: '#FF0000',
   FLAKY: '#FFA500',
   AI: '#800080',
-};
+}
 
 export const EMOJIS = {
   TEST_TUBE: ':test_tube:',
@@ -17,7 +17,7 @@ export const EMOJIS = {
   INFO: ':information_source:',
   FALLEN_LEAF: ':fallen_leaf:',
   GREEN_HEART: ':green_heart:',
-};
+}
 
 export const TITLES = {
   TEST_RESULTS: 'Test Results',
@@ -26,7 +26,7 @@ export const TITLES = {
   AI_TEST_REPORTER: `${EMOJIS.SPARKLES} AI Test Reporter`,
   FAILED_TEST_REPORT: `${EMOJIS.X_MARK} Failed Test Report`,
   FAILED_TEST_SUMMARY: 'Failed Test summary',
-};
+}
 
 export const MESSAGES = {
   RESULT_PASSED: '*Result:* Passed',
@@ -44,37 +44,37 @@ export const MESSAGES = {
   BUILD_PREFIX: '*Build:* ',
   MISSING_ENV_WARNING: `${EMOJIS.WARNING} Missing environment properties: {0}. Add these to your CTRF report for a better experience.`,
   FOOTER_TEXT: `<https://github.com/ctrf-io/slack-ctrf|Slack Test Reporter> by <https://ctrf.io|CTRF ${EMOJIS.GREEN_HEART}>`,
-};
+}
 
 export const LIMITS = {
   MAX_FAILED_TESTS: 20,
   CHAR_LIMIT: 2950,
-};
+}
 
 export const NOTICES = {
   TRIMMED_MESSAGE: `\n${EMOJIS.WARNING} Message trimmed as too long for Slack`,
   MAX_TESTS_EXCEEDED: `${EMOJIS.INFO} Only the first {0} failed tests are displayed. {1} additional failed tests were not included.`,
-};
+}
 
 export const TEST_STATUS = {
   PASSED: 'passed',
   FAILED: 'failed',
-};
+}
 
 export const BLOCK_TYPES = {
   SECTION: 'section',
   HEADER: 'header',
   CONTEXT: 'context',
   DIVIDER: 'divider',
-};
+}
 
 export const TEXT_TYPES = {
   MRKDWN: 'mrkdwn',
   PLAIN_TEXT: 'plain_text',
-};
+}
 
 export function formatString(template: string, ...args: any[]): string {
   return template.replace(/{(\d+)}/g, (match, index) => {
-    return typeof args[index] !== 'undefined' ? args[index] : match;
-  });
-} 
+    return typeof args[index] !== 'undefined' ? args[index] : match
+  })
+}

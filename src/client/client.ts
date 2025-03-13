@@ -1,6 +1,6 @@
 // src/client/client.ts
-import { WebClient } from '@slack/web-api';
-import { IncomingWebhook } from '@slack/webhook';
+import { WebClient } from '@slack/web-api'
+import { IncomingWebhook } from '@slack/webhook'
 
 /**
  * Create a Slack API client for more advanced operations
@@ -8,14 +8,14 @@ import { IncomingWebhook } from '@slack/webhook';
  * @returns A WebClient instance
  */
 export const createSlackClient = (token?: string): WebClient => {
-    const apiToken = token || process.env.SLACK_API_TOKEN;
-    
-    if (!apiToken) {
-        throw new Error('Slack API token is required');
-    }
-    
-    return new WebClient(apiToken);
-};
+  const apiToken = token || process.env.SLACK_API_TOKEN
+
+  if (!apiToken) {
+    throw new Error('Slack API token is required')
+  }
+
+  return new WebClient(apiToken)
+}
 
 /**
  * Create a Slack webhook for sending messages
@@ -23,14 +23,14 @@ export const createSlackClient = (token?: string): WebClient => {
  * @returns An IncomingWebhook instance
  */
 export const createSlackWebhook = (url?: string): IncomingWebhook => {
-    const webhookUrl = url || process.env.SLACK_WEBHOOK_URL;
+  const webhookUrl = url || process.env.SLACK_WEBHOOK_URL
 
-    if (!webhookUrl) {
-        throw new Error('Slack webhook URL is required');
-    }
+  if (!webhookUrl) {
+    throw new Error('Slack webhook URL is required')
+  }
 
-    return new IncomingWebhook(webhookUrl);
-};
+  return new IncomingWebhook(webhookUrl)
+}
 
 /**
  * Send a message to Slack using a webhook URL
@@ -38,13 +38,15 @@ export const createSlackWebhook = (url?: string): IncomingWebhook => {
  * @returns A promise that resolves when the message is sent
  */
 export const sendSlackMessage = async (message: object): Promise<void> => {
-    try {
-        const webhook = createSlackWebhook();
-        await webhook.send(message);
-    } catch (error) {
-        throw new Error(`Failed to send Slack message: ${error instanceof Error ? error.message : String(error)}`);
-    }
-};
+  try {
+    const webhook = createSlackWebhook()
+    await webhook.send(message)
+  } catch (error) {
+    throw new Error(
+      `Failed to send Slack message: ${error instanceof Error ? error.message : String(error)}`
+    )
+  }
+}
 
 /**
  * Send a message to a Slack channel using the Web API
@@ -54,16 +56,18 @@ export const sendSlackMessage = async (message: object): Promise<void> => {
  * @returns A promise that resolves with the API response
  */
 export const postMessage = async (
-    client: WebClient,
-    channel: string,
-    message: string | object
+  client: WebClient,
+  channel: string,
+  message: string | object
 ) => {
-    try {
-        return await client.chat.postMessage({
-            channel,
-            ...(typeof message === 'string' ? { text: message } : message)
-        });
-    } catch (error) {
-        throw new Error(`Failed to post message: ${error instanceof Error ? error.message : String(error)}`);
-    }
-};
+  try {
+    return await client.chat.postMessage({
+      channel,
+      ...(typeof message === 'string' ? { text: message } : message),
+    })
+  } catch (error) {
+    throw new Error(
+      `Failed to post message: ${error instanceof Error ? error.message : String(error)}`
+    )
+  }
+}
