@@ -1,190 +1,73 @@
 import { CtrfEnvironment, CtrfReport, CtrfTest } from './types/ctrf';
 import { Options } from './types/reporter';
 import { BLOCK_TYPES, COLORS, EMOJIS, LIMITS, MESSAGES, NOTICES, TEST_STATUS, TEXT_TYPES, TITLES, formatString } from './constants';
+import { createTestResultBlocks, createMessageBlocks, createSlackMessage, createFlakyTestBlocks, createSingleAiTestBlocks, createAiTestBlocks, createFailedTestBlocks, createSingleFailedTestBlocks } from './blocks';
 
 export const formatResultsMessage = (ctrf: CtrfReport, options?: Options): object => {
   const { summary, environment } = ctrf.results;
-  const { passed, failed, skipped, pending, other, tests } = summary;
-  const { title = TITLES.TEST_RESULTS, prefix = null, suffix = null } = options || {};
+  const { failed } = summary;
+  const { title, prefix, suffix } = normalizeOptions(TITLES.TEST_RESULTS, options);
   const { buildInfo, missingEnvProperties } = handleBuildInfo(environment);
-  const resultText = failed > 0 ? formatString(MESSAGES.RESULT_FAILED, failed) : MESSAGES.RESULT_PASSED;
-  const durationInSeconds = (summary.stop - summary.start) / 1000;
-  const durationText = durationInSeconds < 1 ? MESSAGES.DURATION_LESS_THAN_ONE : formatString(MESSAGES.DURATION_FORMAT, new Date(durationInSeconds * 1000).toISOString().substr(11, 8));
-  const testSummary = `${EMOJIS.TEST_TUBE} ${tests} | ${EMOJIS.CHECK_MARK} ${passed} | ${EMOJIS.X_MARK} ${failed} | ${EMOJIS.FAST_FORWARD} ${skipped} | ${EMOJIS.HOURGLASS} ${pending} | ${EMOJIS.QUESTION} ${other}`;
+  
+  const customBlocks = createTestResultBlocks(summary, buildInfo);
 
-  const customBlocks = [{
-    type: BLOCK_TYPES.SECTION,
-    text: {
-      type: TEXT_TYPES.MRKDWN,
-      text: testSummary
-    }
-  }, {
-    type: BLOCK_TYPES.SECTION,
-    text: {
-      type: TEXT_TYPES.MRKDWN,
-      text: `${resultText} | ${durationText}\n${buildInfo}`
-    }
-  }]
-
-  const blocks = blockBuilder([], {
-    title: title,
-    prefix: prefix,
-    prefixBlock: prefix ? true : false,
-    suffix: suffix,
-    suffixBlock: suffix ? true : false,
-    customBlocks: customBlocks,
-    buildInfo: buildInfo,
-    missingEnvProperties: missingEnvProperties,
-    missingEnvPropertiesBlock: missingEnvProperties.length > 0 ? true : false
+  const blocks = createMessageBlocks({
+    title,
+    prefix,
+    suffix,
+    buildInfo,
+    missingEnvProperties,
+    customBlocks
   });
 
-  const notification: string[] = [];
-  notification.push(title);
-
-  if (environment) {
-    const { buildName, buildNumber } = environment;
-    if (buildName && buildNumber) {
-      notification.push(`${buildName} #${buildNumber}`)
-    }
-  }
-
-  const message = failed > 0
-    ? `Failed: ${failed}`
-    : 'Passed';
-
-  notification.push(message)
-
-  return {
-    attachments: [
-      {
-        fallback: notification.join('\n'),
-        color: failed > 0 ? COLORS.FAILED : COLORS.PASSED,
-        blocks: blocks
-      }
-    ]
-  };
+  const message = failed > 0 ? `Failed: ${failed}` : 'Passed';
+  
+  return createSlackMessage(blocks, failed > 0 ? COLORS.FAILED : COLORS.PASSED, title, environment, message);
 };
 
 export const formatFlakyTestsMessage = (ctrf: CtrfReport, options?: Options): object | null => {
   const { environment, tests } = ctrf.results;
   const flakyTests = tests.filter(test => test.flaky);
-  const { title = TITLES.FLAKY_TESTS, prefix = null, suffix = null } = options || {};
+  const { title, prefix, suffix } = normalizeOptions(TITLES.FLAKY_TESTS, options);
   const { buildInfo, missingEnvProperties } = handleBuildInfo(environment);
-  const flakyTestsText = flakyTests.map(test => `- ${test.name}`).join('\n');
-
+  
   if (flakyTests.length === 0) {
     return null;
   }
 
-  const customBlocks = [
-    {
-      type: BLOCK_TYPES.SECTION,
-      text: {
-        type: TEXT_TYPES.MRKDWN,
-        text: `${MESSAGES.FLAKY_TESTS_DETECTED}\n${buildInfo}`
-      }
-    },
-    {
-      type: BLOCK_TYPES.SECTION,
-      text: {
-        type: TEXT_TYPES.MRKDWN,
-        text: `*Flaky Tests*\n${flakyTestsText}`
-      }
-    }];
+  const customBlocks = createFlakyTestBlocks(flakyTests, buildInfo);
 
-  const blocks = blockBuilder([], {
-    title: title,
-    prefix: prefix,
-    prefixBlock: prefix ? true : false,
-    suffix: suffix,
-    suffixBlock: suffix ? true : false,
-    customBlocks: customBlocks,
-    buildInfo: buildInfo,
-    missingEnvProperties: missingEnvProperties,
-    missingEnvPropertiesBlock: missingEnvProperties.length > 0 ? true : false
+  const blocks = createMessageBlocks({
+    title,
+    prefix,
+    suffix,
+    buildInfo,
+    missingEnvProperties,
+    customBlocks
   });
 
-  const notification: string[] = []
-  notification.push(title)
-
-  if (environment) {
-    const { buildName, buildNumber } = environment;
-    if (buildName && buildNumber) {
-      notification.push(`${buildName} #${buildNumber}`)
-    }
-  }
-
-  notification.push('Flaky tests detected')
-
-  return {
-    attachments: [
-      {
-        fallback: notification.join('\n'),
-        color: COLORS.FLAKY,
-        blocks: blocks
-      }
-    ]
-  };
+  return createSlackMessage(blocks, COLORS.FLAKY, title, environment, 'Flaky tests detected');
 };
 
 export const formatAiTestSummary = (test: CtrfTest, environment: CtrfEnvironment | undefined, options?: Options): object | null => {
-  const { name, ai, status } = test
-  const { title = TITLES.AI_TEST_SUMMARY, prefix = null, suffix = null } = options || {};
+  const { name, ai, status } = test;
+  const { title, prefix, suffix } = normalizeOptions(TITLES.AI_TEST_SUMMARY, options);
   const { buildInfo, missingEnvProperties } = handleBuildInfo(environment);
-  const aiSummaryText = formatString(MESSAGES.AI_SUMMARY, ai);
-
+  
   if (!ai || status === TEST_STATUS.PASSED) { return null }
 
-  const customBlocks = [
-    {
-      type: BLOCK_TYPES.SECTION,
-      text: {
-        type: TEXT_TYPES.MRKDWN,
-        text: `${formatString(MESSAGES.TEST_NAME, name)}\n${MESSAGES.STATUS_FAILED}`
-      }
-    },
-    {
-      type: BLOCK_TYPES.SECTION,
-      text: {
-        type: TEXT_TYPES.MRKDWN,
-        text: `${aiSummaryText}`
-      }
-    }
-  ];
+  const customBlocks = createSingleAiTestBlocks(name, ai, buildInfo);
 
-  const blocks = blockBuilder([], {
-    title: title,
-    prefix: prefix,
-    prefixBlock: prefix ? true : false,
-    suffix: suffix,
-    suffixBlock: suffix ? true : false,
-    customBlocks: customBlocks,
-    buildInfo: buildInfo,
-    missingEnvProperties: missingEnvProperties,
-    missingEnvPropertiesBlock: missingEnvProperties.length > 0 ? true : false
+  const blocks = createMessageBlocks({
+    title,
+    prefix,
+    suffix,
+    buildInfo,
+    missingEnvProperties,
+    customBlocks
   });
 
-  const notification: string[] = []
-  notification.push(title)
-
-  if (environment) {
-    const { buildName, buildNumber } = environment;
-    if (buildName && buildNumber) {
-      notification.push(`${buildName} #${buildNumber}`)
-    }
-  }
-
-  notification.push(name)
-
-  return {
-    attachments: [
-      {
-        fallback: notification.join('\n'),
-        color: COLORS.AI,
-        blocks: blocks
-      }
-    ]
-  };
+  return createSlackMessage(blocks, COLORS.AI, title, environment, name);
 };
 
 export const formatConsolidatedAiTestSummary = (
@@ -193,92 +76,25 @@ export const formatConsolidatedAiTestSummary = (
   options?: Options
 ): object | null => {
   const failedTests = tests.filter(test => test.ai && test.status === TEST_STATUS.FAILED);
-  const { title = TITLES.AI_TEST_REPORTER, prefix = null, suffix = null } = options || {};
+  const { title, prefix, suffix } = normalizeOptions(TITLES.AI_TEST_REPORTER, options);
   const { buildInfo, missingEnvProperties } = handleBuildInfo(environment);
 
   if (failedTests.length === 0) {
     return null;
   }
 
-  const customBlocks: any[] = [{
-    type: BLOCK_TYPES.SECTION,
-    text: {
-      type: TEXT_TYPES.MRKDWN,
-      text: buildInfo
-    }
-  }, {
-    type: BLOCK_TYPES.SECTION,
-    text: {
-      type: TEXT_TYPES.MRKDWN,
-      text: `*Total Failed Tests:* ${failedTests.length}`
-    }
-  }, {
-    type: BLOCK_TYPES.DIVIDER
-  }];
+  const customBlocks = createAiTestBlocks(failedTests, buildInfo);
 
-  const limitedFailedTests = failedTests.slice(0, LIMITS.MAX_FAILED_TESTS);
-
-  limitedFailedTests.forEach(test => {
-    const aiSummary = `${test.ai}`;
-
-    customBlocks.push({
-      type: BLOCK_TYPES.HEADER,
-      text: {
-        type: TEXT_TYPES.PLAIN_TEXT,
-        text: `${EMOJIS.X_MARK} ${test.name}`,
-        emoji: true
-      }
-    });
-
-    customBlocks.push({
-      type: BLOCK_TYPES.SECTION,
-      text: {
-        type: TEXT_TYPES.MRKDWN,
-        text: `${formatString(MESSAGES.AI_SUMMARY, aiSummary)}`
-      }
-    });
+  const blocks = createMessageBlocks({
+    title,
+    prefix,
+    suffix,
+    buildInfo,
+    missingEnvProperties,
+    customBlocks
   });
 
-  if (failedTests.length > LIMITS.MAX_FAILED_TESTS) {
-    customBlocks.push({
-      type: BLOCK_TYPES.SECTION,
-      text: {
-        type: TEXT_TYPES.MRKDWN,
-        text: formatString(NOTICES.MAX_TESTS_EXCEEDED, LIMITS.MAX_FAILED_TESTS, failedTests.length - LIMITS.MAX_FAILED_TESTS)
-      }
-    });
-  }
-
-  const blocks = blockBuilder([], {
-    title: title,
-    prefix: prefix,
-    prefixBlock: prefix ? true : false,
-    suffix: suffix,
-    suffixBlock: suffix ? true : false,
-    customBlocks: customBlocks,
-    missingEnvProperties: missingEnvProperties,
-    missingEnvPropertiesBlock: missingEnvProperties.length > 0 ? true : false
-  });
-
-  const notification: string[] = []
-  notification.push(title)
-
-  if (environment) {
-    const { buildName, buildNumber } = environment;
-    if (buildName && buildNumber) {
-      notification.push(`${buildName} #${buildNumber}`)
-    }
-  }
-
-  return {
-    attachments: [
-      {
-        fallback: notification.join('\n'),
-        color: COLORS.AI,
-        blocks: blocks
-      }
-    ]
-  };
+  return createSlackMessage(blocks, COLORS.AI, title, environment);
 };
 
 export const formatConsolidatedFailedTestSummary = (
@@ -287,170 +103,49 @@ export const formatConsolidatedFailedTestSummary = (
   options?: Options
 ): object | null => {
   const failedTests = tests.filter(test => test.status === TEST_STATUS.FAILED);
-  const { title = options?.title ? options.title : TITLES.FAILED_TEST_REPORT, prefix = null, suffix = null } = options || {};
+  const defaultTitle = options?.title ? options.title : TITLES.FAILED_TEST_REPORT;
+  const { title, prefix, suffix } = normalizeOptions(defaultTitle, options);
   const { buildInfo, missingEnvProperties } = handleBuildInfo(environment);
 
   if (failedTests.length === 0) {
     return null;
   }
 
-  const customBlocks: any[] = [
-    {
-      type: BLOCK_TYPES.SECTION,
-      text: {
-        type: TEXT_TYPES.MRKDWN,
-        text: buildInfo
-      }
-    },
-    {
-      type: BLOCK_TYPES.SECTION,
-      text: {
-        type: TEXT_TYPES.MRKDWN,
-        text: formatString(MESSAGES.TOTAL_FAILED_TESTS, failedTests.length)
-      }
-    },
-    {
-      type: BLOCK_TYPES.DIVIDER
-    }]
+  const customBlocks = createFailedTestBlocks(failedTests, buildInfo);
 
-  const limitedFailedTests = failedTests.slice(0, LIMITS.MAX_FAILED_TESTS);
-
-  limitedFailedTests.forEach(test => {
-    const failSummary = test.message && test.message.length > LIMITS.CHAR_LIMIT
-      ? test.message.substring(0, LIMITS.CHAR_LIMIT - NOTICES.TRIMMED_MESSAGE.length) + NOTICES.TRIMMED_MESSAGE
-      : test.message || MESSAGES.NO_MESSAGE_PROVIDED;
-
-    customBlocks.push({
-      type: BLOCK_TYPES.HEADER,
-      text: {
-        type: TEXT_TYPES.PLAIN_TEXT,
-        text: `${EMOJIS.X_MARK} ${test.name}`,
-        emoji: true
-      }
-    });
-
-    customBlocks.push({
-      type: BLOCK_TYPES.SECTION,
-      text: {
-        type: TEXT_TYPES.MRKDWN,
-        text: `${failSummary}`
-      }
-    });
+  const blocks = createMessageBlocks({
+    title,
+    prefix,
+    suffix,
+    buildInfo,
+    missingEnvProperties,
+    customBlocks
   });
 
-  if (failedTests.length > LIMITS.MAX_FAILED_TESTS) {
-    customBlocks.push({
-      type: BLOCK_TYPES.SECTION,
-      text: {
-        type: TEXT_TYPES.MRKDWN,
-        text: formatString(NOTICES.MAX_TESTS_EXCEEDED, LIMITS.MAX_FAILED_TESTS, failedTests.length - LIMITS.MAX_FAILED_TESTS)
-      }
-    });
-  }
-
-  const blocks = blockBuilder([], {
-    title: title,
-    prefix: prefix,
-    prefixBlock: prefix ? true : false,
-    suffix: suffix,
-    suffixBlock: suffix ? true : false,
-    customBlocks: customBlocks,
-    missingEnvProperties: missingEnvProperties,
-    missingEnvPropertiesBlock: missingEnvProperties.length > 0 ? true : false
-  });
-
-  const notification: string[] = []
-  notification.push(title)
-
-  if (environment) {
-    const { buildName, buildNumber } = environment;
-    if (buildName && buildNumber) {
-      notification.push(`${buildName} #${buildNumber}`)
-    }
-  }
-
-  return {
-    attachments: [
-      {
-        fallback: notification.join('\n'),
-        color: COLORS.FAILED,
-        blocks: blocks
-      }
-    ]
-  };
+  return createSlackMessage(blocks, COLORS.FAILED, title, environment);
 };
 
 export const formatFailedTestSummary = (test: CtrfTest, environment: CtrfEnvironment | undefined, options?: Options): object | null => {
   const { name, message, status } = test;
+  const { title, prefix, suffix } = normalizeOptions(TITLES.FAILED_TEST_SUMMARY, options);
   const { buildInfo, missingEnvProperties } = handleBuildInfo(environment);
-  const { title = TITLES.FAILED_TEST_SUMMARY, prefix = null, suffix = null } = options || {};
 
   if (status !== TEST_STATUS.FAILED) {
     return null;
   }
 
-  const enrichedMessage = message && message.length > LIMITS.CHAR_LIMIT
-    ? message.substring(0, LIMITS.CHAR_LIMIT - NOTICES.TRIMMED_MESSAGE.length) + NOTICES.TRIMMED_MESSAGE
-    : (message || MESSAGES.NO_MESSAGE_PROVIDED);
+  const customBlocks = createSingleFailedTestBlocks(name, message, buildInfo);
 
-  const failSummaryText = `*Message:* ${enrichedMessage}`;
-
-  const customBlocks: any[] = [
-    {
-      type: BLOCK_TYPES.SECTION,
-      text: {
-        type: TEXT_TYPES.MRKDWN,
-        text: `${formatString(MESSAGES.TEST_NAME, name)}`
-      }
-    },
-    {
-      type: BLOCK_TYPES.SECTION,
-      text: {
-        type: TEXT_TYPES.MRKDWN,
-        text: `${failSummaryText}`
-      }
-    },
-    {
-      type: BLOCK_TYPES.SECTION,
-      text: {
-        type: TEXT_TYPES.MRKDWN,
-        text: `${buildInfo}`
-      }
-    }
-  ];
-
-  const blocks = blockBuilder([], {
-    title: title,
-    prefix: prefix,
-    prefixBlock: prefix ? true : false,
-    suffix: suffix,
-    suffixBlock: suffix ? true : false,
-    customBlocks: customBlocks,
-    missingEnvProperties: missingEnvProperties,
-    missingEnvPropertiesBlock: missingEnvProperties.length > 0 ? true : false
+  const blocks = createMessageBlocks({
+    title,
+    prefix,
+    suffix,
+    buildInfo,
+    missingEnvProperties,
+    customBlocks
   });
 
-  const notification: string[] = []
-  notification.push(title)
-
-  if (environment) {
-    const { buildName, buildNumber } = environment;
-    if (buildName && buildNumber) {
-      notification.push(`${buildName} #${buildNumber}`)
-    }
-  }
-
-  notification.push(name)
-
-  return {
-    attachments: [
-      {
-        fallback: notification.join('\n'),
-        color: COLORS.FAILED,
-        blocks: blocks
-      }
-    ]
-  };
+  return createSlackMessage(blocks, COLORS.FAILED, title, environment, name);
 };
 
 function handleBuildInfo(environment: CtrfEnvironment | undefined): { buildInfo: string, missingEnvProperties: string[] } {
@@ -489,92 +184,9 @@ function handleBuildInfo(environment: CtrfEnvironment | undefined): { buildInfo:
     buildInfo: MESSAGES.NO_BUILD_INFO,
     missingEnvProperties
   };
-}
+};
 
-interface BlockBuilderOptions {
-  title: string;
-  prefix?: string | null;
-  suffix?: string | null;
-  buildInfo: string;
-  missingEnvProperties: string[];
-  titleBlock?: boolean;
-  prefixBlock?: boolean;
-  suffixBlock?: boolean;
-  missingEnvPropertiesBlock?: boolean;
-  customBlocks?: any[];
-}
-
-function blockBuilder(blocks: any[], options: Partial<BlockBuilderOptions>): any[] {
-  const defaultOptions: BlockBuilderOptions = {
-    title: "Test Results",
-    prefix: null,
-    suffix: null,
-    buildInfo: "",
-    missingEnvProperties: [],
-    titleBlock: true,
-    prefixBlock: false,
-    suffixBlock: false,
-    missingEnvPropertiesBlock: true,
-    customBlocks: []
-  };
-
-  const mergedOptions = { ...defaultOptions, ...options };
-
-  if (mergedOptions.titleBlock) {
-    blocks.push({
-      type: BLOCK_TYPES.HEADER,
-      text: {
-        type: TEXT_TYPES.PLAIN_TEXT,
-        text: mergedOptions.title,
-        emoji: true
-      }
-    });
-  }
-
-  if (mergedOptions.prefixBlock && mergedOptions.prefix) {
-    blocks.push({
-      type: BLOCK_TYPES.SECTION,
-      text: {
-        type: TEXT_TYPES.MRKDWN,
-        text: mergedOptions.prefix
-      }
-    });
-  }
-
-  const customBlocks = mergedOptions.customBlocks || [];
-  if (customBlocks.length > 0) {
-    blocks.push(...customBlocks);
-  }
-
-  if (mergedOptions.suffixBlock && mergedOptions.suffix) {
-    blocks.push({
-      type: BLOCK_TYPES.SECTION,
-      text: {
-        type: TEXT_TYPES.MRKDWN,
-        text: mergedOptions.suffix
-      }
-    });
-  }
-
-  if (mergedOptions.missingEnvPropertiesBlock && mergedOptions.missingEnvProperties.length > 0) {
-    blocks.push({
-      type: BLOCK_TYPES.SECTION,
-      text: {
-        type: TEXT_TYPES.MRKDWN,
-        text: formatString(MESSAGES.MISSING_ENV_WARNING, mergedOptions.missingEnvProperties.join(', '))
-      }
-    });
-  }
-
-  blocks.push({
-    type: BLOCK_TYPES.CONTEXT,
-    elements: [
-      {
-        type: TEXT_TYPES.MRKDWN,
-        text: MESSAGES.FOOTER_TEXT
-      }
-    ]
-  });
-
-  return blocks;
-}
+function normalizeOptions(defaultTitle: string, options?: Options): { title: string, prefix: string | null, suffix: string | null } {
+  const { title = defaultTitle, prefix = null, suffix = null } = options || {};
+  return { title, prefix, suffix };
+};

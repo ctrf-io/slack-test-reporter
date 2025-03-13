@@ -18,12 +18,7 @@ export async function sendTestResultsToSlack(
         return;
     }
 
-    const message = formatResultsMessage(report, {
-        ...options,
-        title: options.title ?? "Test Results",
-        prefix: options.prefix ?? "",
-        suffix: options.suffix ?? ""
-    });
+    const message = formatResultsMessage(report, options);
 
     await sendSlackMessage(message);
     logs && console.log('Test results message sent to Slack.');
@@ -45,12 +40,7 @@ export async function sendFailedResultsToSlack(
     report = stripAnsiFromErrors(report);
 
     if (options.consolidated) {
-        const message = formatConsolidatedFailedTestSummary(report.results.tests, report.results.environment, {
-            ...options,
-            title: options.title ?? "Failed Test Results",
-            prefix: options.prefix ?? "",
-            suffix: options.suffix ?? ""
-        });
+        const message = formatConsolidatedFailedTestSummary(report.results.tests, report.results.environment, options);
         if (message) {
             await sendSlackMessage(message);
             logs && console.log('Failed test summary sent to Slack.');
@@ -81,12 +71,7 @@ export async function sendFlakyResultsToSlack(
         process.env.SLACK_WEBHOOK_URL = options.token;
     }
 
-    const message = formatFlakyTestsMessage(report, {
-        ...options,
-        title: options.title ?? "Flaky Tests",
-        prefix: options.prefix ?? "",
-        suffix: options.suffix ?? ""
-    });
+    const message = formatFlakyTestsMessage(report, options);
     if (message) {
         await sendSlackMessage(message);
         logs && console.log('Flaky tests message sent to Slack.');
@@ -105,12 +90,7 @@ export async function sendAISummaryToSlack(
     }
 
     if (options.consolidated) {
-        const message = formatConsolidatedAiTestSummary(report.results.tests, report.results.environment, {
-            ...options,
-            title: options.title ?? "AI Test Summary",
-            prefix: options.prefix ?? "",
-            suffix: options.suffix ?? ""
-        });
+        const message = formatConsolidatedAiTestSummary(report.results.tests, report.results.environment, options);
         if (message) {
             await sendSlackMessage(message);
             logs && console.log('AI test summary sent to Slack.');
