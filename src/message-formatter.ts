@@ -4,22 +4,10 @@ import {
   type CtrfTest,
 } from './types/ctrf'
 import { type Options } from './types/reporter'
-import {
-  BLOCK_TYPES,
-  COLORS,
-  EMOJIS,
-  LIMITS,
-  MESSAGES,
-  NOTICES,
-  TEST_STATUS,
-  TEXT_TYPES,
-  TITLES,
-  formatString,
-} from './constants'
+import { COLORS, MESSAGES, TEST_STATUS, TITLES } from './constants'
 import {
   createTestResultBlocks,
   createMessageBlocks,
-  createSlackMessage,
   createFlakyTestBlocks,
   createSingleAiTestBlocks,
   createAiTestBlocks,
@@ -45,7 +33,6 @@ export const formatResultsMessage = (
     title,
     prefix,
     suffix,
-    buildInfo,
     missingEnvProperties,
     customBlocks,
   })
@@ -83,7 +70,6 @@ export const formatFlakyTestsMessage = (
     title,
     prefix,
     suffix,
-    buildInfo,
     missingEnvProperties,
     customBlocks,
   })
@@ -113,13 +99,12 @@ export const formatAiTestSummary = (
     return null
   }
 
-  const customBlocks = createSingleAiTestBlocks(name, ai, buildInfo)
+  const customBlocks = createSingleAiTestBlocks(name, ai)
 
   const blocks = createMessageBlocks({
     title,
     prefix,
     suffix,
-    buildInfo,
     missingEnvProperties,
     customBlocks,
   })
@@ -151,7 +136,6 @@ export const formatConsolidatedAiTestSummary = (
     title,
     prefix,
     suffix,
-    buildInfo,
     missingEnvProperties,
     customBlocks,
   })
@@ -181,7 +165,6 @@ export const formatConsolidatedFailedTestSummary = (
     title,
     prefix,
     suffix,
-    buildInfo,
     missingEnvProperties,
     customBlocks,
   })
@@ -211,12 +194,43 @@ export const formatFailedTestSummary = (
     title,
     prefix,
     suffix,
-    buildInfo,
     missingEnvProperties,
     customBlocks,
   })
 
   return createSlackMessage(blocks, COLORS.FAILED, title, environment, name)
+}
+
+export function createSlackMessage(
+  blocks: any[],
+  color: string,
+  title: string,
+  environment?: CtrfEnvironment,
+  additionalInfo?: string
+): object {
+  const notification: string[] = []
+  notification.push(title)
+
+  if (environment) {
+    const { buildName, buildNumber } = environment
+    if (buildName && buildNumber) {
+      notification.push(`${buildName} #${buildNumber}`)
+    }
+  }
+
+  if (additionalInfo) {
+    notification.push(additionalInfo)
+  }
+
+  return {
+    attachments: [
+      {
+        fallback: notification.join('\n'),
+        color,
+        blocks,
+      },
+    ],
+  }
 }
 
 function handleBuildInfo(environment: CtrfEnvironment | undefined): {

@@ -15,6 +15,21 @@ If you don't see your idea listed, and you think it fits into the goals of this 
 - If your contribution is minor, such as a typo fix, open a pull request.
 - If your contribution is major, or you have not yet decided how to implement your idea, open an issue to discuss it. This allows other contributors to point out any potential flaws or to help you flesh out your idea.
 
+### Development
+
+```bash
+git clone https://github.com/ctrf-io/slack-test-reporter.git
+cd slack-test-reporter
+npm install
+npm run build
+```
+
+### Testing
+
+```bash
+npm run all
+```
+
 ### Pull Requests
 
 1. Fork the repository and create your branch from `main`.

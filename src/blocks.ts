@@ -7,7 +7,7 @@ import {
   LIMITS,
   NOTICES,
 } from './constants'
-import { type CtrfTest, type CtrfEnvironment } from './types/ctrf'
+import { type CtrfTest } from './types/ctrf'
 
 export function createTestResultBlocks(summary: any, buildInfo: string): any[] {
   const { passed, failed, skipped, pending, other, tests } = summary
@@ -181,7 +181,6 @@ export function createMessageBlocks(options: {
   title: string
   prefix?: string | null
   suffix?: string | null
-  buildInfo: string
   missingEnvProperties: string[]
   customBlocks: any[]
 }): any[] {
@@ -254,38 +253,6 @@ export function createMessageBlocks(options: {
   return blocks
 }
 
-export function createSlackMessage(
-  blocks: any[],
-  color: string,
-  title: string,
-  environment?: CtrfEnvironment,
-  additionalInfo?: string
-): object {
-  const notification: string[] = []
-  notification.push(title)
-
-  if (environment) {
-    const { buildName, buildNumber } = environment
-    if (buildName && buildNumber) {
-      notification.push(`${buildName} #${buildNumber}`)
-    }
-  }
-
-  if (additionalInfo) {
-    notification.push(additionalInfo)
-  }
-
-  return {
-    attachments: [
-      {
-        fallback: notification.join('\n'),
-        color,
-        blocks,
-      },
-    ],
-  }
-}
-
 export function createFlakyTestBlocks(
   flakyTests: CtrfTest[],
   buildInfo: string
@@ -312,8 +279,7 @@ export function createFlakyTestBlocks(
 
 export function createSingleAiTestBlocks(
   testName: string,
-  aiSummary: string,
-  buildInfo: string
+  aiSummary: string
 ): any[] {
   const formattedAiSummary = formatString(MESSAGES.AI_SUMMARY, aiSummary)
 
