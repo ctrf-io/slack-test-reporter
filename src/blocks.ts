@@ -34,7 +34,24 @@ export function createTestResultBlocks(
           MESSAGES.DURATION_FORMAT,
           new Date(durationInSeconds * 1000).toISOString().substring(11, 19)
         )
-  const testSummary = `${EMOJIS.TEST_TUBE} ${tests} | ${EMOJIS.CHECK_MARK} ${passed} | ${EMOJIS.X_MARK} ${failed} | ${EMOJIS.FAST_FORWARD} ${skipped} | ${EMOJIS.HOURGLASS} ${pending} | ${EMOJIS.QUESTION} ${other}${flakyCount > 0 ? ` | ${EMOJIS.FALLEN_LEAF} ${flakyCount}` : ''}`
+
+  let testSummary = `${EMOJIS.TEST_TUBE} ${tests} | ${EMOJIS.CHECK_MARK} ${passed} | ${EMOJIS.X_MARK} ${failed}`
+
+  if (skipped > 0) {
+    testSummary += ` | ${EMOJIS.FAST_FORWARD} ${skipped}`
+  }
+
+  if (pending > 0) {
+    testSummary += ` | ${EMOJIS.HOURGLASS} ${pending}`
+  }
+
+  if (other > 0) {
+    testSummary += ` | ${EMOJIS.QUESTION} ${other}`
+  }
+
+  if (flakyCount > 0) {
+    testSummary += ` | ${EMOJIS.FALLEN_LEAF} ${flakyCount}`
+  }
 
   return [
     {
