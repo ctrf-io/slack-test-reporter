@@ -133,7 +133,7 @@ export async function sendAISummaryToSlack(
     process.env.SLACK_WEBHOOK_URL = options.token
   }
 
-  if (options.consolidated !== undefined) {
+  if (options.consolidated !== undefined && options.consolidated) {
     const message = formatConsolidatedAiTestSummary(
       report.results.tests,
       report.results.environment,
