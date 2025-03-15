@@ -174,7 +174,7 @@ Read about compatible [markdown](https://api.slack.com/reference/surfaces/format
 
 You can tag users, channels or groups in the message by using the `--prefix` or `--suffix` options.
 
-You need to a Slack user ID, channel ID or group ID. 
+You need to a Slack user ID, channel ID or group ID.
 
 You can find your user ID by:
 
@@ -239,9 +239,9 @@ The package exports the following functions:
 - `sendAISummaryToSlack`
 
 ```ts
-import { sendTestResultsToSlack } from 'slack-ctrf';
+import { sendTestResultsToSlack } from 'slack-ctrf'
 
-sendTestResultsToSlack(report);
+sendTestResultsToSlack(report)
 ```
 
 ## What is CTRF?

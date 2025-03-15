@@ -1,8 +1,13 @@
 #!/usr/bin/env node
-import yargs from 'yargs/yargs';
-import { hideBin } from 'yargs/helpers';
-import { parseCtrfFile } from './ctrf-parser';
-import { sendAISummaryToSlack, sendFailedResultsToSlack, sendFlakyResultsToSlack, sendTestResultsToSlack } from './slack-reporter';
+import yargs from 'yargs/yargs'
+import { hideBin } from 'yargs/helpers'
+import { parseCtrfFile } from './ctrf-parser'
+import {
+  sendAISummaryToSlack,
+  sendFailedResultsToSlack,
+  sendFlakyResultsToSlack,
+  sendTestResultsToSlack,
+} from './slack-reporter'
 
 const sharedOptions = {
   title: {
@@ -22,7 +27,7 @@ const sharedOptions = {
     description: 'Custom text to add as a suffix to the message',
     default: '',
   },
-} as const;
+} as const
 
 const consolidatedOption = {
   consolidated: {
@@ -31,8 +36,9 @@ const consolidatedOption = {
     description: 'Consolidate all failure summaries into a single message',
     default: false,
   },
-} as const;
+} as const
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const argv = yargs(hideBin(process.argv))
   .command(
     'results <path>',
@@ -54,10 +60,19 @@ const argv = yargs(hideBin(process.argv))
     },
     async (argv) => {
       try {
-        const report = parseCtrfFile(argv.path as string);
-        await sendTestResultsToSlack(report, { title: argv.title, prefix: argv.prefix, suffix: argv.suffix, onFailOnly: argv.onFailOnly }, true);
+        const report = parseCtrfFile(argv.path)
+        await sendTestResultsToSlack(
+          report,
+          {
+            title: argv.title,
+            prefix: argv.prefix,
+            suffix: argv.suffix,
+            onFailOnly: argv.onFailOnly,
+          },
+          true
+        )
       } catch (error: any) {
-        console.error('Error:', error.message);
+        console.error('Error:', error.message)
       }
     }
   )
@@ -65,39 +80,55 @@ const argv = yargs(hideBin(process.argv))
     'failed <path>',
     'Send failed test results to Slack',
     (yargs) => {
-      return yargs.positional('path', {
-        describe: 'Path to the CTRF file',
-        type: 'string',
-        demandOption: true,
-      })
-      .options(sharedOptions)
-      .option(consolidatedOption)
+      return yargs
+        .positional('path', {
+          describe: 'Path to the CTRF file',
+          type: 'string',
+          demandOption: true,
+        })
+        .options(sharedOptions)
+        .option(consolidatedOption)
     },
     async (argv) => {
       try {
-        const report = parseCtrfFile(argv.path as string)
-        await sendFailedResultsToSlack(report, { title: argv.title, prefix: argv.prefix, suffix: argv.suffix, consolidated: argv.consolidated }, true);
+        const report = parseCtrfFile(argv.path)
+        await sendFailedResultsToSlack(
+          report,
+          {
+            title: argv.title,
+            prefix: argv.prefix,
+            suffix: argv.suffix,
+            consolidated: argv.consolidated,
+          },
+          true
+        )
       } catch (error: any) {
-        console.error('Error:', error.message);
+        console.error('Error:', error.message)
       }
-    })
+    }
+  )
   .command(
     'flaky <path>',
     'Send flaky test results to Slack',
     (yargs) => {
-      return yargs.positional('path', {
-        describe: 'Path to the CTRF file',
-        type: 'string',
-        demandOption: true,
-      })
-      .options(sharedOptions)
+      return yargs
+        .positional('path', {
+          describe: 'Path to the CTRF file',
+          type: 'string',
+          demandOption: true,
+        })
+        .options(sharedOptions)
     },
     async (argv) => {
       try {
-        const report = parseCtrfFile(argv.path as string);
-        await sendFlakyResultsToSlack(report, { title: argv.title, prefix: argv.prefix, suffix: argv.suffix }, true);
+        const report = parseCtrfFile(argv.path)
+        await sendFlakyResultsToSlack(
+          report,
+          { title: argv.title, prefix: argv.prefix, suffix: argv.suffix },
+          true
+        )
       } catch (error: any) {
-        console.error('Error:', error.message);
+        console.error('Error:', error.message)
       }
     }
   )
@@ -105,22 +136,31 @@ const argv = yargs(hideBin(process.argv))
     'ai <path>',
     'Send ai failed test summary for each failed test to Slack',
     (yargs) => {
-      return yargs.positional('path', {
-        describe: 'Path to the CTRF file',
-        type: 'string',
-        demandOption: true,
-      })
-      .options(sharedOptions)
-      .option(consolidatedOption)
+      return yargs
+        .positional('path', {
+          describe: 'Path to the CTRF file',
+          type: 'string',
+          demandOption: true,
+        })
+        .options(sharedOptions)
+        .option(consolidatedOption)
     },
     async (argv) => {
       try {
-        const report = parseCtrfFile(argv.path as string);
-        await sendAISummaryToSlack(report, { title: argv.title, prefix: argv.prefix, suffix: argv.suffix, consolidated: argv.consolidated }, true);
+        const report = parseCtrfFile(argv.path)
+        await sendAISummaryToSlack(
+          report,
+          {
+            title: argv.title,
+            prefix: argv.prefix,
+            suffix: argv.suffix,
+            consolidated: argv.consolidated,
+          },
+          true
+        )
       } catch (error: any) {
-        console.error('Error:', error.message);
+        console.error('Error:', error.message)
       }
     }
   )
-  .help()
-  .argv;
+  .help().argv
