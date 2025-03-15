@@ -54,6 +54,8 @@ jobs:
           previous-results-report: true
           insights-report: true
           slowest-report: true
+          artifact: true
+          upload-artifact: true
         if: always()
       - name: Post Results to Pull Request
         uses: ctrf-io/github-test-reporter@v1
@@ -61,3 +63,4 @@ jobs:
           report-path: ctrf/*.json
           pull-request-report: true
           summary-report: false
+          annotate: false
