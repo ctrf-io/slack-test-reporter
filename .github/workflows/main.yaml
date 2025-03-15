@@ -51,9 +51,9 @@ jobs:
           fail-rate-report: false
           flaky-report: false
           flaky-rate-report: false
-          previous-results-report: false
-          insights-report: false
-          slowest-report: false
+          previous-results-report: true
+          insights-report: true
+          slowest-report: true
         if: always()
       - name: Post Results to Pull Request
         uses: ctrf-io/github-test-reporter@v1
