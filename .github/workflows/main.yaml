@@ -44,7 +44,7 @@ jobs:
       - name: Publish Test Results
         uses: ctrf-io/github-test-reporter@v1
         with:
-          ctrf-path: ctrf/*.json
+          report-path: ctrf/*.json
           summary-report: true
           test-report: false
           failed-report: false
@@ -58,6 +58,6 @@ jobs:
       - name: Post Results to Pull Request
         uses: ctrf-io/github-test-reporter@v1
         with:
-          ctrf-path: ctrf/*.json
+          report-path: ctrf/*.json
           pull-request-report: true
           summary-report: false
