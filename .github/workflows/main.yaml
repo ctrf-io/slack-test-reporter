@@ -54,7 +54,6 @@ jobs:
           previous-results-report: true
           insights-report: true
           slowest-report: true
-          artifact: true
           upload-artifact: true
         if: always()
       - name: Post Results to Pull Request
