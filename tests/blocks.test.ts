@@ -91,11 +91,17 @@ describe('Blocks', () => {
         start: 1706644023000,
         stop: 1706644024000,
       }
-      
-      const flakyCount = 3
-      const blocks = createTestResultBlocks(mockSummary, mockBuildInfo, flakyCount)
 
-      expect(blocks[0].text.text).toContain(`${EMOJIS.FALLEN_LEAF} ${flakyCount}`)
+      const flakyCount = 3
+      const blocks = createTestResultBlocks(
+        mockSummary,
+        mockBuildInfo,
+        flakyCount
+      )
+
+      expect(blocks[0].text.text).toContain(
+        `${EMOJIS.FALLEN_LEAF} ${flakyCount}`
+      )
     })
   })
 

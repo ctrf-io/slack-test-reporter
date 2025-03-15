@@ -108,7 +108,7 @@ export function createFailedTestBlocks(
       type: BLOCK_TYPES.SECTION,
       text: {
         type: TEXT_TYPES.MRKDWN,
-        text: `${failSummary}`,
+        text: `${failSummary.trim() !== '' ? '```' + failSummary + '```' : failSummary}`,
       },
     })
   })
@@ -361,7 +361,7 @@ export function createSingleFailedTestBlocks(
         ) + NOTICES.TRIMMED_MESSAGE
       : (message ?? MESSAGES.NO_MESSAGE_PROVIDED)
 
-  const failSummaryText = `*Message:* ${enrichedMessage}`
+  const failSummaryText = `*Message:*\n${enrichedMessage.trim() !== '' ? '```' + enrichedMessage + '```' : enrichedMessage}`
 
   return [
     {

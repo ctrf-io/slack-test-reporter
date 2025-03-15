@@ -33,7 +33,7 @@ export const formatResultsMessage = (
   )
   const { buildInfo, missingEnvProperties } = handleBuildInfo(environment)
 
-  const flakyCount = tests.filter(test => test.flaky).length
+  const flakyCount = tests.filter((test) => test.flaky).length
 
   const customBlocks = createTestResultBlocks(summary, buildInfo, flakyCount)
 
