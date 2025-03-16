@@ -20,7 +20,6 @@ export function generateMarkdown(
  * Compiles a Handlebars template with the provided data.
  *
  * - Registers all necessary Handlebars helpers before compiling.
- * - Combines CTRF report data and GitHub context into a single context object.
  * - Uses the provided template source to generate markdown output.
  *
  * @param templateSource - The source string of the Handlebars template.
