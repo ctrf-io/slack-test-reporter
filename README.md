@@ -35,6 +35,8 @@ Explore more <a href="https://www.ctrf.io/integrations">integrations</a>
 - **Send Test Results to Slack**: Automatically send test results to a Slack channel.
 - **Send Flaky Test Details to Slack**: Automatically send flaky test details to a Slack channel.
 - **Send AI Test Summary to Slack**: Automatically send AI test summary to a Slack channel.
+- **Send Failed Test Details to Slack**: Automatically send failed test details to a Slack channel.
+- **Build your own Slack message**: Create and customize your own Slack test reports with our flexible templating system.
 - **Tagging**: Tag users, channels and groups in the message.
 - **Conditional Notifications**: Use the `--onFailOnly` option to send notifications only if tests fail.
 
@@ -132,7 +134,109 @@ npx slack-ctrf failed /path/to/ctrf-report.json --consolidated
 
 ![Failed view](assets/failed.png)
 
-### Send Only on Failures
+## Build your own Slack message
+
+The `custom` method lets you build your own report using a Handlebars
+template allowing you to leverage data from your CTRF report to build a dynamic Slack message. The template can be a Block Kit JSON or Slack flavored markdown context block.
+
+To send a message to Slack using a custom Handlebars template:
+
+```sh
+npx slack-ctrf custom /path/to/ctrf-report.json /path/to/template.hbs --blockkit
+```
+
+```sh
+npx slack-ctrf custom /path/to/ctrf-report.json /path/to/template.hbs --markdown
+```
+
+The template has access to the entire CTRF report data through the `ctrf` variable. For example:
+
+```handlebars
+Tests: {{ctrf.summary.tests}}
+```
+
+```markdown
+Tests: 100
+```
+
+### Block Kit JSON
+
+Provide a Block Kit JSON template to the `--blockkit` option. See the [Slack Block Kit Documentation](https://api.slack.com/block-kit) and [Slack Block Kit Builder](https://api.slack.com/tools/block-kit-builder) for help creating a template.
+
+The Block Kit JSON template can include Handlebars syntax to access test report data. For example:
+
+```json
+{
+  "blocks": [
+    {
+      "type": "header",
+      "text": {
+        "type": "plain_text",
+        "text": "Test Results: {{ctrf.summary.total}} tests run"
+      }
+    },
+    {
+      "type": "section",
+      "text": {
+        "type": "mrkdwn",
+        "text": "*Passed:* {{ctrf.summary.passed}}\n*Failed:* {{ctrf.summary.failed}}"
+      }
+    }
+  ]
+}
+```
+
+See the [templates](templates) directory for examples.
+
+### Slack Flavored Markdown
+
+Provide a Slack flavored markdown template to the `--markdown` option. See the [Slack Flavored Markdown Documentation](https://api.slack.com/block-kit) for help creating a template.
+
+See the [templates](templates) directory for examples.
+
+### Handlebars
+
+Handlebars is a simple templating language that lets you insert data into your
+message in a declarative way. You can use placeholders, conditionals, and loops
+to dynamically generate content based on your test results.
+
+## CTRF Properties
+
+The `ctrf` object provides access to your test results data. Here are the common
+properties:
+
+### Summary (`ctrf.summary`)
+
+- `tests`: Total number of tests
+- `passed`: Number of passed tests
+- `failed`: Number of failed tests
+- `skipped`: Number of skipped tests
+- `start`: Test suite start time
+- `stop`: Test suite end time
+
+### Individual Tests (`ctrf.tests`)
+
+An array of test results, each containing:
+
+- `name`: Test name
+- `status`: Test status ("passed", "failed", "skipped")
+- `message`: Test output/error message
+- `duration`: Test duration in milliseconds
+- `retries`: Number of retries (for flaky tests)
+
+Example accessing test data:
+
+```hbs
+{{#each ctrf.tests}}
+  Test: {{this.name}} - Status: {{this.status}}
+{{/each}}
+```
+
+### Helpers
+
+The template can include helpers to format the data. See the [handlebars built-in helpers](https://handlebarsjs.com/guide/#helpers) and custom [helpers](src/handlebars/helpers) directory for the available helpers.
+
+## Send Only on Failures
 
 To send the test results summary to Slack only if there are failed tests, use the `--onFailOnly` option:
 
@@ -146,7 +250,7 @@ or using the alias:
 npx slack-ctrf results /path/to/ctrf-file.json -f
 ```
 
-### Custom Notification Title
+## Custom Notification Title
 
 You can choose a custom title for your notification, use the `--title` option:
 
@@ -160,7 +264,7 @@ or using the alias:
 npx slack-ctrf results /path/to/ctrf-file.json -t "Custom Title"
 ```
 
-### Add Prefix and Suffix
+## Add Prefix and Suffix
 
 Add custom markdown text to as a prefix, or suffix to the message:
 
@@ -170,7 +274,7 @@ npx slack-ctrf results /path/to/ctrf-file.json -p "prefix" -s "suffix"
 
 Read about compatible [markdown](https://api.slack.com/reference/surfaces/formatting#basic-formatting)
 
-### Tagging a user, channel or group
+## Tagging a user, channel or group
 
 You can tag users, channels or groups in the message by using the `--prefix` or `--suffix` options.
 
@@ -237,23 +341,5 @@ The package exports the following functions:
 - `sendFlakyResultsToSlack`
 - `sendFailedResultsToSlack`
 - `sendAISummaryToSlack`
-
-```ts
-import { sendTestResultsToSlack } from 'slack-ctrf'
-
-sendTestResultsToSlack(report)
-```
-
-## What is CTRF?
-
-CTRF is a universal JSON test report schema that addresses the lack of a standardized format for JSON test reports.
-
-**Consistency Across Tools:** Different testing tools and frameworks often produce reports in varied formats. CTRF ensures a uniform structure, making it easier to understand and compare reports, regardless of the testing tool used.
-
-**Language and Framework Agnostic:** It provides a universal reporting schema that works seamlessly with any programming language and testing framework.
-
-**Facilitates Better Analysis:** With a standardized format, programatically analyzing test outcomes across multiple platforms becomes more straightforward.
-
-## Support Us
-
-If you find this project useful, consider giving it a GitHub star ⭐ It means a lot to us.
+- `sendCustomMarkdownTemplateToSlack`
+- `sendCustomBlockKitTemplateToSlack`

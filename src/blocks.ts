@@ -239,14 +239,16 @@ export function createMessageBlocks(options: {
 
   const blocks: any[] = []
 
-  blocks.push({
-    type: BLOCK_TYPES.HEADER,
-    text: {
-      type: TEXT_TYPES.PLAIN_TEXT,
-      text: title,
-      emoji: true,
-    },
-  })
+  if (title !== '' && title !== null) {
+    blocks.push({
+      type: BLOCK_TYPES.HEADER,
+      text: {
+        type: TEXT_TYPES.PLAIN_TEXT,
+        text: title,
+        emoji: true,
+      },
+    })
+  }
 
   if (prefix !== '' && prefix !== null) {
     blocks.push({

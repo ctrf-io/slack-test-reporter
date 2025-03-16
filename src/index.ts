@@ -3,6 +3,8 @@ import {
   sendFailedResultsToSlack,
   sendFlakyResultsToSlack,
   sendAISummaryToSlack,
+  sendCustomMarkdownTemplateToSlack,
+  sendCustomBlockKitTemplateToSlack,
 } from './slack-reporter'
 
 export {
@@ -10,6 +12,8 @@ export {
   sendFailedResultsToSlack,
   sendFlakyResultsToSlack,
   sendAISummaryToSlack,
+  sendCustomMarkdownTemplateToSlack,
+  sendCustomBlockKitTemplateToSlack,
 }
 
 export * from './types'

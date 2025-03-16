@@ -1,0 +1,33 @@
+*Custom Test Report*
+
+*Summary*
+• Total: {{ctrf.summary.tests}}
+• Passed: {{ctrf.summary.passed}}
+• Failed: {{ctrf.summary.failed}}
+• Skipped: {{ctrf.summary.skipped}}
+• Duration: {{subtract ctrf.summary.stop ctrf.summary.start}}ms
+
+{{#if ctrf.summary.failed}}
+*Failed Tests*
+{{#each ctrf.tests}}
+{{#if (eq this.status "failed")}}
+• *{{this.name}}*
+  - Duration: {{this.duration}}ms
+  - Error: {{this.message}}
+{{/if}}
+{{/each}}
+{{/if}}
+
+{{#if ctrf.summary.flaky}}
+*Flaky Tests*
+{{#each ctrf.tests}}
+{{#if this.flaky}}
+• *{{this.name}}*
+  - Duration: {{this.duration}}ms
+{{/if}}
+{{/each}}
+{{/if}}
+
+*Environment*
+• Branch: {{ctrf.environment.branchName}}
+• Build URL: {{ctrf.environment.buildUrl}} 

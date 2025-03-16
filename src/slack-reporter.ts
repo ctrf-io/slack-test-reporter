@@ -5,11 +5,14 @@ import {
   formatFlakyTestsMessage,
   formatConsolidatedAiTestSummary,
   formatConsolidatedFailedTestSummary,
+  formatCustomMarkdownMessage,
+  formatCustomBlockKitMessage,
 } from './message-formatter'
 import { sendSlackMessage } from './client'
 import { type Options } from './types/reporter'
 import { type CtrfReport } from './types/ctrf'
 import { stripAnsiFromErrors } from './utils/common'
+import { compileTemplate } from './handlebars/core'
 
 /**
  * Send the test results to Slack
@@ -161,5 +164,95 @@ export async function sendAISummaryToSlack(
         }
       }
     }
+  }
+}
+
+/**
+ * Send a message to Slack using a custom Handlebars template
+ * @param report - The CTRF report
+ * @param templateContent - The Handlebars template content
+ * @param options - The options for the message
+ * @param logs - Whether to log the message
+ */
+export async function sendCustomMarkdownTemplateToSlack(
+  report: CtrfReport,
+  templateContent: string,
+  options: Options = {},
+  logs: boolean = false
+): Promise<void> {
+  if (options.token !== undefined) {
+    process.env.SLACK_WEBHOOK_URL = options.token
+  }
+  if (
+    options.onFailOnly !== undefined &&
+    options.onFailOnly &&
+    report.results.summary.failed === 0
+  ) {
+    logs && console.log('No failed tests. Message not sent.')
+    return
+  }
+  report = stripAnsiFromErrors(report)
+
+  const compiledContent = compileTemplate(templateContent, report)
+
+  const message = formatCustomMarkdownMessage(
+    report,
+    compiledContent,
+    report.results.environment,
+    options
+  )
+
+  if (message !== null) {
+    await sendSlackMessage(message)
+    logs && console.log('Custom template message sent to Slack.')
+  } else {
+    logs && console.log('No custom message detected. No message sent.')
+  }
+}
+
+/**
+ * Send a custom Block Kit JSON template to Slack
+ * @param report - The CTRF report
+ * @param blockKitJson - The Block Kit JSON template content
+ * @param options - The options for the message
+ * @param logs - Whether to log the message
+ */
+export async function sendCustomBlockKitTemplateToSlack(
+  report: CtrfReport,
+  templateContent: string,
+  options: Options = {},
+  logs: boolean = false
+): Promise<void> {
+  if (options.token !== undefined) {
+    process.env.SLACK_WEBHOOK_URL = options.token
+  }
+  if (
+    options.onFailOnly !== undefined &&
+    options.onFailOnly &&
+    report.results.summary.failed === 0
+  ) {
+    logs && console.log('No failed tests. Message not sent.')
+    return
+  }
+
+  report = stripAnsiFromErrors(report)
+
+  const compiledContent = compileTemplate(templateContent, report)
+
+  const blockKit = JSON.parse(compiledContent)
+
+  if (blockKit.blocks.length === 0) {
+    logs && console.log('No blocks detected. No message sent.')
+    return
+  }
+
+  const message = formatCustomBlockKitMessage(report, blockKit)
+
+  if (message !== null) {
+    await sendSlackMessage(message)
+    logs && console.log('Custom Block Kit message sent to Slack.')
+  } else {
+    logs &&
+      console.log('No custom Block Kit message detected. No message sent.')
   }
 }
