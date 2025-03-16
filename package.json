@@ -29,6 +29,7 @@
     "@slack/web-api": "^6.9.0",
     "@slack/webhook": "^7.0.1",
     "ctrf": "^0.0.12",
+    "handlebars": "^4.7.8",
     "typescript": "^5.4.5",
     "yargs": "^17.7.2"
   },
