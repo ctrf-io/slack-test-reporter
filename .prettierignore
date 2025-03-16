@@ -1,0 +1,10 @@
+dist/
+node_modules/
+coverage/
+templates/
+reports/
+community-reports/
+.github/
+.exlintrc.js
+README.md
+docs/

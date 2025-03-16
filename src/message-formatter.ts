@@ -4,7 +4,14 @@ import {
   type CtrfTest,
 } from './types/ctrf'
 import { type Options } from './types/reporter'
-import { COLORS, MESSAGES, TEST_STATUS, TITLES } from './constants'
+import {
+  BLOCK_TYPES,
+  COLORS,
+  MESSAGES,
+  TEST_STATUS,
+  TEXT_TYPES,
+  TITLES,
+} from './constants'
 import {
   createTestResultBlocks,
   createMessageBlocks,
@@ -233,10 +240,7 @@ export const formatCustomMarkdownMessage = (
   environment: CtrfEnvironment | undefined,
   options?: Options
 ): object | null => {
-  const { title, prefix, suffix } = normalizeOptions(
-    '',
-    options
-  )
+  const { title, prefix, suffix } = normalizeOptions('', options)
   const { missingEnvProperties } = handleBuildInfo(environment)
 
   const customBlocks = [
@@ -257,7 +261,35 @@ export const formatCustomMarkdownMessage = (
     missingEnvProperties,
   })
 
-  return createSlackMessage(blocks, report.results.summary.failed > 0 ? COLORS.FAILED : COLORS.PASSED, title, environment)
+  return createSlackMessage(
+    blocks,
+    report.results.summary.failed > 0 ? COLORS.FAILED : COLORS.PASSED,
+    title,
+    environment
+  )
+}
+
+export const formatCustomBlockKitMessage = (
+  report: CtrfReport,
+  blockKit: any
+): object | null => {
+  blockKit.blocks.push({
+    type: BLOCK_TYPES.CONTEXT,
+    elements: [
+      {
+        type: TEXT_TYPES.MRKDWN,
+        text: MESSAGES.FOOTER_TEXT,
+      },
+    ],
+  })
+
+  return createSlackMessage(
+    blockKit.blocks,
+    report.results.summary.failed > 0 ? COLORS.FAILED : COLORS.PASSED,
+    '',
+    report.results.environment,
+    'Test Results'
+  )
 }
 
 export function createSlackMessage(

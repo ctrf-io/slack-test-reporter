@@ -7,7 +7,8 @@ import {
   sendFailedResultsToSlack,
   sendFlakyResultsToSlack,
   sendTestResultsToSlack,
-  sendCustomMardownTemplateToSlack,
+  sendCustomMarkdownTemplateToSlack,
+  sendCustomBlockKitTemplateToSlack,
 } from './slack-reporter'
 import fs from 'fs'
 
@@ -181,49 +182,66 @@ const argv = yargs(hideBin(process.argv))
           demandOption: true,
         })
         .options(sharedOptions)
+        .option('onFailOnly', {
+          alias: 'f',
+          type: 'boolean',
+          description: 'Send message only if there are failed tests',
+          default: false,
+        })
         .options({
           markdown: {
             alias: 'm',
             type: 'boolean',
             description: 'template is slack flavored markdown',
-            default: true,
+            default: false,
           },
-          blocks: {
+          blockkit: {
             alias: 'b',
             type: 'boolean',
-            description: 'template is blocks',
-            default: false,
+            description: 'template is Block Kit JSON format',
+            default: true,
           },
         })
         .group(['markdown', 'blocks'], 'Template Format:')
         .check((argv) => {
-          if (argv.blocks === true) {
-            argv.markdown = false;
+          if (argv.blockkit) {
+            argv.markdown = false
           }
-          return true;
+          return true
         })
     },
     async (argv) => {
       try {
         const report = parseCtrfFile(argv.path)
-        
+
         if (!fs.existsSync(argv.templatePath)) {
           throw new Error(`Template file not found: ${argv.templatePath}`)
         }
-        
-        // abstract to a function
+
         const templateContent = fs.readFileSync(argv.templatePath, 'utf-8')
-        
-        await sendCustomMardownTemplateToSlack(
-          report,
-          templateContent,
-          {
-            title: argv.title,
-            prefix: argv.prefix,
-            suffix: argv.suffix,
-          },
-          true
-        )
+
+        if (argv.blockkit) {
+          await sendCustomBlockKitTemplateToSlack(
+            report,
+            templateContent,
+            {
+              onFailOnly: argv.onFailOnly,
+            },
+            true
+          )
+        } else {
+          await sendCustomMarkdownTemplateToSlack(
+            report,
+            templateContent,
+            {
+              title: argv.title,
+              prefix: argv.prefix,
+              suffix: argv.suffix,
+              onFailOnly: argv.onFailOnly,
+            },
+            true
+          )
+        }
       } catch (error: any) {
         console.error('Error:', error.message)
       }

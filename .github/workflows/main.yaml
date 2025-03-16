@@ -41,6 +41,12 @@ jobs:
       - name: E2E failed tests consolidated
         run: npx ts-node src/cli.ts failed "ctrf/*.json" --consolidated
         if: always()
+      - name: E2E custom markdown
+        run: npx ts-node src/cli.ts custom "ctrf/*.json" "templates/custom-markdown.hbs" --markdown
+        if: always()
+      - name: E2E custom blockkit
+        run: npx ts-node src/cli.ts custom "ctrf/*.json" "templates/custom-blockkit.json" --blockkit
+        if: always()  
       - name: Publish Test Results
         uses: ctrf-io/github-test-reporter@v1
         with:

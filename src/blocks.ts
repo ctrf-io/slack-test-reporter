@@ -240,13 +240,13 @@ export function createMessageBlocks(options: {
   const blocks: any[] = []
 
   if (title !== '' && title !== null) {
-  blocks.push({
-    type: BLOCK_TYPES.HEADER,
-    text: {
-      type: TEXT_TYPES.PLAIN_TEXT,
-      text: title,
-      emoji: true,
-    },
+    blocks.push({
+      type: BLOCK_TYPES.HEADER,
+      text: {
+        type: TEXT_TYPES.PLAIN_TEXT,
+        text: title,
+        emoji: true,
+      },
     })
   }
 
