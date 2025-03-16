@@ -45,7 +45,7 @@ jobs:
         run: npx ts-node src/cli.ts custom "ctrf/*.json" "templates/markdown-template.hbs" --markdown
         if: always()
       - name: E2E custom blockkit
-        run: npx ts-node src/cli.ts custom "ctrf/*.json" "templates/blockkit-template.json" --blockkit
+        run: npx ts-node src/cli.ts custom "ctrf/*.json" "templates/blockkit-template.hbs" --blockkit
         if: always()  
       - name: Publish Test Results
         uses: ctrf-io/github-test-reporter@v1

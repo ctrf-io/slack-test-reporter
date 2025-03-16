@@ -35,6 +35,8 @@ Explore more <a href="https://www.ctrf.io/integrations">integrations</a>
 - **Send Test Results to Slack**: Automatically send test results to a Slack channel.
 - **Send Flaky Test Details to Slack**: Automatically send flaky test details to a Slack channel.
 - **Send AI Test Summary to Slack**: Automatically send AI test summary to a Slack channel.
+- **Send Failed Test Details to Slack**: Automatically send failed test details to a Slack channel.
+- **Build your own Slack message**: Create and customize your own Slack test reports with our flexible templating system.
 - **Tagging**: Tag users, channels and groups in the message.
 - **Conditional Notifications**: Use the `--onFailOnly` option to send notifications only if tests fail.
 
@@ -192,9 +194,47 @@ Provide a Slack flavored markdown template to the `--markdown` option. See the [
 
 See the [templates](templates) directory for examples.
 
+### Handlebars
+
+Handlebars is a simple templating language that lets you insert data into your
+message in a declarative way. You can use placeholders, conditionals, and loops
+to dynamically generate content based on your test results.
+
+## CTRF Properties
+
+The `ctrf` object provides access to your test results data. Here are the common
+properties:
+
+### Summary (`ctrf.summary`)
+
+- `tests`: Total number of tests
+- `passed`: Number of passed tests
+- `failed`: Number of failed tests
+- `skipped`: Number of skipped tests
+- `start`: Test suite start time
+- `stop`: Test suite end time
+
+### Individual Tests (`ctrf.tests`)
+
+An array of test results, each containing:
+
+- `name`: Test name
+- `status`: Test status ("passed", "failed", "skipped")
+- `message`: Test output/error message
+- `duration`: Test duration in milliseconds
+- `retries`: Number of retries (for flaky tests)
+
+Example accessing test data:
+
+```hbs
+{{#each ctrf.tests}}
+  Test: {{this.name}} - Status: {{this.status}}
+{{/each}}
+```
+
 ### Helpers
 
-The template can include helpers to format the data. See the [helpers](src/handlebars/helpers) directory for the available helpers.
+The template can include helpers to format the data. See the [handlebars built-in helpers](https://handlebarsjs.com/guide/#helpers) and custom [helpers](src/handlebars/helpers) directory for the available helpers.
 
 ## Send Only on Failures
 
