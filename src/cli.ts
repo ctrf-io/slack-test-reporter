@@ -204,8 +204,8 @@ const argv = yargs(hideBin(process.argv))
         })
         .group(['markdown', 'blocks'], 'Template Format:')
         .check((argv) => {
-          if (argv.blockkit) {
-            argv.markdown = false
+          if (argv.markdown) {
+            argv.blockkit = false
           }
           return true
         })
