@@ -42,10 +42,10 @@ jobs:
         run: npx ts-node src/cli.ts failed "ctrf/*.json" --consolidated
         if: always()
       - name: E2E custom markdown
-        run: npx ts-node src/cli.ts custom "ctrf/*.json" "templates/custom-markdown.hbs" --markdown
+        run: npx ts-node src/cli.ts custom "ctrf/*.json" "templates/markdown-template.hbs" --markdown
         if: always()
       - name: E2E custom blockkit
-        run: npx ts-node src/cli.ts custom "ctrf/*.json" "templates/custom-blockkit.json" --blockkit
+        run: npx ts-node src/cli.ts custom "ctrf/*.json" "templates/blockkit-template.json" --blockkit
         if: always()  
       - name: Publish Test Results
         uses: ctrf-io/github-test-reporter@v1
