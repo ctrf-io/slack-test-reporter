@@ -21,7 +21,7 @@ import {
 } from './ctrf'
 import { formatMessageHelper, stripAnsiHelper } from './ansi'
 import { reverseArray, sliceArrayHelper } from './array'
-import { addHelper } from './math'
+import { addHelper, subtractHelper } from './math'
 
 export function registerAllHelpers(): void {
   formatDurationStartStopToHumanHelper()
@@ -43,6 +43,7 @@ export function registerAllHelpers(): void {
   sliceStringHelper()
   convertTimestamp()
   addHelper()
+  subtractHelper()
   anyFlakyTestsHelper()
   anyFailedTestsHelper()
   anySkippedTestsHelper()

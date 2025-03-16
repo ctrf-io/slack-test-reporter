@@ -7,7 +7,9 @@ import {
   sendFailedResultsToSlack,
   sendFlakyResultsToSlack,
   sendTestResultsToSlack,
+  sendCustomMardownTemplateToSlack,
 } from './slack-reporter'
+import fs from 'fs'
 
 const sharedOptions = {
   title: {
@@ -155,6 +157,70 @@ const argv = yargs(hideBin(process.argv))
             prefix: argv.prefix,
             suffix: argv.suffix,
             consolidated: argv.consolidated,
+          },
+          true
+        )
+      } catch (error: any) {
+        console.error('Error:', error.message)
+      }
+    }
+  )
+  .command(
+    'custom <path> <templatePath>',
+    'Send a message to Slack using a custom Handlebars template',
+    (yargs) => {
+      return yargs
+        .positional('path', {
+          describe: 'Path to the CTRF file',
+          type: 'string',
+          demandOption: true,
+        })
+        .positional('templatePath', {
+          describe: 'Path to the Handlebars template file',
+          type: 'string',
+          demandOption: true,
+        })
+        .options(sharedOptions)
+        .options({
+          markdown: {
+            alias: 'm',
+            type: 'boolean',
+            description: 'template is slack flavored markdown',
+            default: true,
+          },
+          blocks: {
+            alias: 'b',
+            type: 'boolean',
+            description: 'template is blocks',
+            default: false,
+          },
+        })
+        .group(['markdown', 'blocks'], 'Template Format:')
+        .check((argv) => {
+          if (argv.blocks === true) {
+            argv.markdown = false;
+          }
+          return true;
+        })
+    },
+    async (argv) => {
+      try {
+        const report = parseCtrfFile(argv.path)
+        
+        if (!fs.existsSync(argv.templatePath)) {
+          throw new Error(`Template file not found: ${argv.templatePath}`)
+        }
+        
+        // abstract to a function
+        const templateContent = fs.readFileSync(argv.templatePath, 'utf-8')
+        
+        await sendCustomMardownTemplateToSlack(
+          report,
+          templateContent,
+          {
+            title: argv.title,
+            prefix: argv.prefix,
+            suffix: argv.suffix,
           },
           true
         )

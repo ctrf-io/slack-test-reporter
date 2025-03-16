@@ -227,6 +227,39 @@ export const formatFailedTestSummary = (
   return createSlackMessage(blocks, COLORS.FAILED, title, environment, name)
 }
 
+export const formatCustomMarkdownMessage = (
+  report: CtrfReport,
+  templateContent: string,
+  environment: CtrfEnvironment | undefined,
+  options?: Options
+): object | null => {
+  const { title, prefix, suffix } = normalizeOptions(
+    '',
+    options
+  )
+  const { missingEnvProperties } = handleBuildInfo(environment)
+
+  const customBlocks = [
+    {
+      type: 'section',
+      text: {
+        type: 'mrkdwn',
+        text: templateContent,
+      },
+    },
+  ]
+
+  const blocks = createMessageBlocks({
+    title,
+    prefix,
+    suffix,
+    customBlocks,
+    missingEnvProperties,
+  })
+
+  return createSlackMessage(blocks, report.results.summary.failed > 0 ? COLORS.FAILED : COLORS.PASSED, title, environment)
+}
+
 export function createSlackMessage(
   blocks: any[],
   color: string,

@@ -239,6 +239,7 @@ export function createMessageBlocks(options: {
 
   const blocks: any[] = []
 
+  if (title !== '' && title !== null) {
   blocks.push({
     type: BLOCK_TYPES.HEADER,
     text: {
@@ -246,7 +247,8 @@ export function createMessageBlocks(options: {
       text: title,
       emoji: true,
     },
-  })
+    })
+  }
 
   if (prefix !== '' && prefix !== null) {
     blocks.push({

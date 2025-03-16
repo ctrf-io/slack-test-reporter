@@ -20,3 +20,12 @@ export function addHelper(): void {
     ) as number
   })
 }
+
+/**
+ * Register a helper to subtract two numbers
+ */
+export function subtractHelper(): void {
+  Handlebars.registerHelper('subtract', function (a: number, b: number) {
+    return a - b
+  })
+}

@@ -5,11 +5,13 @@ import {
   formatFlakyTestsMessage,
   formatConsolidatedAiTestSummary,
   formatConsolidatedFailedTestSummary,
+  formatCustomMarkdownMessage
 } from './message-formatter'
 import { sendSlackMessage } from './client'
 import { type Options } from './types/reporter'
 import { type CtrfReport } from './types/ctrf'
 import { stripAnsiFromErrors } from './utils/common'
+import { compileTemplate } from './handlebars/core'
 
 /**
  * Send the test results to Slack
@@ -161,5 +163,41 @@ export async function sendAISummaryToSlack(
         }
       }
     }
+  }
+}
+
+/**
+ * Send a message to Slack using a custom Handlebars template
+ * @param report - The CTRF report
+ * @param templateContent - The Handlebars template content
+ * @param options - The options for the message
+ * @param logs - Whether to log the message
+ */
+export async function sendCustomMardownTemplateToSlack(
+  report: CtrfReport,
+  templateContent: string,
+  options: Options = {},
+  logs: boolean = false
+): Promise<void> {
+  if (options.token !== undefined) {
+    process.env.SLACK_WEBHOOK_URL = options.token
+  }
+
+  report = stripAnsiFromErrors(report)
+
+  const compiledContent = compileTemplate(templateContent, report)
+
+  const message = formatCustomMarkdownMessage(
+    report,
+    compiledContent,
+    report.results.environment,
+    options
+  )
+
+  if (message !== null) {
+    await sendSlackMessage(message)
+    logs && console.log('Custom template message sent to Slack.')
+  } else {
+    logs && console.log('No custom message detected. No message sent.')
   }
 }
