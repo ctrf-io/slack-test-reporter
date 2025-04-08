@@ -1,6 +1,7 @@
 import * as handlebars from 'handlebars'
 import { registerAllHelpers } from './helpers'
 import { type CtrfReport } from '../types'
+require('handlebars-helpers-ctrf')({ handlebars })
 
 /**
  * Generates markdown content from a Handlebars template and provided data.
