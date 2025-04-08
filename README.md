@@ -234,7 +234,7 @@ Example accessing test data:
 
 ### Helpers
 
-The template can include helpers to format the data. See the [handlebars built-in helpers](https://handlebarsjs.com/guide/#helpers) and custom [helpers](src/handlebars/helpers) directory for the available helpers.
+The template can include helpers to format the data. There is a wide range of helpers available from custom helpers [handlebars-helpers-ctrf](https://github.com/ctrf-io/handlebars-helpers-ctrf), [handlebars built-in helpers](https://handlebarsjs.com/guide/#helpers) and [slack-ctrf helpers](src/handlebars/helpers)
 
 ## Send Only on Failures
 

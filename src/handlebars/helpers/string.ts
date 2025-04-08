@@ -1,23 +1,6 @@
 import Handlebars from 'handlebars'
 
 /**
- * Converts a given string to uppercase.
- *
- * @example
- * In Handlebars:
- * {{uppercase "hello world"}}
- * Returns: "HELLO WORLD"
- *
- * @param {string} str - The input string to be converted.
- * @returns {string} The uppercase version of the input string.
- */
-export function uppercaseHelper(): void {
-  Handlebars.registerHelper('uppercase', (str: string) => {
-    return str.toUpperCase()
-  })
-}
-
-/**
  * Escapes special Markdown characters in the given string.
  * This is useful to ensure that characters like `*`, `_`, `(`, `)`, etc.
  * don't inadvertently format the output as Markdown.
