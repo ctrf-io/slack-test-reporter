@@ -1,7 +1,11 @@
 import * as handlebars from 'handlebars'
 import { registerAllHelpers } from './helpers'
 import { type CtrfReport } from '../types'
-require('handlebars-helpers-ctrf')({ handlebars })
+// @ts-expect-error - this is not typed
+import handlebarsCtrfHelpers from 'handlebars-helpers-ctrf'
+
+// Initialize the handlebarsCtrfHelpers
+handlebarsCtrfHelpers({ handlebars })
 
 /**
  * Generates markdown content from a Handlebars template and provided data.
