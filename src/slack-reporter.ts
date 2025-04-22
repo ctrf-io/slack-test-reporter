@@ -8,7 +8,7 @@ import {
   formatCustomMarkdownMessage,
   formatCustomBlockKitMessage,
 } from './message-formatter'
-import { sendSlackMessage } from './client'
+import { sendSlackMessage, postMessage } from './client'
 import { type Options } from './types/reporter'
 import { type CtrfReport } from './types/ctrf'
 import { stripAnsiFromErrors } from './utils/common'
@@ -25,10 +25,6 @@ export async function sendTestResultsToSlack(
   options: Options = {},
   logs: boolean = false
 ): Promise<void> {
-  if (options.token !== undefined) {
-    process.env.SLACK_WEBHOOK_URL = options.token
-  }
-
   if (
     options.onFailOnly !== undefined &&
     options.onFailOnly &&
@@ -40,8 +36,20 @@ export async function sendTestResultsToSlack(
 
   const message = formatResultsMessage(report, options)
 
-  await sendSlackMessage(message)
-  logs && console.log('Test results message sent to Slack.')
+  if (options.webhookUrl !== undefined) {
+    await sendSlackMessage(message, {
+      webhookUrl: options.webhookUrl,
+    })
+    logs && console.log('Test results message sent to Slack.')
+  } else if (
+    options.oauthToken !== undefined &&
+    options.channelId !== undefined
+  ) {
+    await postMessage(options.channelId, message, {
+      oauthToken: options.oauthToken,
+    })
+    logs && console.log('Test results message sent to Slack.')
+  }
 }
 
 /**
@@ -55,10 +63,6 @@ export async function sendFailedResultsToSlack(
   options: Options = {},
   logs: boolean = false
 ): Promise<void> {
-  if (options.token !== undefined) {
-    process.env.SLACK_WEBHOOK_URL = options.token
-  }
-
   if (report.results.summary.failed === 0) {
     return
   }
@@ -72,7 +76,18 @@ export async function sendFailedResultsToSlack(
       options
     )
     if (message !== null) {
-      await sendSlackMessage(message)
+      if (options.webhookUrl !== undefined) {
+        await sendSlackMessage(message, {
+          webhookUrl: options.webhookUrl,
+        })
+      } else if (
+        options.oauthToken !== undefined &&
+        options.channelId !== undefined
+      ) {
+        await postMessage(options.channelId, message, {
+          oauthToken: options.oauthToken,
+        })
+      }
       logs && console.log('Failed test summary sent to Slack.')
     } else {
       logs && console.log('No failed test summary detected. No message sent.')
@@ -86,8 +101,20 @@ export async function sendFailedResultsToSlack(
           options
         )
         if (message !== null) {
-          await sendSlackMessage(message)
-          logs && console.log('Failed test summary sent to Slack.')
+          if (options.webhookUrl !== undefined) {
+            await sendSlackMessage(message, {
+              webhookUrl: options.webhookUrl,
+            })
+            logs && console.log('Failed test summary sent to Slack.')
+          } else if (
+            options.oauthToken !== undefined &&
+            options.channelId !== undefined
+          ) {
+            await postMessage(options.channelId, message, {
+              oauthToken: options.oauthToken,
+            })
+            logs && console.log('Failed test summary sent to Slack.')
+          }
         } else {
           logs &&
             console.log('No failed test summary detected. No message sent')
@@ -108,13 +135,20 @@ export async function sendFlakyResultsToSlack(
   options: Options = {},
   logs: boolean = false
 ): Promise<void> {
-  if (options.token !== undefined) {
-    process.env.SLACK_WEBHOOK_URL = options.token
-  }
-
   const message = formatFlakyTestsMessage(report, options)
   if (message !== null) {
-    await sendSlackMessage(message)
+    if (options.webhookUrl !== undefined) {
+      await sendSlackMessage(message, {
+        webhookUrl: options.webhookUrl,
+      })
+    } else if (
+      options.oauthToken !== undefined &&
+      options.channelId !== undefined
+    ) {
+      await postMessage(options.channelId, message, {
+        oauthToken: options.oauthToken,
+      })
+    }
     logs && console.log('Flaky tests message sent to Slack.')
   } else {
     logs && console.log('No flaky tests detected. No message sent.')
@@ -132,10 +166,6 @@ export async function sendAISummaryToSlack(
   options: Options = {},
   logs: boolean = false
 ): Promise<void> {
-  if (options.token !== undefined) {
-    process.env.SLACK_WEBHOOK_URL = options.token
-  }
-
   if (options.consolidated !== undefined && options.consolidated) {
     const message = formatConsolidatedAiTestSummary(
       report.results.tests,
@@ -143,7 +173,18 @@ export async function sendAISummaryToSlack(
       options
     )
     if (message !== null) {
-      await sendSlackMessage(message)
+      if (options.webhookUrl !== undefined) {
+        await sendSlackMessage(message, {
+          webhookUrl: options.webhookUrl,
+        })
+      } else if (
+        options.oauthToken !== undefined &&
+        options.channelId !== undefined
+      ) {
+        await postMessage(options.channelId, message, {
+          oauthToken: options.oauthToken,
+        })
+      }
       logs && console.log('AI test summary sent to Slack.')
     } else {
       logs && console.log('No AI summary detected. No message sent.')
@@ -157,7 +198,18 @@ export async function sendAISummaryToSlack(
           options
         )
         if (message !== null) {
-          await sendSlackMessage(message)
+          if (options.webhookUrl !== undefined) {
+            await sendSlackMessage(message, {
+              webhookUrl: options.webhookUrl,
+            })
+          } else if (
+            options.oauthToken !== undefined &&
+            options.channelId !== undefined
+          ) {
+            await postMessage(options.channelId, message, {
+              oauthToken: options.oauthToken,
+            })
+          }
           logs && console.log('AI test summary sent to Slack.')
         } else {
           logs && console.log('No AI summary detected. No message sent')
@@ -180,9 +232,6 @@ export async function sendCustomMarkdownTemplateToSlack(
   options: Options = {},
   logs: boolean = false
 ): Promise<void> {
-  if (options.token !== undefined) {
-    process.env.SLACK_WEBHOOK_URL = options.token
-  }
   if (
     options.onFailOnly !== undefined &&
     options.onFailOnly &&
@@ -203,7 +252,18 @@ export async function sendCustomMarkdownTemplateToSlack(
   )
 
   if (message !== null) {
-    await sendSlackMessage(message)
+    if (options.webhookUrl !== undefined) {
+      await sendSlackMessage(message, {
+        webhookUrl: options.webhookUrl,
+      })
+    } else if (
+      options.oauthToken !== undefined &&
+      options.channelId !== undefined
+    ) {
+      await postMessage(options.channelId, message, {
+        oauthToken: options.oauthToken,
+      })
+    }
     logs && console.log('Custom template message sent to Slack.')
   } else {
     logs && console.log('No custom message detected. No message sent.')
@@ -223,9 +283,6 @@ export async function sendCustomBlockKitTemplateToSlack(
   options: Options = {},
   logs: boolean = false
 ): Promise<void> {
-  if (options.token !== undefined) {
-    process.env.SLACK_WEBHOOK_URL = options.token
-  }
   if (
     options.onFailOnly !== undefined &&
     options.onFailOnly &&
@@ -249,7 +306,18 @@ export async function sendCustomBlockKitTemplateToSlack(
   const message = formatCustomBlockKitMessage(report, blockKit)
 
   if (message !== null) {
-    await sendSlackMessage(message)
+    if (options.webhookUrl !== undefined) {
+      await sendSlackMessage(message, {
+        webhookUrl: options.webhookUrl,
+      })
+    } else if (
+      options.oauthToken !== undefined &&
+      options.channelId !== undefined
+    ) {
+      await postMessage(options.channelId, message, {
+        oauthToken: options.oauthToken,
+      })
+    }
     logs && console.log('Custom Block Kit message sent to Slack.')
   } else {
     logs &&

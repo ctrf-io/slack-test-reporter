@@ -11,6 +11,7 @@ import {
   sendCustomBlockKitTemplateToSlack,
 } from './slack-reporter'
 import fs from 'fs'
+import { type Options } from './types/reporter'
 
 const sharedOptions = {
   title: {
@@ -32,6 +33,26 @@ const sharedOptions = {
   },
 } as const
 
+const slackOptions = {
+  oauthToken: {
+    alias: 'o',
+    type: 'string',
+    description: 'Slack API Bot Token (xoxb-...). Requires --channel-id.',
+    implies: 'channel-id',
+  },
+  channelId: {
+    alias: 'ch',
+    type: 'string',
+    description: 'Slack Channel ID (required if oauth-token is provided)',
+  },
+  webhookUrl: {
+    alias: 'w',
+    type: 'string',
+    description: 'Slack Incoming Webhook URL',
+    conflicts: ['oauth-token', 'channel-id'],
+  },
+} as const
+
 const consolidatedOption = {
   consolidated: {
     alias: 'c',
@@ -43,6 +64,7 @@ const consolidatedOption = {
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 const argv = yargs(hideBin(process.argv))
+  .options(slackOptions)
   .command(
     'results <path>',
     'Send test results summary to Slack',
@@ -64,6 +86,7 @@ const argv = yargs(hideBin(process.argv))
     async (argv) => {
       try {
         const report = parseCtrfFile(argv.path)
+        const slackConfig = getEffectiveSlackConfig(argv)
         await sendTestResultsToSlack(
           report,
           {
@@ -71,6 +94,7 @@ const argv = yargs(hideBin(process.argv))
             prefix: argv.prefix,
             suffix: argv.suffix,
             onFailOnly: argv.onFailOnly,
+            ...slackConfig,
           },
           true
         )
@@ -95,6 +119,7 @@ const argv = yargs(hideBin(process.argv))
     async (argv) => {
       try {
         const report = parseCtrfFile(argv.path)
+        const slackConfig = getEffectiveSlackConfig(argv)
         await sendFailedResultsToSlack(
           report,
           {
@@ -102,6 +127,7 @@ const argv = yargs(hideBin(process.argv))
             prefix: argv.prefix,
             suffix: argv.suffix,
             consolidated: argv.consolidated,
+            ...slackConfig,
           },
           true
         )
@@ -125,9 +151,15 @@ const argv = yargs(hideBin(process.argv))
     async (argv) => {
       try {
         const report = parseCtrfFile(argv.path)
+        const slackConfig = getEffectiveSlackConfig(argv)
         await sendFlakyResultsToSlack(
           report,
-          { title: argv.title, prefix: argv.prefix, suffix: argv.suffix },
+          {
+            title: argv.title,
+            prefix: argv.prefix,
+            suffix: argv.suffix,
+            ...slackConfig,
+          },
           true
         )
       } catch (error: any) {
@@ -151,6 +183,7 @@ const argv = yargs(hideBin(process.argv))
     async (argv) => {
       try {
         const report = parseCtrfFile(argv.path)
+        const slackConfig = getEffectiveSlackConfig(argv)
         await sendAISummaryToSlack(
           report,
           {
@@ -158,6 +191,7 @@ const argv = yargs(hideBin(process.argv))
             prefix: argv.prefix,
             suffix: argv.suffix,
             consolidated: argv.consolidated,
+            ...slackConfig,
           },
           true
         )
@@ -213,6 +247,7 @@ const argv = yargs(hideBin(process.argv))
     async (argv) => {
       try {
         const report = parseCtrfFile(argv.path)
+        const slackConfig = getEffectiveSlackConfig(argv)
 
         if (!fs.existsSync(argv.templatePath)) {
           throw new Error(`Template file not found: ${argv.templatePath}`)
@@ -226,6 +261,7 @@ const argv = yargs(hideBin(process.argv))
             templateContent,
             {
               onFailOnly: argv.onFailOnly,
+              ...slackConfig,
             },
             true
           )
@@ -238,6 +274,7 @@ const argv = yargs(hideBin(process.argv))
               prefix: argv.prefix,
               suffix: argv.suffix,
               onFailOnly: argv.onFailOnly,
+              ...slackConfig,
             },
             true
           )
@@ -247,4 +284,42 @@ const argv = yargs(hideBin(process.argv))
       }
     }
   )
+  .check((argv) => {
+    const token = argv.oauthToken ?? process.env.SLACK_OAUTH_TOKEN
+    const channelId = argv.channelId ?? process.env.SLACK_CHANNEL_ID
+    const webhookUrl = argv.webhookUrl ?? process.env.SLACK_WEBHOOK_URL
+
+    console.log(token, channelId, webhookUrl)
+
+    const usingOAuthToken = Boolean(token)
+    const usingWebhook = Boolean(webhookUrl)
+
+    if (usingOAuthToken && usingWebhook) {
+      throw new Error('Cannot provide both Slack OAuth Token and Webhook URL.')
+    }
+
+    if (usingOAuthToken) {
+      if (channelId !== undefined) {
+        throw new Error(
+          'Missing required argument: --channel-id (or SLACK_CHANNEL_ID env var) must be provided when using --oauth-token (or SLACK_OAUTH_TOKEN env var)'
+        )
+      }
+      return true
+    }
+
+    if (usingWebhook) {
+      return true
+    }
+
+    throw new Error(
+      'Please provide either webhook-url (or SLACK_WEBHOOK_URL env var), OR both oauth-token (or SLACK_OAUTH_TOKEN env var) and --channel-id (or SLACK_CHANNEL_ID env var).'
+    )
+  })
   .help().argv
+
+function getEffectiveSlackConfig(argv: any): Options {
+  const token = argv.oauthToken ?? process.env.SLACK_OAUTH_TOKEN
+  const channelId = argv.channelId ?? process.env.SLACK_CHANNEL_ID
+  const webhookUrl = argv.webhookUrl ?? process.env.SLACK_WEBHOOK_URL
+  return { oauthToken: token, channelId, webhookUrl }
+}
