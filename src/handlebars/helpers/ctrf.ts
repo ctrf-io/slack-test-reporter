@@ -270,5 +270,3 @@ export function formatRateHelper(): void {
     }
   )
 }
-
-// this is to exponential

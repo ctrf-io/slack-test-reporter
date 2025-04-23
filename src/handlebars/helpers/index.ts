@@ -3,6 +3,7 @@ import {
   escapeMarkdownHelper,
   sliceStringHelper,
   splitLinesHelper,
+  uppercaseHelper,
 } from './string'
 import {
   anyFailedTestsHelper,
@@ -19,12 +20,14 @@ import {
   sortTestsByFlakyRateHelper,
 } from './ctrf'
 import { formatMessageHelper, stripAnsiHelper } from './ansi'
-import { sliceArrayHelper } from './array'
+import { reverseArray, sliceArrayHelper } from './array'
+import { addHelper, subtractHelper } from './math'
 
 export function registerAllHelpers(): void {
   formatDurationStartStopToHumanHelper()
   countFlakyHelper()
   stripAnsiHelper()
+  uppercaseHelper()
   equalsHelper()
   formatDurationMsToHumanHelper()
   formatMessageHelper()
@@ -34,10 +37,13 @@ export function registerAllHelpers(): void {
   formatRateHelper()
   sortTestsByFailRateHelper()
   sliceArrayHelper()
+  reverseArray()
   escapeMarkdownHelper()
   splitLinesHelper()
   sliceStringHelper()
   convertTimestamp()
+  addHelper()
+  subtractHelper()
   anyFlakyTestsHelper()
   anyFailedTestsHelper()
   anySkippedTestsHelper()
