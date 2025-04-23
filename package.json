@@ -1,6 +1,6 @@
 {
   "name": "slack-ctrf",
-  "version": "0.0.25",
+  "version": "0.0.26",
   "description": "Send Slack notifications with test results from popular testing frameworks",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
