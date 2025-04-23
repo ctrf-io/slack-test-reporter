@@ -289,8 +289,6 @@ const argv = yargs(hideBin(process.argv))
     const channelId = argv.channelId ?? process.env.SLACK_CHANNEL_ID
     const webhookUrl = argv.webhookUrl ?? process.env.SLACK_WEBHOOK_URL
 
-    console.log(token, channelId, webhookUrl)
-
     const usingOAuthToken = Boolean(token)
     const usingWebhook = Boolean(webhookUrl)
 
@@ -299,7 +297,7 @@ const argv = yargs(hideBin(process.argv))
     }
 
     if (usingOAuthToken) {
-      if (channelId !== undefined) {
+      if (channelId === undefined) {
         throw new Error(
           'Missing required argument: --channel-id (or SLACK_CHANNEL_ID env var) must be provided when using --oauth-token (or SLACK_OAUTH_TOKEN env var)'
         )
