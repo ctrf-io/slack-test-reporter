@@ -1,6 +1,7 @@
 // src/client/client.ts
 import { type ChatPostMessageResponse, WebClient } from '@slack/web-api'
 import { IncomingWebhook } from '@slack/webhook'
+import { type Options } from '../types/reporter'
 
 /**
  * Create a Slack API client for more advanced operations
@@ -8,7 +9,7 @@ import { IncomingWebhook } from '@slack/webhook'
  * @returns A WebClient instance
  */
 export const createSlackClient = (token?: string): WebClient => {
-  const apiToken = token ?? process.env.SLACK_API_TOKEN
+  const apiToken = token ?? process.env.SLACK_OAUTH_TOKEN
 
   if (apiToken === undefined) {
     throw new Error('Slack API token is required')
@@ -37,9 +38,12 @@ export const createSlackWebhook = (url?: string): IncomingWebhook => {
  * @param message - The message payload to send to Slack
  * @returns A promise that resolves when the message is sent
  */
-export const sendSlackMessage = async (message: object): Promise<void> => {
+export const sendSlackMessage = async (
+  message: object,
+  options: Options
+): Promise<void> => {
   try {
-    const webhook = createSlackWebhook()
+    const webhook = createSlackWebhook(options.webhookUrl)
     await webhook.send(message)
   } catch (error) {
     throw new Error(
@@ -56,11 +60,12 @@ export const sendSlackMessage = async (message: object): Promise<void> => {
  * @returns A promise that resolves with the API response
  */
 export const postMessage = async (
-  client: WebClient,
   channel: string,
-  message: string | object
+  message: string | object,
+  options: Options
 ): Promise<ChatPostMessageResponse> => {
   try {
+    const client = createSlackClient(options.oauthToken)
     return await client.chat.postMessage({
       channel,
       ...(typeof message === 'string' ? { text: message } : message),

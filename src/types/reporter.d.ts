@@ -4,5 +4,8 @@ export interface Options {
   prefix?: string
   suffix?: string
   consolidated?: boolean
+  oauthToken?: string
+  channelId?: string
+  webhookUrl?: string
   token?: string
 }
