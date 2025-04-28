@@ -23,6 +23,8 @@ jobs:
         run: npm run build
       - name: Run tests
         run: npm run all
+      - name: E2E custom blockkit
+        run: npx slack-ctrf src/cli.ts custom "ctrf/*.json" "templates/blockkit-template.hbs" --blockkit
       - name: E2E test results
         run: npx ts-node src/cli.ts results "ctrf/*.json"
         if: always()
