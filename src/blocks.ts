@@ -53,22 +53,64 @@ export function createTestResultBlocks(
     testSummary += ` | ${EMOJIS.FALLEN_LEAF} ${flakyCount}`
   }
 
-  return [
-    {
-      type: BLOCK_TYPES.SECTION,
-      text: {
-        type: TEXT_TYPES.MRKDWN,
-        text: testSummary,
-      },
+  const block: any = {
+    type: BLOCK_TYPES.SECTION,
+    text: {
+      type: TEXT_TYPES.MRKDWN,
+      text: `${testSummary}\n${resultText} | ${durationText}\n${buildInfo}`,
     },
-    {
-      type: BLOCK_TYPES.SECTION,
-      text: {
-        type: TEXT_TYPES.MRKDWN,
-        text: `${resultText} | ${durationText}\n${buildInfo}`,
+  }
+
+  const skipChart = process.env.CTRF_SKIP_PIE_CHART === 'true'
+  if (!skipChart) {
+    block.accessory = {
+      type: BLOCK_TYPES.IMAGE,
+      image_url: createChartImage(summary),
+      alt_text: 'Pie Chart',
+    }
+  }
+
+  return [block]
+}
+
+export function createChartImage(summary: Summary): string {
+  const { passed, failed, skipped, pending, other, tests } = summary
+  const percentage = tests > 0 ? Math.round((passed / tests) * 100) : 0
+  const chartUrl = `https://quickchart.io/chart?w=150&h=150&c=${encodeURIComponent(
+    JSON.stringify({
+      type: 'doughnut',
+      data: {
+        datasets: [
+          {
+            data: [passed, failed, skipped, pending, other],
+            backgroundColor: [
+              '#36c96d',
+              '#e74c3c',
+              '#d3d3d3',
+              '#f1c40f',
+              '#9b59b6',
+            ],
+          },
+        ],
       },
-    },
-  ]
+      options: {
+        plugins: {
+          legend: { display: false },
+          tooltip: { enabled: false },
+          doughnutlabel: {
+            labels: [
+              {
+                text: `${percentage}%`,
+                font: { size: 22, weight: 'bold' },
+              },
+            ],
+          },
+        },
+      },
+    })
+  )}`
+
+  return chartUrl
 }
 
 /**

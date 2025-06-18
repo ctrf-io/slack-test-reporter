@@ -63,6 +63,7 @@ export const TEST_STATUS = {
 
 export const BLOCK_TYPES = {
   SECTION: 'section',
+  IMAGE: 'image',
   HEADER: 'header',
   CONTEXT: 'context',
   DIVIDER: 'divider',

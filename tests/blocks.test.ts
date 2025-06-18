@@ -29,18 +29,22 @@ describe('Blocks', () => {
 
       const blocks = createTestResultBlocks(mockSummary, mockBuildInfo)
 
-      expect(blocks).toHaveLength(2)
+      expect(blocks).toHaveLength(1)
       expect(blocks[0].type).toBe(BLOCK_TYPES.SECTION)
       expect(blocks[0].text.type).toBe(TEXT_TYPES.MRKDWN)
       expect(blocks[0].text.text).toContain(`${EMOJIS.TEST_TUBE} 13`)
       expect(blocks[0].text.text).toContain(`${EMOJIS.CHECK_MARK} 10`)
       expect(blocks[0].text.text).not.toContain(EMOJIS.FALLEN_LEAF)
 
-      expect(blocks[1].type).toBe(BLOCK_TYPES.SECTION)
-      expect(blocks[1].text.type).toBe(TEXT_TYPES.MRKDWN)
-      expect(blocks[1].text.text).toContain(MESSAGES.RESULT_PASSED)
-      expect(blocks[1].text.text).toContain(mockBuildInfo)
-      expect(blocks[1].text.text).toContain('00:00:25') // Duration formatted
+      expect(blocks[0].accessory).toHaveProperty('alt_text', 'Pie Chart')
+      expect(blocks[0].accessory).toHaveProperty('type', 'image')
+      expect(blocks[0].accessory.image_url).toContain(
+        'https://quickchart.io/chart?'
+      )
+
+      expect(blocks[0].text.text).toContain(MESSAGES.RESULT_PASSED)
+      expect(blocks[0].text.text).toContain(mockBuildInfo)
+      expect(blocks[0].text.text).toContain('00:00:25') // Duration formatted
     })
 
     it('should create blocks for failed tests', () => {
@@ -57,10 +61,10 @@ describe('Blocks', () => {
 
       const blocks = createTestResultBlocks(mockSummary, mockBuildInfo)
 
-      expect(blocks).toHaveLength(2)
+      expect(blocks).toHaveLength(1)
       expect(blocks[0].text.text).toContain(`${EMOJIS.X_MARK} 2`)
-      expect(blocks[1].text.text).toContain('*Result:* 2 failed tests')
-      expect(blocks[1].text.text).toContain('00:00:01') // Duration formatted
+      expect(blocks[0].text.text).toContain('*Result:* 2 failed tests')
+      expect(blocks[0].text.text).toContain('00:00:01') // Duration formatted
     })
 
     it('should handle duration less than one second', () => {
@@ -77,7 +81,7 @@ describe('Blocks', () => {
 
       const blocks = createTestResultBlocks(mockSummary, mockBuildInfo)
 
-      expect(blocks[1].text.text).toContain(MESSAGES.DURATION_LESS_THAN_ONE)
+      expect(blocks[0].text.text).toContain(MESSAGES.DURATION_LESS_THAN_ONE)
     })
 
     it('should include flaky tests count when provided', () => {
