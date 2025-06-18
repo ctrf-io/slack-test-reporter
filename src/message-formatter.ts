@@ -273,15 +273,17 @@ export const formatCustomBlockKitMessage = (
   report: CtrfReport,
   blockKit: any
 ): object | null => {
-  blockKit.blocks.push({
-    type: BLOCK_TYPES.CONTEXT,
-    elements: [
-      {
-        type: TEXT_TYPES.MRKDWN,
-        text: MESSAGES.FOOTER_TEXT,
-      },
-    ],
-  })
+  if (!(process.env.CTRF_SKIP_FOOTER === 'true')) {
+    blockKit.blocks.push({
+      type: BLOCK_TYPES.CONTEXT,
+      elements: [
+        {
+          type: TEXT_TYPES.MRKDWN,
+          text: MESSAGES.FOOTER_TEXT,
+        },
+      ],
+    })
+  }
 
   return createSlackMessage(
     blockKit.blocks,
