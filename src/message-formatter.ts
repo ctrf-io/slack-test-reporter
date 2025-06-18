@@ -335,15 +335,25 @@ function handleBuildInfo(environment: CtrfEnvironment | undefined): {
 } {
   const missingEnvProperties: string[] = []
 
-  if (environment === undefined) {
+  // Extract build info from process.env or environment as fallback
+  const buildName =
+    process.env.BUILD_NAME ?? environment?.buildName ?? undefined
+  const buildNumber =
+    process.env.BUILD_NUMBER ?? environment?.buildNumber ?? undefined
+  const buildUrl = process.env.BUILD_URL ?? environment?.buildUrl ?? undefined
+
+  // If no environment and no process.env values, return early
+  if (
+    environment === undefined &&
+    buildName === undefined &&
+    buildNumber === undefined &&
+    buildUrl === undefined
+  ) {
     return {
       buildInfo: MESSAGES.NO_BUILD_INFO,
       missingEnvProperties: ['buildName', 'buildNumber', 'buildUrl'],
     }
   }
-
-  const { buildName, buildNumber, buildUrl } = environment
-
   if (buildName === undefined) missingEnvProperties.push('buildName')
   if (buildNumber === undefined) missingEnvProperties.push('buildNumber')
   if (buildUrl === undefined) missingEnvProperties.push('buildUrl')
