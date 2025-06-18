@@ -61,7 +61,7 @@ export function createTestResultBlocks(
     },
   }
 
-  const skipChart = process.env.CTRF_SKIP_PIE_CHART === 'true'
+  const skipChart = process.env.CTRF_SKIP_CHART === 'true'
   if (!skipChart) {
     block.accessory = {
       type: BLOCK_TYPES.IMAGE,
