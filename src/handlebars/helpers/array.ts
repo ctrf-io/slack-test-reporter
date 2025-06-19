@@ -50,5 +50,6 @@ export function reverseArray(): void {
     if (arr !== undefined) {
       return arr.reverse()
     }
+    return []
   })
 }

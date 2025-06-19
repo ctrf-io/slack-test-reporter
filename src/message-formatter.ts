@@ -40,7 +40,7 @@ export const formatResultsMessage = (
   )
   const { buildInfo, missingEnvProperties } = handleBuildInfo(environment)
 
-  const flakyCount = tests.filter((test) => test.flaky).length
+  const flakyCount = tests.filter(test => test.flaky).length
 
   const customBlocks = createTestResultBlocks(summary, buildInfo, flakyCount)
 
@@ -74,7 +74,7 @@ export const formatFlakyTestsMessage = (
   options?: Options
 ): object | null => {
   const { environment, tests } = ctrf.results
-  const flakyTests = tests.filter((test) => test.flaky)
+  const flakyTests = tests.filter(test => test.flaky)
   const { title, prefix, suffix } = normalizeOptions(
     TITLES.FLAKY_TESTS,
     options
@@ -153,7 +153,7 @@ export const formatConsolidatedAiTestSummary = (
   options?: Options
 ): object | null => {
   const failedTests = tests.filter(
-    (test) => test.ai !== undefined && test.status === TEST_STATUS.FAILED
+    test => test.ai !== undefined && test.status === TEST_STATUS.FAILED
   )
   const { title, prefix, suffix } = normalizeOptions(
     TITLES.AI_TEST_REPORTER,
@@ -183,7 +183,7 @@ export const formatConsolidatedFailedTestSummary = (
   environment: CtrfEnvironment | undefined,
   options?: Options
 ): object | null => {
-  const failedTests = tests.filter((test) => test.status === TEST_STATUS.FAILED)
+  const failedTests = tests.filter(test => test.status === TEST_STATUS.FAILED)
   const defaultTitle = options?.title ?? TITLES.FAILED_TEST_REPORT
   const { title, prefix, suffix } = normalizeOptions(defaultTitle, options)
   const { buildInfo, missingEnvProperties } = handleBuildInfo(environment)

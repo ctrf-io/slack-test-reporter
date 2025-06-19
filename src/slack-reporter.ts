@@ -30,7 +30,7 @@ export async function sendTestResultsToSlack(
     options.onFailOnly &&
     report.results.summary.failed === 0
   ) {
-    logs && console.log('No failed tests. Message not sent.')
+    if (logs) console.log('No failed tests. Message not sent.')
     return
   }
 
@@ -40,7 +40,7 @@ export async function sendTestResultsToSlack(
     await sendSlackMessage(message, {
       webhookUrl: options.webhookUrl,
     })
-    logs && console.log('Test results message sent to Slack.')
+    if (logs) console.log('Test results message sent to Slack.')
   } else if (
     options.oauthToken !== undefined &&
     options.channelId !== undefined
@@ -48,7 +48,7 @@ export async function sendTestResultsToSlack(
     await postMessage(options.channelId, message, {
       oauthToken: options.oauthToken,
     })
-    logs && console.log('Test results message sent to Slack.')
+    if (logs) console.log('Test results message sent to Slack.')
   }
 }
 
@@ -88,9 +88,9 @@ export async function sendFailedResultsToSlack(
           oauthToken: options.oauthToken,
         })
       }
-      logs && console.log('Failed test summary sent to Slack.')
+      if (logs) console.log('Failed test summary sent to Slack.')
     } else {
-      logs && console.log('No failed test summary detected. No message sent.')
+      if (logs) console.log('No failed test summary detected. No message sent.')
     }
   } else {
     for (const test of report.results.tests) {
@@ -105,7 +105,7 @@ export async function sendFailedResultsToSlack(
             await sendSlackMessage(message, {
               webhookUrl: options.webhookUrl,
             })
-            logs && console.log('Failed test summary sent to Slack.')
+            if (logs) console.log('Failed test summary sent to Slack.')
           } else if (
             options.oauthToken !== undefined &&
             options.channelId !== undefined
@@ -113,10 +113,10 @@ export async function sendFailedResultsToSlack(
             await postMessage(options.channelId, message, {
               oauthToken: options.oauthToken,
             })
-            logs && console.log('Failed test summary sent to Slack.')
+            if (logs) console.log('Failed test summary sent to Slack.')
           }
         } else {
-          logs &&
+          if (logs)
             console.log('No failed test summary detected. No message sent')
         }
       }
@@ -149,9 +149,9 @@ export async function sendFlakyResultsToSlack(
         oauthToken: options.oauthToken,
       })
     }
-    logs && console.log('Flaky tests message sent to Slack.')
+    if (logs) console.log('Flaky tests message sent to Slack.')
   } else {
-    logs && console.log('No flaky tests detected. No message sent.')
+    if (logs) console.log('No flaky tests detected. No message sent.')
   }
 }
 
@@ -185,9 +185,9 @@ export async function sendAISummaryToSlack(
           oauthToken: options.oauthToken,
         })
       }
-      logs && console.log('AI test summary sent to Slack.')
+      if (logs) console.log('AI test summary sent to Slack.')
     } else {
-      logs && console.log('No AI summary detected. No message sent.')
+      if (logs) console.log('No AI summary detected. No message sent.')
     }
   } else {
     for (const test of report.results.tests) {
@@ -210,9 +210,9 @@ export async function sendAISummaryToSlack(
               oauthToken: options.oauthToken,
             })
           }
-          logs && console.log('AI test summary sent to Slack.')
+          if (logs) console.log('AI test summary sent to Slack.')
         } else {
-          logs && console.log('No AI summary detected. No message sent')
+          if (logs) console.log('No AI summary detected. No message sent')
         }
       }
     }
@@ -237,7 +237,7 @@ export async function sendCustomMarkdownTemplateToSlack(
     options.onFailOnly &&
     report.results.summary.failed === 0
   ) {
-    logs && console.log('No failed tests. Message not sent.')
+    if (logs) console.log('No failed tests. Message not sent.')
     return
   }
   report = stripAnsiFromErrors(report)
@@ -264,9 +264,9 @@ export async function sendCustomMarkdownTemplateToSlack(
         oauthToken: options.oauthToken,
       })
     }
-    logs && console.log('Custom template message sent to Slack.')
+    if (logs) console.log('Custom template message sent to Slack.')
   } else {
-    logs && console.log('No custom message detected. No message sent.')
+    if (logs) console.log('No custom message detected. No message sent.')
   }
 }
 
@@ -288,7 +288,7 @@ export async function sendCustomBlockKitTemplateToSlack(
     options.onFailOnly &&
     report.results.summary.failed === 0
   ) {
-    logs && console.log('No failed tests. Message not sent.')
+    if (logs) console.log('No failed tests. Message not sent.')
     return
   }
 
@@ -299,7 +299,7 @@ export async function sendCustomBlockKitTemplateToSlack(
   const blockKit = JSON.parse(compiledContent)
 
   if (blockKit.blocks.length === 0) {
-    logs && console.log('No blocks detected. No message sent.')
+    if (logs) console.log('No blocks detected. No message sent.')
     return
   }
 
@@ -318,9 +318,9 @@ export async function sendCustomBlockKitTemplateToSlack(
         oauthToken: options.oauthToken,
       })
     }
-    logs && console.log('Custom Block Kit message sent to Slack.')
+    if (logs) console.log('Custom Block Kit message sent to Slack.')
   } else {
-    logs &&
+    if (logs)
       console.log('No custom Block Kit message detected. No message sent.')
   }
 }

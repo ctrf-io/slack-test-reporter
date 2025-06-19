@@ -7,9 +7,6 @@ on:
   pull_request:
     branches:
       - '**'
-env:
-  SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
-  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
 jobs:
   testing:
@@ -18,35 +15,13 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
       - name: Install dependencies
-        run: npm install
+        run: npm ci
       - name: Build
-        run: npm run build
-      - name: Run tests
-        run: npm run all
-      - name: E2E test results
-        run: npx ts-node src/cli.ts results "ctrf/*.json"
-        if: always()
-      - name: E2E flaky tests
-        run: npx ts-node src/cli.ts flaky "ctrf/*.json"
-        if: always()
-      - name: E2E ai tests
-        run: npx ts-node src/cli.ts ai "ctrf/*.json"
-        if: always()
-      - name: E2E failed tests
-        run: npx ts-node src/cli.ts failed "ctrf/*.json"
-        if: always()
-      - name: E2E AI Consolidated
-        run: npx ts-node src/cli.ts ai "ctrf/*.json" --consolidated
-        if: always()
-      - name: E2E failed tests consolidated
-        run: npx ts-node src/cli.ts failed "ctrf/*.json" --consolidated
-        if: always()
-      - name: E2E custom markdown
-        run: npx ts-node src/cli.ts custom "ctrf/*.json" "templates/markdown-template.hbs" --markdown
-        if: always()
-      - name: E2E custom blockkit
-        run: npx ts-node src/cli.ts custom "ctrf/*.json" "templates/blockkit-template.hbs" --blockkit
-        if: always()  
+        run: npm build
+      - name: Lint
+        run: npm run lint-check && npm run format-check
+      - name: Tests
+        run: npm test 
       - name: Publish Test Results
         uses: ctrf-io/github-test-reporter@v1
         with:

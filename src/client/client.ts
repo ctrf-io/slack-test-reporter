@@ -1,5 +1,5 @@
 // src/client/client.ts
-import { type ChatPostMessageResponse, WebClient } from '@slack/web-api'
+import { ChatPostMessageResponse, WebClient } from '@slack/web-api'
 import { IncomingWebhook } from '@slack/webhook'
 import { type Options } from '../types/reporter'
 
@@ -54,7 +54,6 @@ export const sendSlackMessage = async (
 
 /**
  * Send a message to a Slack channel using the Web API
- * @param client - Slack WebClient instance
  * @param channel - Channel ID or name
  * @param message - Message text or blocks
  * @returns A promise that resolves with the API response
@@ -66,10 +65,19 @@ export const postMessage = async (
 ): Promise<ChatPostMessageResponse> => {
   try {
     const client = createSlackClient(options.oauthToken)
-    return await client.chat.postMessage({
-      channel,
-      ...(typeof message === 'string' ? { text: message } : message),
-    })
+
+    // For v7, we need to handle the payload structure correctly
+    if (typeof message === 'string') {
+      return await client.chat.postMessage({
+        channel,
+        text: message,
+      })
+    } else {
+      return await client.chat.postMessage({
+        channel,
+        ...message,
+      } as any) // Type assertion needed for complex message objects
+    }
   } catch (error) {
     throw new Error(
       `Failed to post message: ${error instanceof Error ? error.message : String(error)}`

@@ -68,7 +68,7 @@ const argv = yargs(hideBin(process.argv))
   .command(
     'results <path>',
     'Send test results summary to Slack',
-    (yargs) => {
+    yargs => {
       return yargs
         .positional('path', {
           describe: 'Path to the CTRF file',
@@ -83,7 +83,7 @@ const argv = yargs(hideBin(process.argv))
         })
         .options(sharedOptions)
     },
-    async (argv) => {
+    async argv => {
       try {
         const report = parseCtrfFile(argv.path)
         const slackConfig = getEffectiveSlackConfig(argv)
@@ -106,7 +106,7 @@ const argv = yargs(hideBin(process.argv))
   .command(
     'failed <path>',
     'Send failed test results to Slack',
-    (yargs) => {
+    yargs => {
       return yargs
         .positional('path', {
           describe: 'Path to the CTRF file',
@@ -116,7 +116,7 @@ const argv = yargs(hideBin(process.argv))
         .options(sharedOptions)
         .option(consolidatedOption)
     },
-    async (argv) => {
+    async argv => {
       try {
         const report = parseCtrfFile(argv.path)
         const slackConfig = getEffectiveSlackConfig(argv)
@@ -139,7 +139,7 @@ const argv = yargs(hideBin(process.argv))
   .command(
     'flaky <path>',
     'Send flaky test results to Slack',
-    (yargs) => {
+    yargs => {
       return yargs
         .positional('path', {
           describe: 'Path to the CTRF file',
@@ -148,7 +148,7 @@ const argv = yargs(hideBin(process.argv))
         })
         .options(sharedOptions)
     },
-    async (argv) => {
+    async argv => {
       try {
         const report = parseCtrfFile(argv.path)
         const slackConfig = getEffectiveSlackConfig(argv)
@@ -170,7 +170,7 @@ const argv = yargs(hideBin(process.argv))
   .command(
     'ai <path>',
     'Send ai failed test summary for each failed test to Slack',
-    (yargs) => {
+    yargs => {
       return yargs
         .positional('path', {
           describe: 'Path to the CTRF file',
@@ -180,7 +180,7 @@ const argv = yargs(hideBin(process.argv))
         .options(sharedOptions)
         .option(consolidatedOption)
     },
-    async (argv) => {
+    async argv => {
       try {
         const report = parseCtrfFile(argv.path)
         const slackConfig = getEffectiveSlackConfig(argv)
@@ -203,7 +203,7 @@ const argv = yargs(hideBin(process.argv))
   .command(
     'custom <path> <templatePath>',
     'Send a message to Slack using a custom Handlebars template',
-    (yargs) => {
+    yargs => {
       return yargs
         .positional('path', {
           describe: 'Path to the CTRF file',
@@ -237,14 +237,14 @@ const argv = yargs(hideBin(process.argv))
           },
         })
         .group(['markdown', 'blocks'], 'Template Format:')
-        .check((argv) => {
+        .check(argv => {
           if (argv.markdown) {
             argv.blockkit = false
           }
           return true
         })
     },
-    async (argv) => {
+    async argv => {
       try {
         const report = parseCtrfFile(argv.path)
         const slackConfig = getEffectiveSlackConfig(argv)
@@ -284,7 +284,7 @@ const argv = yargs(hideBin(process.argv))
       }
     }
   )
-  .check((argv) => {
+  .check(argv => {
     const token = argv.oauthToken ?? process.env.SLACK_OAUTH_TOKEN
     const channelId = argv.channelId ?? process.env.SLACK_CHANNEL_ID
     const webhookUrl = argv.webhookUrl ?? process.env.SLACK_WEBHOOK_URL

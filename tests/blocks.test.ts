@@ -127,22 +127,22 @@ describe('Blocks', () => {
       expect(blocks.length).toBeGreaterThan(0)
 
       const totalFailedBlock = blocks.find(
-        (block) =>
+        block =>
           block.type === BLOCK_TYPES.SECTION &&
           block.text?.text?.includes('Total Failed Tests')
       )
       expect(totalFailedBlock).toBeDefined()
 
       const blockTexts = blocks
-        .filter((block) => block.type === BLOCK_TYPES.SECTION)
-        .map((block) => block.text.text)
+        .filter(block => block.type === BLOCK_TYPES.SECTION)
+        .map(block => block.text.text)
         .join('\n')
 
       expect(blockTexts).toContain(mockBuildInfo)
 
       const allBlockText = blocks
-        .filter((block) => block.text?.text)
-        .map((block) => block.text.text)
+        .filter(block => block.text?.text)
+        .map(block => block.text.text)
         .join('\n')
 
       expect(allBlockText).toContain('Test 1')
@@ -157,14 +157,14 @@ describe('Blocks', () => {
       expect(blocks.length).toBeGreaterThan(0)
 
       const totalFailedBlock = blocks.find(
-        (block) =>
+        block =>
           block.type === BLOCK_TYPES.SECTION &&
           block.text?.text?.includes('*Total Failed Tests:* 0')
       )
       expect(totalFailedBlock).toBeDefined()
 
       const buildInfoBlock = blocks.find(
-        (block) =>
+        block =>
           block.type === BLOCK_TYPES.SECTION &&
           block.text?.text?.includes(mockBuildInfo)
       )
@@ -199,8 +199,8 @@ describe('Blocks', () => {
       const blocks = createMessageBlocks(options)
 
       const blockTexts = blocks
-        .filter((block) => block.type === BLOCK_TYPES.SECTION)
-        .map((block) => block.text.text)
+        .filter(block => block.type === BLOCK_TYPES.SECTION)
+        .map(block => block.text.text)
         .join('\n')
 
       expect(blockTexts).toContain('Prefix message')
@@ -217,8 +217,8 @@ describe('Blocks', () => {
       const blocks = createMessageBlocks(options)
 
       const blockTexts = blocks
-        .filter((block) => block.type === BLOCK_TYPES.SECTION)
-        .map((block) => block.text.text)
+        .filter(block => block.type === BLOCK_TYPES.SECTION)
+        .map(block => block.text.text)
         .join('\n')
 
       expect(blockTexts).toContain('Missing environment properties')
@@ -244,7 +244,7 @@ describe('Blocks', () => {
       const blocks = createMessageBlocks(options)
 
       const foundCustomBlock = blocks.find(
-        (block) =>
+        block =>
           block.type === BLOCK_TYPES.SECTION &&
           block.text?.text === 'Custom block content'
       )
@@ -267,8 +267,8 @@ describe('Blocks', () => {
       expect(blocks.length).toBeGreaterThan(0)
 
       const blockTexts = blocks
-        .filter((block) => block.type === BLOCK_TYPES.SECTION)
-        .map((block) => block.text.text)
+        .filter(block => block.type === BLOCK_TYPES.SECTION)
+        .map(block => block.text.text)
         .join('\n')
 
       expect(blockTexts).toContain(testName)
@@ -288,8 +288,8 @@ describe('Blocks', () => {
       expect(blocks.length).toBeGreaterThan(0)
 
       const blockTexts = blocks
-        .filter((block) => block.type === BLOCK_TYPES.SECTION)
-        .map((block) => block.text.text)
+        .filter(block => block.type === BLOCK_TYPES.SECTION)
+        .map(block => block.text.text)
         .join('\n')
 
       expect(blockTexts).toContain(testName)
@@ -338,8 +338,8 @@ describe('Blocks', () => {
       expect(blocks.length).toBeGreaterThan(0)
 
       const blockTexts = blocks
-        .filter((block) => block.type === BLOCK_TYPES.SECTION)
-        .map((block) => block.text.text)
+        .filter(block => block.type === BLOCK_TYPES.SECTION)
+        .map(block => block.text.text)
         .join('\n')
 
       expect(blockTexts).toContain(testName)

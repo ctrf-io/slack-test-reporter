@@ -44,7 +44,7 @@ export function stripAnsiFromErrors(report: CtrfReport | null): any {
     return report
   }
 
-  report.results.tests.forEach((test) => {
+  report.results.tests.forEach(test => {
     if (test.message !== undefined) {
       test.message = stripAnsi(test.message)
     }
