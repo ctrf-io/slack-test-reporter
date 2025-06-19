@@ -13,9 +13,9 @@
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",
     "lint": "eslint . --ext .ts --fix",
-    "lint-check": "eslint . --ext .ts",
+    "lint:check": "eslint . --ext .ts",
     "format": "prettier --write .",
-    "format-check": "prettier --check .",
+    "format:check": "prettier --check .",
     "prepublishOnly": "npm run clean && npm run build",
     "all": "npm run build:check && npm run test && npm run lint && npm run format"
   },

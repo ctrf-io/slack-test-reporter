@@ -1,26 +1,37 @@
-name: Test summary example
+name: CI
 
 on:
   push:
     branches:
-      - '**'
+      - main
   pull_request:
     branches:
-      - '**'
+      - main
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   testing:
     runs-on: ubuntu-latest
+    permissions:
+      checks: write
+      pull-requests: write
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
       - name: Install dependencies
         run: npm ci
-      - name: Build
-        run: npm build
-      - name: Lint
-        run: npm run lint-check && npm run format-check
-      - name: Tests
+      - name: Build Check
+        run: npm run build:check
+      - name: Lint and Format Check
+        run: npm run lint:check && npm run format:check
+      - name: Run Tests
         run: npm test 
       - name: Publish Test Results
         uses: ctrf-io/github-test-reporter@v1
@@ -36,11 +47,6 @@ jobs:
           insights-report: true
           slowest-report: true
           upload-artifact: true
-        if: always()
-      - name: Post Results to Pull Request
-        uses: ctrf-io/github-test-reporter@v1
-        with:
-          report-path: ctrf/*.json
           pull-request-report: true
-          summary-report: false
           annotate: false
+          overwrite-comment: true
