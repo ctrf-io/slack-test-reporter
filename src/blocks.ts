@@ -82,7 +82,7 @@ export function createChartImage(summary: Summary): string {
 
   const filtered = values
     .map((v, i) => ({ value: v, color: colors[i] }))
-    .filter((entry) => entry.value > 0)
+    .filter(entry => entry.value > 0)
 
   const chartUrl = `https://quickchart.io/chart?w=150&h=150&c=${encodeURIComponent(
     JSON.stringify({
@@ -90,8 +90,8 @@ export function createChartImage(summary: Summary): string {
       data: {
         datasets: [
           {
-            data: filtered.map((e) => e.value),
-            backgroundColor: filtered.map((e) => e.color),
+            data: filtered.map(e => e.value),
+            backgroundColor: filtered.map(e => e.color),
             borderWidth: 0,
           },
         ],
