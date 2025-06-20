@@ -34,7 +34,7 @@
     "node": ">=16.0.0"
   },
   "dependencies": {
-    "@slack/web-api": "^7.9.2",
+    "@slack/web-api": "^7.9.3",
     "@slack/webhook": "^7.0.5",
     "ctrf": "^0.0.12",
     "handlebars": "^4.7.8",
