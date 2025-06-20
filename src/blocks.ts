@@ -288,15 +288,17 @@ export function createMessageBlocks(options: {
     }
   }
 
-  blocks.push({
-    type: BLOCK_TYPES.CONTEXT,
-    elements: [
-      {
-        type: TEXT_TYPES.MRKDWN,
-        text: MESSAGES.FOOTER_TEXT,
-      },
-    ],
-  })
+  if (!(process.env.CTRF_SKIP_FOOTER === 'true')) {
+    blocks.push({
+      type: BLOCK_TYPES.CONTEXT,
+      elements: [
+        {
+          type: TEXT_TYPES.MRKDWN,
+          text: MESSAGES.FOOTER_TEXT,
+        },
+      ],
+    })
+  }
 
   return blocks
 }
