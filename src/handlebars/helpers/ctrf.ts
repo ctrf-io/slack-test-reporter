@@ -18,7 +18,7 @@ export function LimitFailedTests(): void {
   Handlebars.registerHelper(
     'limitFailedTests',
     (tests: CtrfTest[], limit: number) => {
-      return tests.filter((test) => test.status === 'failed').slice(0, limit)
+      return tests.filter(test => test.status === 'failed').slice(0, limit)
     }
   )
 }
@@ -49,8 +49,7 @@ export function moreThanHelper(): void {
  * @returns {number} The number of flaky tests.
  */
 export function countFlakyHelper(): void {
-  Handlebars.registerHelper('countFlaky', (tests) => {
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
+  Handlebars.registerHelper('countFlaky', tests => {
     return tests.filter((test: { flaky: boolean }) => test.flaky).length
   })
 }
@@ -67,7 +66,7 @@ export function countFlakyHelper(): void {
  */
 export function anyFlakyTestsHelper(): void {
   Handlebars.registerHelper('anyFlakyTests', (tests: CtrfTest[]) => {
-    return tests.some((test) => test.flaky)
+    return tests.some(test => test.flaky)
   })
 }
 
@@ -83,7 +82,7 @@ export function anyFlakyTestsHelper(): void {
  */
 export function anyFailedTestsHelper(): void {
   Handlebars.registerHelper('anyFailedTests', (tests: CtrfTest[]) => {
-    return tests.some((test) => test.status === 'failed')
+    return tests.some(test => test.status === 'failed')
   })
 }
 
@@ -100,7 +99,7 @@ export function anyFailedTestsHelper(): void {
 export function anySkippedTestsHelper(): void {
   Handlebars.registerHelper('anySkippedTests', (tests: CtrfTest[]) => {
     return tests.some(
-      (test) =>
+      test =>
         test.status === 'skipped' ||
         test.status === 'pending' ||
         test.status === 'other'
@@ -208,7 +207,7 @@ export function sortTestsByFlakyRateHelper(): void {
     const testsCopy = tests.slice()
 
     const flakyTests = testsCopy.filter(
-      (test) =>
+      test =>
         test.extra !== undefined &&
         typeof test.extra.flakyRate === 'number' &&
         test.extra.flakyRate > 0
@@ -237,7 +236,7 @@ export function sortTestsByFailRateHelper(): void {
     const testsCopy = tests.slice()
 
     const failedTests = testsCopy.filter(
-      (test) =>
+      test =>
         test.extra !== undefined &&
         typeof test.extra.failRate === 'number' &&
         test.extra.failRate > 0

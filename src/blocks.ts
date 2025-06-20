@@ -157,7 +157,7 @@ export function createFailedTestBlocks(
 
   const limitedFailedTests = failedTests.slice(0, LIMITS.MAX_FAILED_TESTS)
 
-  limitedFailedTests.forEach((test) => {
+  limitedFailedTests.forEach(test => {
     const failSummary =
       test.message !== undefined && test.message.length > LIMITS.CHAR_LIMIT
         ? test.message.substring(
@@ -233,7 +233,7 @@ export function createAiTestBlocks(
 
   const limitedFailedTests = failedTests.slice(0, LIMITS.MAX_FAILED_TESTS)
 
-  limitedFailedTests.forEach((test) => {
+  limitedFailedTests.forEach(test => {
     const aiSummary = `${test.ai}`
 
     blocks.push({
@@ -367,7 +367,7 @@ export function createFlakyTestBlocks(
   flakyTests: CtrfTest[],
   buildInfo: string
 ): any[] {
-  const flakyTestsText = flakyTests.map((test) => `- ${test.name}`).join('\n')
+  const flakyTestsText = flakyTests.map(test => `- ${test.name}`).join('\n')
 
   return [
     {
