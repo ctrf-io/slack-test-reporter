@@ -76,20 +76,23 @@ export function createTestResultBlocks(
 export function createChartImage(summary: Summary): string {
   const { passed, failed, skipped, pending, other, tests } = summary
   const percentage = tests > 0 ? Math.round((passed / tests) * 100) : 0
+
+  const values = [passed, failed, skipped, pending, other]
+  const colors = ['#36c96d', '#e74c3c', '#d3d3d3', '#f1c40f', '#9b59b6']
+
+  const filtered = values
+    .map((v, i) => ({ value: v, color: colors[i] }))
+    .filter((entry) => entry.value > 0)
+
   const chartUrl = `https://quickchart.io/chart?w=150&h=150&c=${encodeURIComponent(
     JSON.stringify({
       type: 'doughnut',
       data: {
         datasets: [
           {
-            data: [passed, failed, skipped, pending, other],
-            backgroundColor: [
-              '#36c96d',
-              '#e74c3c',
-              '#d3d3d3',
-              '#f1c40f',
-              '#9b59b6',
-            ],
+            data: filtered.map((e) => e.value),
+            backgroundColor: filtered.map((e) => e.color),
+            borderWidth: 0,
           },
         ],
       },
