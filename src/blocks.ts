@@ -327,29 +327,32 @@ export function createMessageBlocks(options: {
       },
     })
   }
-
-  if (missingEnvProperties.length > 0) {
-    blocks.push({
-      type: BLOCK_TYPES.SECTION,
-      text: {
-        type: TEXT_TYPES.MRKDWN,
-        text: formatString(
-          MESSAGES.MISSING_ENV_WARNING,
-          missingEnvProperties.join(', ')
-        ),
-      },
-    })
+  if (!(process.env.CTRF_SKIP_WARNINGS === 'true')) {
+    if (missingEnvProperties.length > 0) {
+      blocks.push({
+        type: BLOCK_TYPES.SECTION,
+        text: {
+          type: TEXT_TYPES.MRKDWN,
+          text: formatString(
+            MESSAGES.MISSING_ENV_WARNING,
+            missingEnvProperties.join(', ')
+          ),
+        },
+      })
+    }
   }
 
-  blocks.push({
-    type: BLOCK_TYPES.CONTEXT,
-    elements: [
-      {
-        type: TEXT_TYPES.MRKDWN,
-        text: MESSAGES.FOOTER_TEXT,
-      },
-    ],
-  })
+  if (!(process.env.CTRF_SKIP_FOOTER === 'true')) {
+    blocks.push({
+      type: BLOCK_TYPES.CONTEXT,
+      elements: [
+        {
+          type: TEXT_TYPES.MRKDWN,
+          text: MESSAGES.FOOTER_TEXT,
+        },
+      ],
+    })
+  }
 
   return blocks
 }

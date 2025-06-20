@@ -42,7 +42,7 @@ export const MESSAGES = {
   TOTAL_FAILED_TESTS: '*Total Failed Tests:* {0}',
   MESSAGE_PREFIX: '*Message:* ',
   BUILD_PREFIX: '*Build:* ',
-  MISSING_ENV_WARNING: `${EMOJIS.WARNING} Missing environment properties: {0}. Add these to your CTRF report for a better experience.`,
+  MISSING_ENV_WARNING: `${EMOJIS.WARNING} Missing environment properties: {0}. Add these to your CTRF report for a better experience. Or use environment variables in SCREAMING_SNAKE_CASE format.`,
   FOOTER_TEXT: `<https://github.com/ctrf-io/slack-ctrf|Slack Test Reporter> by <https://ctrf.io|CTRF ${EMOJIS.GREEN_HEART}>`,
 }
 
