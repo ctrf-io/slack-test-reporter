@@ -100,6 +100,7 @@ const argv = yargs(hideBin(process.argv))
         )
       } catch (error: any) {
         console.error('Error:', error.message)
+        process.exit(1)
       }
     }
   )
@@ -133,6 +134,7 @@ const argv = yargs(hideBin(process.argv))
         )
       } catch (error: any) {
         console.error('Error:', error.message)
+        process.exit(1)
       }
     }
   )
@@ -164,6 +166,7 @@ const argv = yargs(hideBin(process.argv))
         )
       } catch (error: any) {
         console.error('Error:', error.message)
+        process.exit(1)
       }
     }
   )
@@ -197,6 +200,7 @@ const argv = yargs(hideBin(process.argv))
         )
       } catch (error: any) {
         console.error('Error:', error.message)
+        process.exit(1)
       }
     }
   )
@@ -250,7 +254,8 @@ const argv = yargs(hideBin(process.argv))
         const slackConfig = getEffectiveSlackConfig(argv)
 
         if (!fs.existsSync(argv.templatePath)) {
-          throw new Error(`Template file not found: ${argv.templatePath}`)
+          console.error('Error: Template file not found:', argv.templatePath)
+          process.exit(1)
         }
 
         const templateContent = fs.readFileSync(argv.templatePath, 'utf-8')
@@ -281,6 +286,7 @@ const argv = yargs(hideBin(process.argv))
         }
       } catch (error: any) {
         console.error('Error:', error.message)
+        process.exit(1)
       }
     }
   )
