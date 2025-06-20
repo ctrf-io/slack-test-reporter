@@ -98,13 +98,22 @@ export function createChartImage(summary: Summary): string {
       },
       options: {
         plugins: {
+          datalabels: {
+            display: true,
+            color: '#000000',
+            font: {
+              family: 'lato',
+              size: 12,
+              weight: 'bold',
+            },
+          },
           legend: { display: false },
           tooltip: { enabled: false },
           doughnutlabel: {
             labels: [
               {
                 text: `${percentage}%`,
-                font: { size: 22, weight: 'bold' },
+                font: { size: 22, weight: 'bold', family: 'lato' },
               },
             ],
           },
