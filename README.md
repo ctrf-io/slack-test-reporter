@@ -369,3 +369,13 @@ The package exports the following functions:
 - `sendAISummaryToSlack`
 - `sendCustomMarkdownTemplateToSlack`
 - `sendCustomBlockKitTemplateToSlack`
+
+## Configuration
+
+You can skip features by using environment variables.
+
+```sh
+export CTRF_SKIP_FOOTER=true # Skip the footer
+export CTRF_SKIP_CHART=true # Skip the chart
+export CTRF_SKIP_WARNINGS=true # Skip the build warnings
+```
