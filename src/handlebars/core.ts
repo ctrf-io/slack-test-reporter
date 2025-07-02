@@ -1,6 +1,9 @@
 import * as handlebars from 'handlebars'
 import { registerAllHelpers } from './helpers'
 import { type CtrfReport } from '../types'
+
+require('handlebars-helpers-ctrf')({ handlebars })
+
 /**
  * Generates markdown content from a Handlebars template and provided data.
  *
@@ -30,6 +33,7 @@ export function compileTemplate(
   data: CtrfReport
 ): string {
   registerAllHelpers()
+  
   const context = { ctrf: data.results }
   const template = handlebars.compile(templateSource, {
     preventIndent: true,
