@@ -5,7 +5,7 @@ import {
   sendAISummaryToSlack,
   sendCustomMarkdownTemplateToSlack,
   sendCustomBlockKitTemplateToSlack,
-} from './slack-reporter'
+} from './slack-reporter.js'
 
 export {
   sendTestResultsToSlack,
@@ -16,4 +16,4 @@ export {
   sendCustomBlockKitTemplateToSlack,
 }
 
-export * from './types'
+export * from './types/index.js'

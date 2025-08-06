@@ -1,2 +1,2 @@
-export * from './ctrf'
-export * from './reporter'
+export * from './ctrf.js'
+export * from './reporter.js'

@@ -1,0 +1,17 @@
+{
+  "entryPoints": ["src/index.ts"],
+  "out": "docs",
+  "exclude": ["src/__tests__/**/*", "src/**/*.test.ts", "src/**/*.spec.ts"],
+  "excludePrivate": true,
+  "excludeProtected": true,
+  "excludeExternals": true,
+  "includeVersion": true,
+  "categorizeByGroup": true,
+  "categoryOrder": ["Methods", "*"],
+  "readme": "none",
+  "plugin": ["typedoc-plugin-markdown"],
+  "name": "CTRF ",
+  "githubPages": false,
+  "gitRevision": "main",
+  "cleanOutputDir": true
+}

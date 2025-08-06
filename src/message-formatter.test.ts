@@ -1,5 +1,7 @@
-import { formatResultsMessage } from '../src/message-formatter'
-import { BLOCK_TYPES, TITLES } from '../src/constants'
+import { expect, describe, it } from 'vitest'
+import { formatResultsMessage } from './message-formatter'
+import { BLOCK_TYPES, TITLES } from './constants'
+import { CtrfReport } from './types/ctrf'
 
 const mockCtrfReport = {
   results: {
@@ -24,7 +26,7 @@ const mockCtrfReport = {
 describe('Message Formatter', () => {
   describe('formatResultsMessage', () => {
     it('should format test results message with default options', () => {
-      const result = formatResultsMessage(mockCtrfReport as any)
+      const result = formatResultsMessage(mockCtrfReport as CtrfReport)
 
       expect(result).toBeDefined()
       // @ts-expect-error - accessing properties for testing
@@ -46,7 +48,7 @@ describe('Message Formatter', () => {
     it('should format test results message with custom title', () => {
       const customTitle = 'Custom Test Results'
 
-      const result = formatResultsMessage(mockCtrfReport as any, {
+      const result = formatResultsMessage(mockCtrfReport as CtrfReport, {
         title: customTitle,
       })
 
@@ -59,7 +61,7 @@ describe('Message Formatter', () => {
     })
 
     it('should include build information when environment is provided', () => {
-      const result = formatResultsMessage(mockCtrfReport as any)
+      const result = formatResultsMessage(mockCtrfReport as CtrfReport)
 
       // @ts-expect-error - accessing properties for testing
       const buildInfoText = result.attachments[0].blocks

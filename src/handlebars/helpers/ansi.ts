@@ -1,5 +1,5 @@
 import Handlebars from 'handlebars'
-import { stripAnsi } from '../../utils/common'
+import { stripAnsi } from '../../utils/common.js'
 
 /**
  * Strips ANSI escape codes from the given message.

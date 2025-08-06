@@ -2,8 +2,8 @@ import {
   type CtrfEnvironment,
   type CtrfReport,
   type CtrfTest,
-} from './types/ctrf'
-import { type Options } from './types/reporter'
+} from './types/ctrf.js'
+import { type Options } from './types/reporter.js'
 import {
   BLOCK_TYPES,
   COLORS,
@@ -11,7 +11,7 @@ import {
   TEST_STATUS,
   TEXT_TYPES,
   TITLES,
-} from './constants'
+} from './constants.js'
 import {
   createTestResultBlocks,
   createMessageBlocks,
@@ -20,7 +20,7 @@ import {
   createAiTestBlocks,
   createFailedTestBlocks,
   createSingleFailedTestBlocks,
-} from './blocks'
+} from './blocks.js'
 
 /**
  * Format the results message
@@ -295,7 +295,7 @@ export const formatCustomBlockKitMessage = (
 }
 
 export function createSlackMessage(
-  blocks: any[],
+  blocks: unknown[],
   color: string,
   title: string,
   environment?: CtrfEnvironment,

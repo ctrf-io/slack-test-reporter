@@ -1,5 +1,5 @@
 import Handlebars from 'handlebars'
-import { type CtrfTest } from '../../types'
+import { type CtrfTest } from '../../types/index.js'
 
 /**
  * Filters an array of tests to only those that have failed, then limits the result to a specified number.
@@ -214,7 +214,7 @@ export function sortTestsByFlakyRateHelper(): void {
     )
 
     flakyTests.sort(
-      (a, b) => (b.extra?.flakyRate ?? 0) - (a.extra?.flakyRate ?? 0)
+      (a, b) => Number(b.extra?.flakyRate) - Number(a.extra?.flakyRate)
     )
 
     return flakyTests
@@ -243,7 +243,7 @@ export function sortTestsByFailRateHelper(): void {
     )
 
     failedTests.sort(
-      (a, b) => (b.extra?.failRate ?? 0) - (a.extra?.failRate ?? 0)
+      (a, b) => Number(b.extra?.failRate) - Number(a.extra?.failRate)
     )
 
     return failedTests

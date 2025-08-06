@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 import yargs from 'yargs/yargs'
 import { hideBin } from 'yargs/helpers'
-import { parseCtrfFile } from './ctrf-parser'
+import { parseCtrfFile } from './ctrf-parser.js'
 import {
   sendAISummaryToSlack,
   sendFailedResultsToSlack,
@@ -9,9 +9,9 @@ import {
   sendTestResultsToSlack,
   sendCustomMarkdownTemplateToSlack,
   sendCustomBlockKitTemplateToSlack,
-} from './slack-reporter'
+} from './slack-reporter.js'
 import fs from 'fs'
-import { type Options } from './types/reporter'
+import { type Options } from './types/reporter.js'
 
 const sharedOptions = {
   title: {

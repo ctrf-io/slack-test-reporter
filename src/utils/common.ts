@@ -39,9 +39,9 @@ export function stripAnsi(message: string): string {
  * @param report - The report to strip ANSI escape codes from
  * @returns The report with ANSI escape codes stripped from errors
  */
-export function stripAnsiFromErrors(report: CtrfReport | null): any {
+export function stripAnsiFromErrors(report: CtrfReport | null): CtrfReport {
   if (report?.results?.tests === undefined) {
-    return report
+    return report as CtrfReport
   }
 
   report.results.tests.forEach(test => {

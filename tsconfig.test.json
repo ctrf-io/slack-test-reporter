@@ -1,8 +1,11 @@
 {
   "extends": "./tsconfig.json",
   "compilerOptions": {
-    "rootDir": ".",
-    "types": ["jest", "node"]
+    "types": ["vitest/globals", "node"],
+    "moduleResolution": "bundler",
+    "allowImportingTsExtensions": false,
+    "noEmit": true
   },
-  "include": ["src/**/*", "tests/**/*"]
+  "include": ["src/**/*"],
+  "exclude": ["dist/**/*", "node_modules/**/*"]
 }

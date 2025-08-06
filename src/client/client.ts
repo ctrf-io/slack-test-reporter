@@ -1,7 +1,7 @@
 // src/client/client.ts
 import { ChatPostMessageResponse, WebClient } from '@slack/web-api'
 import { IncomingWebhook } from '@slack/webhook'
-import { type Options } from '../types/reporter'
+import { type Options } from '../types/reporter.js'
 
 /**
  * Create a Slack API client for more advanced operations

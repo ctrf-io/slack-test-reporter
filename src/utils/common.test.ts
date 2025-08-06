@@ -1,4 +1,6 @@
-import { stripAnsi, stripAnsiFromErrors } from '../../src/utils/common'
+import { expect, describe, it } from 'vitest'
+import { stripAnsi, stripAnsiFromErrors } from './common'
+import { CtrfReport } from '../types/ctrf'
 
 describe('Common Utilities', () => {
   describe('stripAnsi', () => {
@@ -50,10 +52,10 @@ describe('Common Utilities', () => {
         },
       }
 
-      const result = stripAnsiFromErrors(report as any)
+      const result = stripAnsiFromErrors(report as CtrfReport)
 
-      expect(result.results.tests[0].message).toBe('Error: Test failed')
-      expect(result.results.tests[0].trace).toBe('At line 42')
+      expect(result.results.tests[0]?.message).toBe('Error: Test failed')
+      expect(result.results.tests[0]?.trace).toBe('At line 42')
     })
 
     it('should return the report as is when there are no tests', () => {
@@ -66,7 +68,7 @@ describe('Common Utilities', () => {
         },
       }
 
-      const result = stripAnsiFromErrors(report as any)
+      const result = stripAnsiFromErrors(report as CtrfReport)
 
       expect(result).toEqual(report)
     })

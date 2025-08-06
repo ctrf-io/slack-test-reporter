@@ -257,7 +257,7 @@ Example accessing test data:
 
 ### Helpers
 
-The template can include helpers to format the data. There is a wide range of helpers available from custom helpers [handlebars-helpers-ctrf](https://github.com/ctrf-io/handlebars-helpers), [handlebars built-in helpers](https://handlebarsjs.com/guide/#helpers) and [slack-ctrf helpers](src/handlebars/helpers)
+The template can include helpers to format the data. There is a wide range of helpers available from CTRF custom helpers [handlebars-helpers-ctrf](https://github.com/ctrf-io/handlebars-helpers), [handlebars built-in helpers](https://handlebarsjs.com/guide/#helpers) and [slack-ctrf helpers](src/handlebars/helpers)
 
 ## Send Only on Failures
 
@@ -379,3 +379,51 @@ export CTRF_SKIP_FOOTER=true # Skip the footer
 export CTRF_SKIP_CHART=true # Skip the chart
 export CTRF_SKIP_WARNINGS=true # Skip the build warnings
 ```
+
+## Development
+
+Contributions are very welcome!
+
+### Run all checks
+
+```sh
+npm run all
+```
+
+### Run E2E
+
+If you have a Slack account to test with, set the environment variables test:
+
+```sh
+export SLACK_WEBHOOK_URL=https://hooks.slack.com/services/your/webhook/url
+# or
+export SLACK_OAUTH_TOKEN=xoxb-your/bot/user/oauth/token
+export SLACK_CHANNEL_ID=C0123456789
+```
+
+Run the E2E tests:
+
+```sh
+npm run e2e
+```
+
+or test a single command:
+
+```sh
+node dist/cli.js results "ctrf-report.json"
+```
+
+## What is CTRF?
+
+CTRF is a universal JSON test report schema that addresses the lack of a standardized format for JSON test reports.
+
+**Consistency Across Tools:** Different testing tools and frameworks often produce reports in varied formats. CTRF ensures a uniform structure, making it easier to understand and compare reports, regardless of the testing tool used.
+
+**Language and Framework Agnostic:** It provides a universal reporting schema that works seamlessly with any programming language and testing framework.
+
+**Facilitates Better Analysis:** With a standardized format, programatically analyzing test outcomes across multiple platforms becomes more straightforward.
+
+## Support Us
+
+If you find this project useful, consider giving it a GitHub star ⭐ It means a lot to us.
+

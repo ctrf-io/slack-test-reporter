@@ -4,7 +4,7 @@ import {
   sliceStringHelper,
   splitLinesHelper,
   uppercaseHelper,
-} from './string'
+} from './string.js'
 import {
   anyFailedTestsHelper,
   anyFlakyTestsHelper,
@@ -18,10 +18,10 @@ import {
   moreThanHelper,
   sortTestsByFailRateHelper,
   sortTestsByFlakyRateHelper,
-} from './ctrf'
-import { formatMessageHelper, stripAnsiHelper } from './ansi'
-import { reverseArray, sliceArrayHelper } from './array'
-import { addHelper, subtractHelper } from './math'
+} from './ctrf.js'
+import { formatMessageHelper, stripAnsiHelper } from './ansi.js'
+import { reverseArray, sliceArrayHelper } from './array.js'
+import { addHelper, subtractHelper } from './math.js'
 
 export function registerAllHelpers(): void {
   formatDurationStartStopToHumanHelper()

@@ -6,8 +6,8 @@ import {
   TEXT_TYPES,
   LIMITS,
   NOTICES,
-} from './constants'
-import { type Summary, type CtrfTest } from './types/ctrf'
+} from './constants.js'
+import { type Summary, type CtrfTest } from './types/ctrf.js'
 
 /**
  * Create blocks for test result summary

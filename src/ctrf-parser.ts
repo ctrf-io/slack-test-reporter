@@ -1,6 +1,6 @@
-import { type CtrfReport } from './types/ctrf'
-import { stripAnsiFromErrors } from './utils/common'
-import { mergeReports, readReportsFromGlobPattern } from 'ctrf'
+import { type CtrfReport } from './types/ctrf.js'
+import { stripAnsiFromErrors } from './utils/common.js'
+import { mergeReports, readReportsFromGlobPattern, type Report } from 'ctrf'
 
 /**
  * Parse a CTRF file
@@ -18,7 +18,9 @@ export function parseCtrfFile(pattern: string): CtrfReport {
   }
 
   const report: CtrfReport =
-    reports.length > 1 ? (mergeReports(reports) as CtrfReport) : reports[0]!
+    reports.length > 1
+      ? (mergeReports(reports as Report[]) as CtrfReport)
+      : reports[0]!
   const processedReport = stripAnsiFromErrors(report)
   console.log(`Read ${reports.length} CTRF reports`)
   return processedReport

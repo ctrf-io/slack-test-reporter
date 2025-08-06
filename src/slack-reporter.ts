@@ -7,12 +7,12 @@ import {
   formatConsolidatedFailedTestSummary,
   formatCustomMarkdownMessage,
   formatCustomBlockKitMessage,
-} from './message-formatter'
-import { sendSlackMessage, postMessage } from './client'
-import { type Options } from './types/reporter'
-import { type CtrfReport } from './types/ctrf'
-import { stripAnsiFromErrors } from './utils/common'
-import { compileTemplate } from './handlebars/core'
+} from './message-formatter.js'
+import { sendSlackMessage, postMessage } from './client/index.js'
+import { type Options } from './types/reporter.js'
+import { type CtrfReport } from './types/ctrf.js'
+import { stripAnsiFromErrors } from './utils/common.js'
+import { compileTemplate } from './handlebars/core.js'
 
 /**
  * Send the test results to Slack

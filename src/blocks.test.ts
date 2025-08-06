@@ -1,3 +1,4 @@
+import { expect, describe, it } from 'vitest'
 import {
   createTestResultBlocks,
   createFailedTestBlocks,
@@ -6,9 +7,9 @@ import {
   createFlakyTestBlocks,
   createSingleAiTestBlocks,
   createSingleFailedTestBlocks,
-} from '../src/blocks'
-import { BLOCK_TYPES, TEXT_TYPES, EMOJIS, MESSAGES } from '../src/constants'
-import { CtrfTest } from '../src/types/ctrf'
+} from './blocks'
+import { BLOCK_TYPES, TEXT_TYPES, EMOJIS, MESSAGES } from './constants'
+import { CtrfTest } from './types/ctrf'
 
 describe('Blocks', () => {
   const mockBuildInfo =

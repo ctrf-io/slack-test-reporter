@@ -7,7 +7,7 @@ export interface Results {
   summary: Summary
   tests: CtrfTest[]
   environment?: CtrfEnvironment
-  extra?: Record<string, any>
+  extra?: Record<string, unknown>
 }
 
 export interface Summary {
@@ -20,7 +20,7 @@ export interface Summary {
   suites?: number
   start: number
   stop: number
-  extra?: Record<string, any>
+  extra?: Record<string, unknown>
 }
 
 export interface CtrfTest {
@@ -43,9 +43,9 @@ export interface CtrfTest {
   browser?: string
   device?: string
   screenshot?: string
-  parameters?: Record<string, any>
+  parameters?: Record<string, unknown>
   steps?: Step[]
-  extra?: Record<string, any>
+  extra?: Record<string, unknown>
 }
 
 export interface CtrfEnvironment {
@@ -62,13 +62,13 @@ export interface CtrfEnvironment {
   repositoryUrl?: string
   branchName?: string
   testEnvironment?: string
-  extra?: Record<string, any>
+  extra?: Record<string, unknown>
 }
 
 export interface Tool {
   name: string
   version?: string
-  extra?: Record<string, any>
+  extra?: Record<string, unknown>
 }
 
 export interface Step {
