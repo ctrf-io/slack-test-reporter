@@ -24,9 +24,11 @@ analyses directly to your chosen Slack channel.
 </div>
 
 <p style="font-size: 14px; margin: 1rem 0;">
-Maintained by <a href="https://github.com/ma11hewthomas">Matthew Thomas</a><br/>
+
 Contributions are very welcome! <br/>
-Explore more <a href="https://www.ctrf.io/integrations">integrations</a>
+Explore more <a href="https://www.ctrf.io/integrations">integrations</a> <br/>
+We’d love your feedback, <a href="https://app.formbricks.com/s/cmefs524mhlh1tl01gkpvefrb">share it anonymously</a>.
+
 </p>
 </div>
 
@@ -361,14 +363,7 @@ You can use the package programmatically to send notifications to Slack. To inst
 npm install slack-ctrf
 ```
 
-The package exports the following functions:
-
-- `sendTestResultsToSlack`
-- `sendFlakyResultsToSlack`
-- `sendFailedResultsToSlack`
-- `sendAISummaryToSlack`
-- `sendCustomMarkdownTemplateToSlack`
-- `sendCustomBlockKitTemplateToSlack`
+see [API documentation](docs/functions) for more details.
 
 ## Configuration
 

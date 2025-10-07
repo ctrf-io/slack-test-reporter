@@ -1,8 +1,8 @@
-**CTRF v0.0.29-next.0**
+**CTRF v0.0.29**
 
 ***
 
-# CTRF v0.0.29-next.0
+# CTRF v0.0.29
 
 ## Interfaces
 
