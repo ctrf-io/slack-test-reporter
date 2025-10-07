@@ -1,6 +1,6 @@
 {
   "name": "slack-ctrf",
-  "version": "0.0.29",
+  "version": "0.0.30",
   "description": "Send Slack notifications with test results from popular testing frameworks",
   "type": "module",
   "main": "dist/index.js",
@@ -41,7 +41,7 @@
     "@slack/webhook": "^7.0.5",
     "ctrf": "0.0.13",
     "handlebars": "^4.7.8",
-    "handlebars-helpers-ctrf": "^0.0.4-next.8",
+    "handlebars-helpers-ctrf": "^0.0.6",
     "yargs": "^18.0.0"
   },
   "devDependencies": {
