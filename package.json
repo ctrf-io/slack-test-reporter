@@ -1,6 +1,6 @@
 {
   "name": "slack-ctrf",
-  "version": "0.0.30",
+  "version": "0.0.31",
   "description": "Send Slack notifications with test results from popular testing frameworks",
   "type": "module",
   "main": "dist/index.js",
@@ -25,7 +25,14 @@
   "bin": {
     "slack-ctrf": "./dist/cli.js"
   },
-  "repository": "github:ctrf-io/slack-test-reporter",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ctrf-io/slack-test-reporter.git"
+  },
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  },
   "homepage": "https://ctrf.io",
   "files": [
     "dist/",
