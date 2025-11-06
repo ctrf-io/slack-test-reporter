@@ -19,12 +19,13 @@ import { compileTemplate } from './handlebars/core.js'
  * @param report - The CTRF report
  * @param options - The options for the message
  * @param logs - Whether to log the message
+ * @returns The message timestamp if returnTs is true and using OAuth, otherwise void
  */
 export async function sendTestResultsToSlack(
   report: CtrfReport,
   options: Options = {},
   logs: boolean = false
-): Promise<void> {
+): Promise<string | void> {
   if (
     options.onFailOnly !== undefined &&
     options.onFailOnly &&
@@ -39,16 +40,23 @@ export async function sendTestResultsToSlack(
   if (options.webhookUrl !== undefined) {
     await sendSlackMessage(message, {
       webhookUrl: options.webhookUrl,
+      threadTs: options.threadTs,
     })
     if (logs) console.log('Test results message sent to Slack.')
+    return
   } else if (
     options.oauthToken !== undefined &&
     options.channelId !== undefined
   ) {
-    await postMessage(options.channelId, message, {
+    const response = await postMessage(options.channelId, message, {
       oauthToken: options.oauthToken,
+      threadTs: options.threadTs,
     })
     if (logs) console.log('Test results message sent to Slack.')
+    if (options.returnTs && response.ts) {
+      return response.ts
+    }
+    return
   }
 }
 
@@ -57,12 +65,13 @@ export async function sendTestResultsToSlack(
  * @param report - The CTRF report
  * @param options - The options for the message
  * @param logs - Whether to log the message
+ * @returns The message timestamp if returnTs is true and using OAuth, otherwise void
  */
 export async function sendFailedResultsToSlack(
   report: CtrfReport,
   options: Options = {},
   logs: boolean = false
-): Promise<void> {
+): Promise<string | void> {
   if (report.results.summary.failed === 0) {
     return
   }
@@ -79,20 +88,28 @@ export async function sendFailedResultsToSlack(
       if (options.webhookUrl !== undefined) {
         await sendSlackMessage(message, {
           webhookUrl: options.webhookUrl,
+          threadTs: options.threadTs,
         })
       } else if (
         options.oauthToken !== undefined &&
         options.channelId !== undefined
       ) {
-        await postMessage(options.channelId, message, {
+        const response = await postMessage(options.channelId, message, {
           oauthToken: options.oauthToken,
+          threadTs: options.threadTs,
         })
+        if (logs) console.log('Failed test summary sent to Slack.')
+        if (options.returnTs && response.ts) {
+          return response.ts
+        }
+        return
       }
       if (logs) console.log('Failed test summary sent to Slack.')
     } else {
       if (logs) console.log('No failed test summary detected. No message sent.')
     }
   } else {
+    let firstTimestamp: string | undefined
     for (const test of report.results.tests) {
       if (test.status === 'failed') {
         const message = formatFailedTestSummary(
@@ -104,22 +121,30 @@ export async function sendFailedResultsToSlack(
           if (options.webhookUrl !== undefined) {
             await sendSlackMessage(message, {
               webhookUrl: options.webhookUrl,
+              threadTs: options.threadTs,
             })
             if (logs) console.log('Failed test summary sent to Slack.')
           } else if (
             options.oauthToken !== undefined &&
             options.channelId !== undefined
           ) {
-            await postMessage(options.channelId, message, {
+            const response = await postMessage(options.channelId, message, {
               oauthToken: options.oauthToken,
+              threadTs: options.threadTs,
             })
             if (logs) console.log('Failed test summary sent to Slack.')
+            if (options.returnTs && response.ts && !firstTimestamp) {
+              firstTimestamp = response.ts
+            }
           }
         } else {
           if (logs)
             console.log('No failed test summary detected. No message sent')
         }
       }
+    }
+    if (options.returnTs && firstTimestamp) {
+      return firstTimestamp
     }
   }
 }
@@ -129,25 +154,33 @@ export async function sendFailedResultsToSlack(
  * @param report - The CTRF report
  * @param options - The options for the message
  * @param logs - Whether to log the message
+ * @returns The message timestamp if returnTs is true and using OAuth, otherwise void
  */
 export async function sendFlakyResultsToSlack(
   report: CtrfReport,
   options: Options = {},
   logs: boolean = false
-): Promise<void> {
+): Promise<string | void> {
   const message = formatFlakyTestsMessage(report, options)
   if (message !== null) {
     if (options.webhookUrl !== undefined) {
       await sendSlackMessage(message, {
         webhookUrl: options.webhookUrl,
+        threadTs: options.threadTs,
       })
     } else if (
       options.oauthToken !== undefined &&
       options.channelId !== undefined
     ) {
-      await postMessage(options.channelId, message, {
+      const response = await postMessage(options.channelId, message, {
         oauthToken: options.oauthToken,
+        threadTs: options.threadTs,
       })
+      if (logs) console.log('Flaky tests message sent to Slack.')
+      if (options.returnTs && response.ts) {
+        return response.ts
+      }
+      return
     }
     if (logs) console.log('Flaky tests message sent to Slack.')
   } else {
@@ -160,12 +193,13 @@ export async function sendFlakyResultsToSlack(
  * @param report - The CTRF report
  * @param options - The options for the message
  * @param logs - Whether to log the message
+ * @returns The message timestamp if returnTs is true and using OAuth, otherwise void
  */
 export async function sendAISummaryToSlack(
   report: CtrfReport,
   options: Options = {},
   logs: boolean = false
-): Promise<void> {
+): Promise<string | void> {
   if (options.consolidated !== undefined && options.consolidated) {
     const message = formatConsolidatedAiTestSummary(
       report.results.tests,
@@ -176,20 +210,28 @@ export async function sendAISummaryToSlack(
       if (options.webhookUrl !== undefined) {
         await sendSlackMessage(message, {
           webhookUrl: options.webhookUrl,
+          threadTs: options.threadTs,
         })
       } else if (
         options.oauthToken !== undefined &&
         options.channelId !== undefined
       ) {
-        await postMessage(options.channelId, message, {
+        const response = await postMessage(options.channelId, message, {
           oauthToken: options.oauthToken,
+          threadTs: options.threadTs,
         })
+        if (logs) console.log('AI test summary sent to Slack.')
+        if (options.returnTs && response.ts) {
+          return response.ts
+        }
+        return
       }
       if (logs) console.log('AI test summary sent to Slack.')
     } else {
       if (logs) console.log('No AI summary detected. No message sent.')
     }
   } else {
+    let firstTimestamp: string | undefined
     for (const test of report.results.tests) {
       if (test.status === 'failed') {
         const message = formatAiTestSummary(
@@ -201,20 +243,28 @@ export async function sendAISummaryToSlack(
           if (options.webhookUrl !== undefined) {
             await sendSlackMessage(message, {
               webhookUrl: options.webhookUrl,
+              threadTs: options.threadTs,
             })
           } else if (
             options.oauthToken !== undefined &&
             options.channelId !== undefined
           ) {
-            await postMessage(options.channelId, message, {
+            const response = await postMessage(options.channelId, message, {
               oauthToken: options.oauthToken,
+              threadTs: options.threadTs,
             })
+            if (logs) console.log('AI test summary sent to Slack.')
+            if (options.returnTs && response.ts && !firstTimestamp) {
+              firstTimestamp = response.ts
+            }
           }
-          if (logs) console.log('AI test summary sent to Slack.')
         } else {
           if (logs) console.log('No AI summary detected. No message sent')
         }
       }
+    }
+    if (options.returnTs && firstTimestamp) {
+      return firstTimestamp
     }
   }
 }
@@ -225,13 +275,14 @@ export async function sendAISummaryToSlack(
  * @param templateContent - The Handlebars template content
  * @param options - The options for the message
  * @param logs - Whether to log the message
+ * @returns The message timestamp if returnTs is true and using OAuth, otherwise void
  */
 export async function sendCustomMarkdownTemplateToSlack(
   report: CtrfReport,
   templateContent: string,
   options: Options = {},
   logs: boolean = false
-): Promise<void> {
+): Promise<string | void> {
   if (
     options.onFailOnly !== undefined &&
     options.onFailOnly &&
@@ -255,14 +306,21 @@ export async function sendCustomMarkdownTemplateToSlack(
     if (options.webhookUrl !== undefined) {
       await sendSlackMessage(message, {
         webhookUrl: options.webhookUrl,
+        threadTs: options.threadTs,
       })
     } else if (
       options.oauthToken !== undefined &&
       options.channelId !== undefined
     ) {
-      await postMessage(options.channelId, message, {
+      const response = await postMessage(options.channelId, message, {
         oauthToken: options.oauthToken,
+        threadTs: options.threadTs,
       })
+      if (logs) console.log('Custom template message sent to Slack.')
+      if (options.returnTs && response.ts) {
+        return response.ts
+      }
+      return
     }
     if (logs) console.log('Custom template message sent to Slack.')
   } else {
@@ -276,13 +334,14 @@ export async function sendCustomMarkdownTemplateToSlack(
  * @param blockKitJson - The Block Kit JSON template content
  * @param options - The options for the message
  * @param logs - Whether to log the message
+ * @returns The message timestamp if returnTs is true and using OAuth, otherwise void
  */
 export async function sendCustomBlockKitTemplateToSlack(
   report: CtrfReport,
   templateContent: string,
   options: Options = {},
   logs: boolean = false
-): Promise<void> {
+): Promise<string | void> {
   if (
     options.onFailOnly !== undefined &&
     options.onFailOnly &&
@@ -309,14 +368,21 @@ export async function sendCustomBlockKitTemplateToSlack(
     if (options.webhookUrl !== undefined) {
       await sendSlackMessage(message, {
         webhookUrl: options.webhookUrl,
+        threadTs: options.threadTs,
       })
     } else if (
       options.oauthToken !== undefined &&
       options.channelId !== undefined
     ) {
-      await postMessage(options.channelId, message, {
+      const response = await postMessage(options.channelId, message, {
         oauthToken: options.oauthToken,
+        threadTs: options.threadTs,
       })
+      if (logs) console.log('Custom Block Kit message sent to Slack.')
+      if (options.returnTs && response.ts) {
+        return response.ts
+      }
+      return
     }
     if (logs) console.log('Custom Block Kit message sent to Slack.')
   } else {

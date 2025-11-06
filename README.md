@@ -329,6 +329,32 @@ And finally, you can tag a group by using the `\!subteam^` symbol with the group
 npx slack-ctrf results /path/to/ctrf-file.json -s "<\!subteam^0123456789> please review the results"
 ```
 
+## Threading Support
+
+You can post messages as threaded replies to group related messages together (e.g., re-runs or follow-ups).
+
+### Post to a Thread
+
+Use the `--thread-ts` (or `--tt`) option to reply to an existing thread:
+
+```sh
+npx slack-ctrf results /path/to/ctrf-report.json --thread-ts "1234567890.123456"
+```
+
+### Get Message Timestamp
+
+Use the `--return-ts` (or `--rt`) flag to output the message timestamp. This is useful for capturing the timestamp of the first message to use in subsequent threaded replies:
+
+```sh
+# First message - capture timestamp
+THREAD_TS=$(npx slack-ctrf results /path/to/ctrf-report.json --return-ts | jq -r '.ts')
+
+# Reply to thread
+npx slack-ctrf results /path/to/ctrf-report.json --thread-ts "$THREAD_TS"
+```
+
+**Note:** The `--return-ts` flag only works when using OAuth token authentication (not webhooks).
+
 ## Options
 
 - `--onFailOnly, -f`: Send notification only if there are failed tests.
@@ -338,6 +364,8 @@ npx slack-ctrf results /path/to/ctrf-file.json -s "<\!subteam^0123456789> please
 - `--webhook-url, -w`: Incoming webhook URL
 - `--oauth-token, -o`: OAuth token
 - `--channel-id, -ch`: Channel ID
+- `--thread-ts, -tt`: Thread timestamp to reply to an existing thread
+- `--return-ts, -rt`: Output the message timestamp (only works with OAuth token)
 
 ## Merge reports
 

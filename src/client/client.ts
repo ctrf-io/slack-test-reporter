@@ -36,6 +36,7 @@ export const createSlackWebhook = (url?: string): IncomingWebhook => {
 /**
  * Send a message to Slack using a webhook URL
  * @param message - The message payload to send to Slack
+ * @param options - Options including thread_ts for threading
  * @returns A promise that resolves when the message is sent
  */
 export const sendSlackMessage = async (
@@ -44,7 +45,11 @@ export const sendSlackMessage = async (
 ): Promise<void> => {
   try {
     const webhook = createSlackWebhook(options.webhookUrl)
-    await webhook.send(message)
+    const payload = { ...message } as any
+    if (options.threadTs) {
+      payload.thread_ts = options.threadTs
+    }
+    await webhook.send(payload)
   } catch (error) {
     throw new Error(
       `Failed to send Slack message: ${error instanceof Error ? error.message : String(error)}`
@@ -56,6 +61,7 @@ export const sendSlackMessage = async (
  * Send a message to a Slack channel using the Web API
  * @param channel - Channel ID or name
  * @param message - Message text or blocks
+ * @param options - Options including thread_ts for threading
  * @returns A promise that resolves with the API response
  */
 export const postMessage = async (
@@ -67,14 +73,23 @@ export const postMessage = async (
     const client = createSlackClient(options.oauthToken)
 
     // For v7, we need to handle the payload structure correctly
+    const basePayload: any = {
+      channel,
+    }
+
+    // Add thread_ts if provided
+    if (options.threadTs) {
+      basePayload.thread_ts = options.threadTs
+    }
+
     if (typeof message === 'string') {
       return await client.chat.postMessage({
-        channel,
+        ...basePayload,
         text: message,
       })
     } else {
       return await client.chat.postMessage({
-        channel,
+        ...basePayload,
         ...message,
       } as any) // Type assertion needed for complex message objects
     }

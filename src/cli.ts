@@ -31,6 +31,17 @@ const sharedOptions = {
     description: 'Custom text to add as a suffix to the message',
     default: '',
   },
+  threadTs: {
+    alias: 'tt',
+    type: 'string',
+    description: 'Thread timestamp to reply to an existing thread',
+  },
+  returnTs: {
+    alias: 'rt',
+    type: 'boolean',
+    description: 'Output the message timestamp (only works with OAuth token)',
+    default: false,
+  },
 } as const
 
 const slackOptions = {
@@ -87,17 +98,22 @@ const argv = yargs(hideBin(process.argv))
       try {
         const report = parseCtrfFile(argv.path)
         const slackConfig = getEffectiveSlackConfig(argv)
-        await sendTestResultsToSlack(
+        const timestamp = await sendTestResultsToSlack(
           report,
           {
             title: argv.title,
             prefix: argv.prefix,
             suffix: argv.suffix,
             onFailOnly: argv.onFailOnly,
+            threadTs: argv.threadTs,
+            returnTs: argv.returnTs,
             ...slackConfig,
           },
           true
         )
+        if (argv.returnTs && timestamp) {
+          console.log(JSON.stringify({ ts: timestamp }))
+        }
       } catch (error: any) {
         console.error('Error:', error.message)
         process.exit(1)
@@ -121,17 +137,22 @@ const argv = yargs(hideBin(process.argv))
       try {
         const report = parseCtrfFile(argv.path)
         const slackConfig = getEffectiveSlackConfig(argv)
-        await sendFailedResultsToSlack(
+        const timestamp = await sendFailedResultsToSlack(
           report,
           {
             title: argv.title,
             prefix: argv.prefix,
             suffix: argv.suffix,
             consolidated: argv.consolidated,
+            threadTs: argv.threadTs,
+            returnTs: argv.returnTs,
             ...slackConfig,
           },
           true
         )
+        if (argv.returnTs && timestamp) {
+          console.log(JSON.stringify({ ts: timestamp }))
+        }
       } catch (error: any) {
         console.error('Error:', error.message)
         process.exit(1)
@@ -154,16 +175,21 @@ const argv = yargs(hideBin(process.argv))
       try {
         const report = parseCtrfFile(argv.path)
         const slackConfig = getEffectiveSlackConfig(argv)
-        await sendFlakyResultsToSlack(
+        const timestamp = await sendFlakyResultsToSlack(
           report,
           {
             title: argv.title,
             prefix: argv.prefix,
             suffix: argv.suffix,
+            threadTs: argv.threadTs,
+            returnTs: argv.returnTs,
             ...slackConfig,
           },
           true
         )
+        if (argv.returnTs && timestamp) {
+          console.log(JSON.stringify({ ts: timestamp }))
+        }
       } catch (error: any) {
         console.error('Error:', error.message)
         process.exit(1)
@@ -187,17 +213,22 @@ const argv = yargs(hideBin(process.argv))
       try {
         const report = parseCtrfFile(argv.path)
         const slackConfig = getEffectiveSlackConfig(argv)
-        await sendAISummaryToSlack(
+        const timestamp = await sendAISummaryToSlack(
           report,
           {
             title: argv.title,
             prefix: argv.prefix,
             suffix: argv.suffix,
             consolidated: argv.consolidated,
+            threadTs: argv.threadTs,
+            returnTs: argv.returnTs,
             ...slackConfig,
           },
           true
         )
+        if (argv.returnTs && timestamp) {
+          console.log(JSON.stringify({ ts: timestamp }))
+        }
       } catch (error: any) {
         console.error('Error:', error.message)
         process.exit(1)
@@ -261,17 +292,22 @@ const argv = yargs(hideBin(process.argv))
         const templateContent = fs.readFileSync(argv.templatePath, 'utf-8')
 
         if (argv.blockkit) {
-          await sendCustomBlockKitTemplateToSlack(
+          const timestamp = await sendCustomBlockKitTemplateToSlack(
             report,
             templateContent,
             {
               onFailOnly: argv.onFailOnly,
+              threadTs: argv.threadTs,
+              returnTs: argv.returnTs,
               ...slackConfig,
             },
             true
           )
+          if (argv.returnTs && timestamp) {
+            console.log(JSON.stringify({ ts: timestamp }))
+          }
         } else {
-          await sendCustomMarkdownTemplateToSlack(
+          const timestamp = await sendCustomMarkdownTemplateToSlack(
             report,
             templateContent,
             {
@@ -279,10 +315,15 @@ const argv = yargs(hideBin(process.argv))
               prefix: argv.prefix,
               suffix: argv.suffix,
               onFailOnly: argv.onFailOnly,
+              threadTs: argv.threadTs,
+              returnTs: argv.returnTs,
               ...slackConfig,
             },
             true
           )
+          if (argv.returnTs && timestamp) {
+            console.log(JSON.stringify({ ts: timestamp }))
+          }
         }
       } catch (error: any) {
         console.error('Error:', error.message)

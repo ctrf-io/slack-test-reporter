@@ -8,4 +8,6 @@ export interface Options {
   channelId?: string
   webhookUrl?: string
   token?: string
+  threadTs?: string
+  returnTs?: boolean
 }
