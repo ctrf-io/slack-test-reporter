@@ -8,11 +8,90 @@ import {
   formatCustomMarkdownMessage,
   formatCustomBlockKitMessage,
 } from './message-formatter.js'
-import { sendSlackMessage, postMessage } from './client/index.js'
-import { type Options } from './types/reporter.js'
+import {
+  sendSlackMessage,
+  postMessage,
+  updateMessage,
+  addReaction,
+} from './client/index.js'
+import { type Options, type SlackMessage } from './types/reporter.js'
 import { type CtrfReport } from './types/ctrf.js'
 import { stripAnsiFromErrors } from './utils/common.js'
 import { compileTemplate } from './handlebars/core.js'
+
+/**
+ * Internal utility to dispatch a message to Slack via Webhook or OAuth
+ */
+async function dispatchMessage(
+  message: SlackMessage,
+  options: Options,
+  logs: boolean,
+  successMsg: string
+): Promise<string | undefined> {
+  const threadTs = options.threadTs || process.env.SLACK_THREAD_TS
+
+  if (options.webhookUrl !== undefined) {
+    await sendSlackMessage(message, {
+      webhookUrl: options.webhookUrl,
+      threadTs: threadTs,
+      replyBroadcast: options.replyBroadcast,
+    })
+    if (logs) console.log(successMsg)
+    return undefined
+  } else if (
+    options.oauthToken !== undefined &&
+    options.channelId !== undefined
+  ) {
+    let response: any
+    if (options.updateTs) {
+      response = await updateMessage(
+        options.channelId,
+        options.updateTs,
+        message,
+        {
+          oauthToken: options.oauthToken,
+        }
+      )
+    } else {
+      response = await postMessage(options.channelId, message, {
+        oauthToken: options.oauthToken,
+        threadTs: threadTs,
+        replyBroadcast: options.replyBroadcast,
+      })
+    }
+    if (logs) console.log(successMsg)
+    return response.ts as string
+      }
+    return undefined
+}
+
+/**
+ * Add a status reaction to a message based on report results
+ */
+async function addStatusReaction(
+  report: CtrfReport,
+  ts: string,
+  options: Options
+): Promise<void> {
+  if (
+    !options.react ||
+    !options.oauthToken ||
+    !options.channelId ||
+    !ts ||
+    options.updateTs // Don't react if updating an existing message, usually
+  ) {
+    return
+  }
+
+  const emoji = report.results.summary.failed > 0 ? 'x' : 'white_check_mark'
+  try {
+    await addReaction(options.channelId, ts, emoji, {
+      oauthToken: options.oauthToken,
+    })
+  } catch (error) {
+    // Fail silently for reactions to not break the reporter
+  }
+}
 
 /**
  * Send the test results to Slack
@@ -36,28 +115,18 @@ export async function sendTestResultsToSlack(
   }
 
   const message = formatResultsMessage(report, options)
+  const ts = await dispatchMessage(
+    message,
+    options,
+    logs,
+    'Test results message sent to Slack.'
+  )
 
-  if (options.webhookUrl !== undefined) {
-    await sendSlackMessage(message, {
-      webhookUrl: options.webhookUrl,
-      threadTs: options.threadTs,
-    })
-    if (logs) console.log('Test results message sent to Slack.')
-    return
-  } else if (
-    options.oauthToken !== undefined &&
-    options.channelId !== undefined
-  ) {
-    const response = await postMessage(options.channelId, message, {
-      oauthToken: options.oauthToken,
-      threadTs: options.threadTs,
-    })
-    if (logs) console.log('Test results message sent to Slack.')
-    if (options.returnTs && response.ts) {
-      return response.ts
-    }
-    return
+  if (ts) {
+    await addStatusReaction(report, ts, options)
   }
+
+  if (options.returnTs) return ts
 }
 
 /**
@@ -85,30 +154,40 @@ export async function sendFailedResultsToSlack(
       options
     )
     if (message !== null) {
-      if (options.webhookUrl !== undefined) {
-        await sendSlackMessage(message, {
-          webhookUrl: options.webhookUrl,
-          threadTs: options.threadTs,
-        })
-      } else if (
-        options.oauthToken !== undefined &&
-        options.channelId !== undefined
-      ) {
-        const response = await postMessage(options.channelId, message, {
-          oauthToken: options.oauthToken,
-          threadTs: options.threadTs,
-        })
-        if (logs) console.log('Failed test summary sent to Slack.')
-        if (options.returnTs && response.ts) {
-          return response.ts
-        }
-        return
+      const ts = await dispatchMessage(
+        message,
+        options,
+        logs,
+        'Failed test summary sent to Slack.'
+      )
+      if (ts) {
+        await addStatusReaction(report, ts, options)
       }
-      if (logs) console.log('Failed test summary sent to Slack.')
+      if (options.returnTs) return ts
     } else {
       if (logs) console.log('No failed test summary detected. No message sent.')
     }
   } else {
+    let parentTs: string | undefined
+    const threadTs = options.threadTs || process.env.SLACK_THREAD_TS
+
+    // Send a summary message first to act as the parent if auto-threading is desired
+    // and no threadTs was provided.
+    if (!threadTs && report.results.summary.failed > 1) {
+      const summaryMsg = {
+        text: `*${options.title || 'Test Failures'}*: ${report.results.summary.failed} tests failed. See thread for details.`,
+      }
+      parentTs = await dispatchMessage(
+        summaryMsg,
+        options,
+        logs,
+        'Failure summary sent to Slack.'
+      )
+      if (parentTs) {
+        await addStatusReaction(report, parentTs, options)
+      }
+    }
+
     let firstTimestamp: string | undefined
     for (const test of report.results.tests) {
       if (test.status === 'failed') {
@@ -118,34 +197,20 @@ export async function sendFailedResultsToSlack(
           options
         )
         if (message !== null) {
-          if (options.webhookUrl !== undefined) {
-            await sendSlackMessage(message, {
-              webhookUrl: options.webhookUrl,
-              threadTs: options.threadTs,
-            })
-            if (logs) console.log('Failed test summary sent to Slack.')
-          } else if (
-            options.oauthToken !== undefined &&
-            options.channelId !== undefined
-          ) {
-            const response = await postMessage(options.channelId, message, {
-              oauthToken: options.oauthToken,
-              threadTs: options.threadTs,
-            })
-            if (logs) console.log('Failed test summary sent to Slack.')
-            if (options.returnTs && response.ts && !firstTimestamp) {
-              firstTimestamp = response.ts
-            }
-          }
+          const ts = await dispatchMessage(
+            message,
+            { ...options, threadTs: parentTs || threadTs },
+            logs,
+            'Failed test summary sent to Slack.'
+          )
+          if (!firstTimestamp) firstTimestamp = ts
         } else {
           if (logs)
             console.log('No failed test summary detected. No message sent')
         }
       }
     }
-    if (options.returnTs && firstTimestamp) {
-      return firstTimestamp
-    }
+    if (options.returnTs) return parentTs || firstTimestamp
   }
 }
 
@@ -163,26 +228,16 @@ export async function sendFlakyResultsToSlack(
 ): Promise<string | void> {
   const message = formatFlakyTestsMessage(report, options)
   if (message !== null) {
-    if (options.webhookUrl !== undefined) {
-      await sendSlackMessage(message, {
-        webhookUrl: options.webhookUrl,
-        threadTs: options.threadTs,
-      })
-    } else if (
-      options.oauthToken !== undefined &&
-      options.channelId !== undefined
-    ) {
-      const response = await postMessage(options.channelId, message, {
-        oauthToken: options.oauthToken,
-        threadTs: options.threadTs,
-      })
-      if (logs) console.log('Flaky tests message sent to Slack.')
-      if (options.returnTs && response.ts) {
-        return response.ts
-      }
-      return
+    const ts = await dispatchMessage(
+      message,
+      options,
+      logs,
+      'Flaky tests message sent to Slack.'
+    )
+    if (ts) {
+      await addStatusReaction(report, ts, options)
     }
-    if (logs) console.log('Flaky tests message sent to Slack.')
+    if (options.returnTs) return ts
   } else {
     if (logs) console.log('No flaky tests detected. No message sent.')
   }
@@ -207,30 +262,38 @@ export async function sendAISummaryToSlack(
       options
     )
     if (message !== null) {
-      if (options.webhookUrl !== undefined) {
-        await sendSlackMessage(message, {
-          webhookUrl: options.webhookUrl,
-          threadTs: options.threadTs,
-        })
-      } else if (
-        options.oauthToken !== undefined &&
-        options.channelId !== undefined
-      ) {
-        const response = await postMessage(options.channelId, message, {
-          oauthToken: options.oauthToken,
-          threadTs: options.threadTs,
-        })
-        if (logs) console.log('AI test summary sent to Slack.')
-        if (options.returnTs && response.ts) {
-          return response.ts
-        }
-        return
+      const ts = await dispatchMessage(
+        message,
+        options,
+        logs,
+        'AI test summary sent to Slack.'
+      )
+      if (ts) {
+        await addStatusReaction(report, ts, options)
       }
-      if (logs) console.log('AI test summary sent to Slack.')
+      if (options.returnTs) return ts
     } else {
       if (logs) console.log('No AI summary detected. No message sent.')
     }
   } else {
+    let parentTs: string | undefined
+    const threadTs = options.threadTs || process.env.SLACK_THREAD_TS
+
+    if (!threadTs && report.results.summary.failed > 1) {
+      const summaryMsg = {
+        text: `*AI Test Summary*: Analysis for ${report.results.summary.failed} failures below.`,
+      }
+      parentTs = await dispatchMessage(
+        summaryMsg,
+        options,
+        logs,
+        'AI summary header sent to Slack.'
+      )
+      if (parentTs) {
+        await addStatusReaction(report, parentTs, options)
+      }
+    }
+
     let firstTimestamp: string | undefined
     for (const test of report.results.tests) {
       if (test.status === 'failed') {
@@ -240,32 +303,19 @@ export async function sendAISummaryToSlack(
           options
         )
         if (message !== null) {
-          if (options.webhookUrl !== undefined) {
-            await sendSlackMessage(message, {
-              webhookUrl: options.webhookUrl,
-              threadTs: options.threadTs,
-            })
-          } else if (
-            options.oauthToken !== undefined &&
-            options.channelId !== undefined
-          ) {
-            const response = await postMessage(options.channelId, message, {
-              oauthToken: options.oauthToken,
-              threadTs: options.threadTs,
-            })
-            if (logs) console.log('AI test summary sent to Slack.')
-            if (options.returnTs && response.ts && !firstTimestamp) {
-              firstTimestamp = response.ts
-            }
-          }
+          const ts = await dispatchMessage(
+            message,
+            { ...options, threadTs: parentTs || threadTs },
+            logs,
+            'AI test summary sent to Slack.'
+          )
+          if (!firstTimestamp) firstTimestamp = ts
         } else {
           if (logs) console.log('No AI summary detected. No message sent')
         }
       }
     }
-    if (options.returnTs && firstTimestamp) {
-      return firstTimestamp
-    }
+    if (options.returnTs) return parentTs || firstTimestamp
   }
 }
 
@@ -303,26 +353,16 @@ export async function sendCustomMarkdownTemplateToSlack(
   )
 
   if (message !== null) {
-    if (options.webhookUrl !== undefined) {
-      await sendSlackMessage(message, {
-        webhookUrl: options.webhookUrl,
-        threadTs: options.threadTs,
-      })
-    } else if (
-      options.oauthToken !== undefined &&
-      options.channelId !== undefined
-    ) {
-      const response = await postMessage(options.channelId, message, {
-        oauthToken: options.oauthToken,
-        threadTs: options.threadTs,
-      })
-      if (logs) console.log('Custom template message sent to Slack.')
-      if (options.returnTs && response.ts) {
-        return response.ts
-      }
-      return
+    const ts = await dispatchMessage(
+      message,
+      options,
+      logs,
+      'Custom template message sent to Slack.'
+    )
+    if (ts) {
+      await addStatusReaction(report, ts, options)
     }
-    if (logs) console.log('Custom template message sent to Slack.')
+    if (options.returnTs) return ts
   } else {
     if (logs) console.log('No custom message detected. No message sent.')
   }
@@ -365,28 +405,20 @@ export async function sendCustomBlockKitTemplateToSlack(
   const message = formatCustomBlockKitMessage(report, blockKit)
 
   if (message !== null) {
-    if (options.webhookUrl !== undefined) {
-      await sendSlackMessage(message, {
-        webhookUrl: options.webhookUrl,
-        threadTs: options.threadTs,
-      })
-    } else if (
-      options.oauthToken !== undefined &&
-      options.channelId !== undefined
-    ) {
-      const response = await postMessage(options.channelId, message, {
-        oauthToken: options.oauthToken,
-        threadTs: options.threadTs,
-      })
-      if (logs) console.log('Custom Block Kit message sent to Slack.')
-      if (options.returnTs && response.ts) {
-        return response.ts
-      }
-      return
+    const ts = await dispatchMessage(
+      message,
+      options,
+      logs,
+      'Custom Block Kit message sent to Slack.'
+    )
+    if (ts) {
+      await addStatusReaction(report, ts, options)
     }
-    if (logs) console.log('Custom Block Kit message sent to Slack.')
+    if (options.returnTs) return ts
   } else {
     if (logs)
       console.log('No custom Block Kit message detected. No message sent.')
   }
 }
+
+

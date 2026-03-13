@@ -1,7 +1,7 @@
 // src/client/client.ts
 import { ChatPostMessageResponse, WebClient } from '@slack/web-api'
 import { IncomingWebhook } from '@slack/webhook'
-import { type Options } from '../types/reporter.js'
+import { type Options, type SlackMessage } from '../types/reporter.js'
 
 /**
  * Create a Slack API client for more advanced operations
@@ -36,18 +36,22 @@ export const createSlackWebhook = (url?: string): IncomingWebhook => {
 /**
  * Send a message to Slack using a webhook URL
  * @param message - The message payload to send to Slack
- * @param options - Options including thread_ts for threading
+ * @param options - Options including threadTs and replyBroadcast
  * @returns A promise that resolves when the message is sent
  */
 export const sendSlackMessage = async (
-  message: object,
+  message: SlackMessage,
   options: Options
 ): Promise<void> => {
   try {
     const webhook = createSlackWebhook(options.webhookUrl)
-    const payload = { ...message } as any
+    const payload: any = { ...message }
     if (options.threadTs) {
       payload.thread_ts = options.threadTs
+    }
+    // Webhooks don't support reply_broadcast in a standard way, but we include it for completeness
+    if (options.replyBroadcast) {
+      payload.reply_broadcast = options.replyBroadcast
     }
     await webhook.send(payload)
   } catch (error) {
@@ -61,37 +65,34 @@ export const sendSlackMessage = async (
  * Send a message to a Slack channel using the Web API
  * @param channel - Channel ID or name
  * @param message - Message text or blocks
- * @param options - Options including thread_ts for threading
+ * @param options - Options including threadTs and replyBroadcast
  * @returns A promise that resolves with the API response
  */
 export const postMessage = async (
   channel: string,
-  message: string | object,
+  message: string | SlackMessage,
   options: Options
 ): Promise<ChatPostMessageResponse> => {
   try {
     const client = createSlackClient(options.oauthToken)
 
-    // For v7, we need to handle the payload structure correctly
-    const basePayload: any = {
-      channel,
-    }
-
-    // Add thread_ts if provided
-    if (options.threadTs) {
-      basePayload.thread_ts = options.threadTs
-    }
+    const threadTs = options.threadTs
+    const replyBroadcast = options.replyBroadcast
 
     if (typeof message === 'string') {
       return await client.chat.postMessage({
-        ...basePayload,
+        channel,
         text: message,
-      })
+        thread_ts: threadTs,
+        reply_broadcast: replyBroadcast,
+       } as any)
     } else {
       return await client.chat.postMessage({
-        ...basePayload,
+        channel,
         ...message,
-      } as any) // Type assertion needed for complex message objects
+        thread_ts: threadTs || message.thread_ts,
+        reply_broadcast: replyBroadcast || message.reply_broadcast,
+      } as any)
     }
   } catch (error) {
     throw new Error(
@@ -99,3 +100,70 @@ export const postMessage = async (
     )
   }
 }
+
+/**
+ * Update an existing Slack message
+ * @param channel - Channel ID
+ * @param ts - Timestamp of the message to update
+ * @param message - New message content
+ * @param options - Options including oauthToken
+ * @returns A promise that resolves with the API response
+ */
+export const updateMessage = async (
+  channel: string,
+  ts: string,
+  message: string | SlackMessage,
+  options: Options
+): Promise<ChatPostMessageResponse> => {
+  try {
+    const client = createSlackClient(options.oauthToken)
+
+    if (typeof message === 'string') {
+      return (await client.chat.update({
+        channel,
+        ts,
+        text: message,
+      } as any)) as any
+    } else {
+      return (await client.chat.update({
+        channel,
+        ts,
+        ...message,
+     } as any)) as any
+    }
+  } catch (error) {
+    throw new Error(
+      `Failed to update message: ${error instanceof Error ? error.message : String(error)}`
+    )
+  }
+}
+
+/**
+ * Add a reaction to a Slack message
+ * @param channel - Channel ID
+ * @param ts - Timestamp of the message to react to
+ * @param emoji - Emoji name (without colons)
+ * @param options - Options including oauthToken
+ */
+export const addReaction = async (
+  channel: string,
+  ts: string,
+  emoji: string,
+  options: Options
+): Promise<void> => {
+  try {
+    const client = createSlackClient(options.oauthToken)
+    await client.reactions.add({
+      channel,
+      timestamp: ts,
+      name: emoji,
+    })
+  } catch (error) {
+    // If reaction already exists, we can ignore it
+    const errorMsg = error instanceof Error ? error.message : String(error)
+    if (!errorMsg.includes('already_reacted')) {
+      throw new Error(`Failed to add reaction: ${errorMsg}`)
+    }
+  }
+}
+
