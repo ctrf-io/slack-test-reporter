@@ -98,18 +98,17 @@ describe('SlackClient', () => {
         });
     });
     describe('constructor', () => {
-        it('should fallback to environment variables', () => {
-            process.env.SLACK_TITLE = 'Env Title';
-            process.env.SLACK_THREAD_TS = 'env.ts';
-            process.env.SLACK_DRY_RUN = 'true';
-            const client = new SlackClient({});
+        it('should use provided options', () => {
+            const options = {
+                title: 'Provided Title',
+                threadTs: 'provided.ts',
+                dryRun: true,
+            };
+            const client = new SlackClient(options);
             // Accessing private options for testing
-            expect(client.options.title).toBe('Env Title');
-            expect(client.options.threadTs).toBe('env.ts');
+            expect(client.options.title).toBe('Provided Title');
+            expect(client.options.threadTs).toBe('provided.ts');
             expect(client.options.dryRun).toBe(true);
-            delete process.env.SLACK_TITLE;
-            delete process.env.SLACK_THREAD_TS;
-            delete process.env.SLACK_DRY_RUN;
         });
     });
     describe('retry logic', () => {

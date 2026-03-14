@@ -100,9 +100,55 @@ const consolidatedOption = {
         default: false,
     },
 };
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-const argv = yargs(hideBin(process.argv))
+function getActionConfig() {
+    const config = {};
+    const mapping = {
+        command: process.env.INPUT_COMMAND,
+        path: process.env.INPUT_PATH,
+        templatePath: process.env.INPUT_TEMPLATE_PATH,
+        title: process.env.INPUT_TITLE,
+        prefix: process.env.INPUT_PREFIX,
+        suffix: process.env.INPUT_SUFFIX,
+        threadTs: process.env.INPUT_THREAD_TS,
+        replyBroadcast: process.env.INPUT_REPLY_BROADCAST,
+        updateTs: process.env.INPUT_UPDATE_TS,
+        react: process.env.INPUT_REACT,
+        onFailOnly: process.env.INPUT_ON_FAIL_ONLY,
+        consolidated: process.env.INPUT_CONSOLIDATED,
+        autoThread: process.env.INPUT_AUTO_THREAD,
+        oauthToken: process.env.INPUT_SLACK_TOKEN,
+        channelId: process.env.INPUT_CHANNEL_ID,
+        webhookUrl: process.env.INPUT_WEBHOOK_URL,
+        maxRetries: process.env.INPUT_MAX_RETRIES,
+        dryRun: process.env.INPUT_DRY_RUN,
+    };
+    for (const [key, value] of Object.entries(mapping)) {
+        if (value !== undefined && value !== '') {
+            if (value === 'true') {
+                config[key] = true;
+            }
+            else if (value === 'false') {
+                config[key] = false;
+            }
+            else if (!isNaN(Number(value)) && key === 'maxRetries') {
+                config[key] = Number(value);
+            }
+            else {
+                config[key] = value;
+            }
+        }
+    }
+    return config;
+}
+function setGithubOutput(key, value) {
+    const outputPath = process.env.GITHUB_OUTPUT;
+    if (outputPath && value) {
+        fs.appendFileSync(outputPath, `${key}=${value}\n`);
+    }
+}
+const y = yargs(hideBin(process.argv))
     .options(slackOptions)
+    .config(getActionConfig())
     .command('results <path>', 'Send test results summary to Slack', yargs => {
     return yargs
         .positional('path', {
@@ -236,6 +282,9 @@ const argv = yargs(hideBin(process.argv))
         if (argv.returnTs && timestamp) {
             console.log(JSON.stringify({ ts: timestamp }));
         }
+        if (timestamp) {
+            setGithubOutput('ts', timestamp);
+        }
     }
     catch (error) {
         const message = error instanceof Error ? error.message : String(error);
@@ -263,7 +312,24 @@ const argv = yargs(hideBin(process.argv))
     }
     throw new Error('Please provide either webhook-url (or SLACK_WEBHOOK_URL env var), OR both oauth-token (or SLACK_OAUTH_TOKEN env var) and --channel-id (or SLACK_CHANNEL_ID env var).');
 })
-    .help().argv;
+    .help();
+// Trigger the CLI
+if (process.env.INPUT_COMMAND && process.argv.length < 3) {
+    const command = process.env.INPUT_COMMAND;
+    const path = process.env.INPUT_PATH;
+    if (path) {
+        // If it's a custom command, we need the template path too
+        const templatePath = process.env.INPUT_TEMPLATE_PATH;
+        const args = templatePath ? [command, path, templatePath] : [command, path];
+        y.parse(args);
+    }
+    else {
+        y.parse();
+    }
+}
+else {
+    y.parse();
+}
 /**
  * Handle command execution with shared logic
  */
@@ -290,6 +356,9 @@ async function handleCommand(reporterFn, argv, extraOptions = {}) {
         const timestamp = await reporterFn(report, options, !argv.returnTs);
         if (argv.returnTs && timestamp) {
             console.log(JSON.stringify({ ts: timestamp }));
+        }
+        if (timestamp) {
+            setGithubOutput('ts', timestamp);
         }
     }
     catch (error) {

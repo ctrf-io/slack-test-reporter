@@ -10430,7 +10430,7 @@ var require_ms = __commonJS({
     var h = m * 60;
     var d = h * 24;
     var w = d * 7;
-    var y = d * 365.25;
+    var y2 = d * 365.25;
     module.exports = function(val, options) {
       options = options || {};
       var type = typeof val;
@@ -10462,7 +10462,7 @@ var require_ms = __commonJS({
         case "yrs":
         case "yr":
         case "y":
-          return n * y;
+          return n * y2;
         case "weeks":
         case "week":
         case "w":
@@ -10889,10 +10889,10 @@ var require_browser = __commonJS({
 var require_has_flag = __commonJS({
   "node_modules/has-flag/index.js"(exports, module) {
     "use strict";
-    module.exports = (flag, argv2 = process.argv) => {
+    module.exports = (flag, argv = process.argv) => {
       const prefix = flag.startsWith("-") ? "" : flag.length === 1 ? "-" : "--";
-      const position = argv2.indexOf(prefix + flag);
-      const terminatorPosition = argv2.indexOf("--");
+      const position = argv.indexOf(prefix + flag);
+      const terminatorPosition = argv.indexOf("--");
       return position !== -1 && (terminatorPosition === -1 || position < terminatorPosition);
     };
   }
@@ -23319,10 +23319,10 @@ var require_binary_search = __commonJS({
 // node_modules/source-map/lib/quick-sort.js
 var require_quick_sort = __commonJS({
   "node_modules/source-map/lib/quick-sort.js"(exports) {
-    function swap(ary, x, y) {
+    function swap(ary, x, y2) {
       var temp = ary[x];
-      ary[x] = ary[y];
-      ary[y] = temp;
+      ary[x] = ary[y2];
+      ary[y2] = temp;
     }
     function randomIntInRange(low, high) {
       return Math.round(low + Math.random() * (high - low));
@@ -27305,7 +27305,7 @@ var YargsParser = class {
     let error = null;
     checkConfiguration();
     let notFlags = [];
-    const argv2 = Object.assign(/* @__PURE__ */ Object.create(null), { _: [] });
+    const argv = Object.assign(/* @__PURE__ */ Object.create(null), { _: [] });
     const argvReturn = {};
     for (let i = 0; i < args.length; i++) {
       const arg = args[i];
@@ -27443,41 +27443,41 @@ var YargsParser = class {
         pushPositional(arg);
       }
     }
-    applyEnvVars(argv2, true);
-    applyEnvVars(argv2, false);
-    setConfig(argv2);
+    applyEnvVars(argv, true);
+    applyEnvVars(argv, false);
+    setConfig(argv);
     setConfigObjects();
-    applyDefaultsAndAliases(argv2, flags.aliases, defaults2, true);
-    applyCoercions(argv2);
+    applyDefaultsAndAliases(argv, flags.aliases, defaults2, true);
+    applyCoercions(argv);
     if (configuration["set-placeholder-key"])
-      setPlaceholderKeys(argv2);
+      setPlaceholderKeys(argv);
     Object.keys(flags.counts).forEach(function(key) {
-      if (!hasKey(argv2, key.split(".")))
+      if (!hasKey(argv, key.split(".")))
         setArg(key, 0);
     });
     if (notFlagsOption && notFlags.length)
-      argv2[notFlagsArgv] = [];
+      argv[notFlagsArgv] = [];
     notFlags.forEach(function(key) {
-      argv2[notFlagsArgv].push(key);
+      argv[notFlagsArgv].push(key);
     });
     if (configuration["camel-case-expansion"] && configuration["strip-dashed"]) {
-      Object.keys(argv2).filter((key) => key !== "--" && key.includes("-")).forEach((key) => {
-        delete argv2[key];
+      Object.keys(argv).filter((key) => key !== "--" && key.includes("-")).forEach((key) => {
+        delete argv[key];
       });
     }
     if (configuration["strip-aliased"]) {
       ;
       [].concat(...Object.keys(aliases).map((k) => aliases[k])).forEach((alias) => {
         if (configuration["camel-case-expansion"] && alias.includes("-")) {
-          delete argv2[alias.split(".").map((prop) => camelCase(prop)).join(".")];
+          delete argv[alias.split(".").map((prop) => camelCase(prop)).join(".")];
         }
-        delete argv2[alias];
+        delete argv[alias];
       });
     }
     function pushPositional(arg) {
       const maybeCoercedNumber = maybeCoerceNumber("_", arg);
       if (typeof maybeCoercedNumber === "string" || typeof maybeCoercedNumber === "number") {
-        argv2._.push(maybeCoercedNumber);
+        argv._.push(maybeCoercedNumber);
       }
     }
     function eatNargs(i, key, args2, argAfterEqualSign) {
@@ -27557,11 +27557,11 @@ var YargsParser = class {
       }
       const value = processValue(key, val, shouldStripQuotes);
       const splitKey = key.split(".");
-      setKey(argv2, splitKey, value);
+      setKey(argv, splitKey, value);
       if (flags.aliases[key]) {
         flags.aliases[key].forEach(function(x) {
           const keyProperties = x.split(".");
-          setKey(argv2, keyProperties, value);
+          setKey(argv, keyProperties, value);
         });
       }
       if (splitKey.length > 1 && configuration["dot-notation"]) {
@@ -27572,7 +27572,7 @@ var YargsParser = class {
           a.shift();
           keyProperties = keyProperties.concat(a);
           if (!(flags.aliases[key] || []).includes(keyProperties.join("."))) {
-            setKey(argv2, keyProperties, value);
+            setKey(argv, keyProperties, value);
           }
         });
       }
@@ -27635,11 +27635,11 @@ var YargsParser = class {
       }
       return value;
     }
-    function setConfig(argv3) {
+    function setConfig(argv2) {
       const configLookup = /* @__PURE__ */ Object.create(null);
       applyDefaultsAndAliases(configLookup, flags.aliases, defaults2);
       Object.keys(flags.configs).forEach(function(configKey) {
-        const configPath = argv3[configKey] || configLookup[configKey];
+        const configPath = argv2[configKey] || configLookup[configKey];
         if (configPath) {
           try {
             let config = null;
@@ -27662,7 +27662,7 @@ var YargsParser = class {
           } catch (ex) {
             if (ex.name === "PermissionDenied")
               error = ex;
-            else if (argv3[configKey])
+            else if (argv2[configKey])
               error = Error(__("Invalid JSON config file: %s", configPath));
           }
         }
@@ -27675,7 +27675,7 @@ var YargsParser = class {
         if (typeof value === "object" && value !== null && !Array.isArray(value) && configuration["dot-notation"]) {
           setConfigObject(value, fullKey);
         } else {
-          if (!hasKey(argv2, fullKey.split(".")) || checkAllAliases(fullKey, flags.arrays) && configuration["combine-arrays"]) {
+          if (!hasKey(argv, fullKey.split(".")) || checkAllAliases(fullKey, flags.arrays) && configuration["combine-arrays"]) {
             setArg(fullKey, value);
           }
         }
@@ -27688,7 +27688,7 @@ var YargsParser = class {
         });
       }
     }
-    function applyEnvVars(argv3, configOnly) {
+    function applyEnvVars(argv2, configOnly) {
       if (typeof envPrefix === "undefined")
         return;
       const prefix = typeof envPrefix === "string" ? envPrefix : "";
@@ -27701,24 +27701,24 @@ var YargsParser = class {
             }
             return camelCase(key);
           });
-          if ((configOnly && flags.configs[keys.join(".")] || !configOnly) && !hasKey(argv3, keys)) {
+          if ((configOnly && flags.configs[keys.join(".")] || !configOnly) && !hasKey(argv2, keys)) {
             setArg(keys.join("."), env2[envVar]);
           }
         }
       });
     }
-    function applyCoercions(argv3) {
+    function applyCoercions(argv2) {
       let coerce;
       const applied = /* @__PURE__ */ new Set();
-      Object.keys(argv3).forEach(function(key) {
+      Object.keys(argv2).forEach(function(key) {
         if (!applied.has(key)) {
           coerce = checkAllAliases(key, flags.coercions);
           if (typeof coerce === "function") {
             try {
-              const value = maybeCoerceNumber(key, coerce(argv3[key]));
+              const value = maybeCoerceNumber(key, coerce(argv2[key]));
               [].concat(flags.aliases[key] || [], key).forEach((ali) => {
                 applied.add(ali);
-                argv3[ali] = value;
+                argv2[ali] = value;
               });
             } catch (err) {
               error = err;
@@ -27727,14 +27727,14 @@ var YargsParser = class {
         }
       });
     }
-    function setPlaceholderKeys(argv3) {
+    function setPlaceholderKeys(argv2) {
       flags.keys.forEach((key) => {
         if (~key.indexOf("."))
           return;
-        if (typeof argv3[key] === "undefined")
-          argv3[key] = void 0;
+        if (typeof argv2[key] === "undefined")
+          argv2[key] = void 0;
       });
-      return argv3;
+      return argv2;
     }
     function applyDefaultsAndAliases(obj, aliases2, defaults3, canLog = false) {
       Object.keys(defaults3).forEach(function(key) {
@@ -27836,8 +27836,8 @@ var YargsParser = class {
             }
           });
           flags.aliases[key].forEach(function(x) {
-            flags.aliases[x] = [key].concat(flags.aliases[key].filter(function(y) {
-              return x !== y;
+            flags.aliases[x] = [key].concat(flags.aliases[key].filter(function(y2) {
+              return x !== y2;
             }));
           });
         });
@@ -27945,7 +27945,7 @@ var YargsParser = class {
     }
     return {
       aliases: Object.assign({}, flags.aliases),
-      argv: Object.assign(argvReturn, argv2),
+      argv: Object.assign(argvReturn, argv),
       configuration,
       defaulted: Object.assign({}, defaulted),
       error,
@@ -28060,8 +28060,8 @@ function isBundledElectronApp() {
 function isElectronApp() {
   return !!process.versions.electron;
 }
-function hideBin(argv2) {
-  return argv2.slice(getProcessArgvBinIndex() + 1);
+function hideBin(argv) {
+  return argv.slice(getProcessArgvBinIndex() + 1);
 }
 function getProcessArgvBin() {
   return process.argv[getProcessArgvBinIndex()];
@@ -28557,7 +28557,7 @@ function commandMiddlewareFactory(commandMiddleware) {
     return middleware;
   });
 }
-function applyMiddleware(argv2, yargs, middlewares, beforeValidation) {
+function applyMiddleware(argv, yargs, middlewares, beforeValidation) {
   return middlewares.reduce((acc, middleware) => {
     if (middleware.applyBeforeValidation !== beforeValidation) {
       return acc;
@@ -28573,7 +28573,7 @@ function applyMiddleware(argv2, yargs, middlewares, beforeValidation) {
       const result = middleware(acc, yargs);
       return isPromise(result) ? result.then((middlewareObj) => Object.assign(acc, middlewareObj)) : Object.assign(acc, result);
     }
-  }, argv2);
+  }, argv);
 }
 
 // node_modules/yargs/build/lib/utils/maybe-async-result.js
@@ -28772,9 +28772,9 @@ var CommandInstance = class {
       innerYargs.getInternalMethods().getUsageInstance().usage(this.usageFromParentCommandsCommandHandler(parentCommands, commandHandler), commandHandler.description);
     }
     const innerArgv = innerYargs.getInternalMethods().runYargsParserAndExecuteCommands(null, void 0, true, commandIndex, helpOnly);
-    return isPromise(innerArgv) ? innerArgv.then((argv2) => ({
+    return isPromise(innerArgv) ? innerArgv.then((argv) => ({
       aliases: innerYargs.parsed.aliases,
-      innerArgv: argv2
+      innerArgv: argv
     })) : {
       aliases: innerYargs.parsed.aliases,
       innerArgv
@@ -28837,31 +28837,31 @@ var CommandInstance = class {
     const maybePromiseArgv = applyMiddleware(innerArgv, yargs, middlewares, true);
     return isPromise(maybePromiseArgv) ? maybePromiseArgv.then((resolvedInnerArgv) => this.handleValidationAndGetResult(isDefaultCommand, commandHandler, resolvedInnerArgv, currentContext, aliases, yargs, middlewares, positionalMap)) : this.handleValidationAndGetResult(isDefaultCommand, commandHandler, maybePromiseArgv, currentContext, aliases, yargs, middlewares, positionalMap);
   }
-  populatePositionals(commandHandler, argv2, context, yargs) {
-    argv2._ = argv2._.slice(context.commands.length);
+  populatePositionals(commandHandler, argv, context, yargs) {
+    argv._ = argv._.slice(context.commands.length);
     const demanded = commandHandler.demanded.slice(0);
     const optional = commandHandler.optional.slice(0);
     const positionalMap = {};
-    this.validation.positionalCount(demanded.length, argv2._.length);
+    this.validation.positionalCount(demanded.length, argv._.length);
     while (demanded.length) {
       const demand = demanded.shift();
-      this.populatePositional(demand, argv2, positionalMap);
+      this.populatePositional(demand, argv, positionalMap);
     }
     while (optional.length) {
       const maybe = optional.shift();
-      this.populatePositional(maybe, argv2, positionalMap);
+      this.populatePositional(maybe, argv, positionalMap);
     }
-    argv2._ = context.commands.concat(argv2._.map((a) => "" + a));
-    this.postProcessPositionals(argv2, positionalMap, this.cmdToParseOptions(commandHandler.original), yargs);
+    argv._ = context.commands.concat(argv._.map((a) => "" + a));
+    this.postProcessPositionals(argv, positionalMap, this.cmdToParseOptions(commandHandler.original), yargs);
     return positionalMap;
   }
-  populatePositional(positional, argv2, positionalMap) {
+  populatePositional(positional, argv, positionalMap) {
     const cmd = positional.cmd[0];
     if (positional.variadic) {
-      positionalMap[cmd] = argv2._.splice(0).map(String);
+      positionalMap[cmd] = argv._.splice(0).map(String);
     } else {
-      if (argv2._.length)
-        positionalMap[cmd] = [String(argv2._.shift())];
+      if (argv._.length)
+        positionalMap[cmd] = [String(argv._.shift())];
     }
   }
   cmdToParseOptions(cmdString) {
@@ -28891,7 +28891,7 @@ var CommandInstance = class {
     });
     return parseOptions;
   }
-  postProcessPositionals(argv2, positionalMap, parseOptions, yargs) {
+  postProcessPositionals(argv, positionalMap, parseOptions, yargs) {
     const options = Object.assign({}, yargs.getOptions());
     options.default = Object.assign(parseOptions.default, options.default);
     for (const key of Object.keys(parseOptions.alias)) {
@@ -28927,10 +28927,10 @@ var CommandInstance = class {
         if (positionalKeys.includes(key)) {
           if (!positionalMap[key])
             positionalMap[key] = parsed.argv[key];
-          if (!this.isInConfigs(yargs, key) && !this.isDefaulted(yargs, key) && Object.prototype.hasOwnProperty.call(argv2, key) && Object.prototype.hasOwnProperty.call(parsed.argv, key) && (Array.isArray(argv2[key]) || Array.isArray(parsed.argv[key]))) {
-            argv2[key] = [].concat(argv2[key], parsed.argv[key]);
+          if (!this.isInConfigs(yargs, key) && !this.isDefaulted(yargs, key) && Object.prototype.hasOwnProperty.call(argv, key) && Object.prototype.hasOwnProperty.call(parsed.argv, key) && (Array.isArray(argv[key]) || Array.isArray(parsed.argv[key]))) {
+            argv[key] = [].concat(argv[key], parsed.argv[key]);
           } else {
-            argv2[key] = parsed.argv[key];
+            argv[key] = parsed.argv[key];
           }
         }
       });
@@ -29635,24 +29635,24 @@ var Completion = class {
     this.indexAfterLastReset = 0;
     this.zshShell = (_c2 = ((_a2 = this.shim.getEnv("SHELL")) === null || _a2 === void 0 ? void 0 : _a2.includes("zsh")) || ((_b2 = this.shim.getEnv("ZSH_NAME")) === null || _b2 === void 0 ? void 0 : _b2.includes("zsh"))) !== null && _c2 !== void 0 ? _c2 : false;
   }
-  defaultCompletion(args, argv2, current, done) {
+  defaultCompletion(args, argv, current, done) {
     const handlers = this.command.getCommandHandlers();
     for (let i = 0, ii = args.length; i < ii; ++i) {
       if (handlers[args[i]] && handlers[args[i]].builder) {
         const builder = handlers[args[i]].builder;
         if (isCommandBuilderCallback(builder)) {
           this.indexAfterLastReset = i + 1;
-          const y = this.yargs.getInternalMethods().reset();
-          builder(y, true);
-          return y.argv;
+          const y2 = this.yargs.getInternalMethods().reset();
+          builder(y2, true);
+          return y2.argv;
         }
       }
     }
     const completions = [];
     this.commandCompletions(completions, args, current);
-    this.optionCompletions(completions, args, argv2, current);
-    this.choicesFromOptionsCompletions(completions, args, argv2, current);
-    this.choicesFromPositionalsCompletions(completions, args, argv2, current);
+    this.optionCompletions(completions, args, argv, current);
+    this.choicesFromOptionsCompletions(completions, args, argv, current);
+    this.choicesFromPositionalsCompletions(completions, args, argv, current);
     done(null, completions);
   }
   commandCompletions(completions, args, current) {
@@ -29671,7 +29671,7 @@ var Completion = class {
       });
     }
   }
-  optionCompletions(completions, args, argv2, current) {
+  optionCompletions(completions, args, argv, current) {
     if ((current.match(/^-/) || current === "" && completions.length === 0) && !this.previousArgHasChoices(args)) {
       const options = this.yargs.getOptions();
       const positionalKeys = this.yargs.getGroups()[this.usage.getPositionalGroupName()] || [];
@@ -29684,7 +29684,7 @@ var Completion = class {
       });
     }
   }
-  choicesFromOptionsCompletions(completions, args, argv2, current) {
+  choicesFromOptionsCompletions(completions, args, argv, current) {
     if (this.previousArgHasChoices(args)) {
       const choices = this.getPreviousArgChoices(args);
       if (choices && choices.length > 0) {
@@ -29692,13 +29692,13 @@ var Completion = class {
       }
     }
   }
-  choicesFromPositionalsCompletions(completions, args, argv2, current) {
+  choicesFromPositionalsCompletions(completions, args, argv, current) {
     if (current === "" && completions.length > 0 && this.previousArgHasChoices(args)) {
       return;
     }
     const positionalKeys = this.yargs.getGroups()[this.usage.getPositionalGroupName()] || [];
     const offset = Math.max(this.indexAfterLastReset, this.yargs.getInternalMethods().getContext().commands.length + 1);
-    const positionalKey = positionalKeys[argv2._.length - offset - 1];
+    const positionalKey = positionalKeys[argv._.length - offset - 1];
     if (!positionalKey) {
       return;
     }
@@ -29776,10 +29776,10 @@ var Completion = class {
       completions.push(dashes + "no-" + keyWithDesc);
     }
   }
-  customCompletion(args, argv2, current, done) {
+  customCompletion(args, argv, current, done) {
     assertNotStrictEqual(this.customCompletionFunction, null, this.shim);
     if (isSyncCompletionFunction(this.customCompletionFunction)) {
-      const result = this.customCompletionFunction(current, argv2);
+      const result = this.customCompletionFunction(current, argv);
       if (isPromise(result)) {
         return result.then((list) => {
           this.shim.process.nextTick(() => {
@@ -29793,20 +29793,20 @@ var Completion = class {
       }
       return done(null, result);
     } else if (isFallbackCompletionFunction(this.customCompletionFunction)) {
-      return this.customCompletionFunction(current, argv2, (onCompleted = done) => this.defaultCompletion(args, argv2, current, onCompleted), (completions) => {
+      return this.customCompletionFunction(current, argv, (onCompleted = done) => this.defaultCompletion(args, argv, current, onCompleted), (completions) => {
         done(null, completions);
       });
     } else {
-      return this.customCompletionFunction(current, argv2, (completions) => {
+      return this.customCompletionFunction(current, argv, (completions) => {
         done(null, completions);
       });
     }
   }
   getCompletion(args, done) {
     const current = args.length ? args[args.length - 1] : "";
-    const argv2 = this.yargs.parse(args, true);
-    const completionFunction = this.customCompletionFunction ? (argv3) => this.customCompletion(args, argv3, current, done) : (argv3) => this.defaultCompletion(args, argv3, current, done);
-    return isPromise(argv2) ? argv2.then(completionFunction) : completionFunction(argv2);
+    const argv = this.yargs.parse(args, true);
+    const completionFunction = this.customCompletionFunction ? (argv2) => this.customCompletion(args, argv2, current, done) : (argv2) => this.defaultCompletion(args, argv2, current, done);
+    return isPromise(argv) ? argv.then(completionFunction) : completionFunction(argv);
   }
   generateCompletionScript($0, cmd) {
     let script = this.zshShell ? completionZshTemplate : completionShTemplate;
@@ -29871,9 +29871,9 @@ function validation(yargs, usage2, shim3) {
   const __ = shim3.y18n.__;
   const __n = shim3.y18n.__n;
   const self2 = {};
-  self2.nonOptionCount = function nonOptionCount(argv2) {
+  self2.nonOptionCount = function nonOptionCount(argv) {
     const demandedCommands = yargs.getDemandedCommands();
-    const positionalCount = argv2._.length + (argv2["--"] ? argv2["--"].length : 0);
+    const positionalCount = argv._.length + (argv["--"] ? argv["--"].length : 0);
     const _s = positionalCount - yargs.getInternalMethods().getContext().commands.length;
     if (demandedCommands._ && (_s < demandedCommands._.min || _s > demandedCommands._.max)) {
       if (_s < demandedCommands._.min) {
@@ -29896,10 +29896,10 @@ function validation(yargs, usage2, shim3) {
       usage2.fail(__n("Not enough non-option arguments: got %s, need at least %s", "Not enough non-option arguments: got %s, need at least %s", observed, observed + "", required + ""));
     }
   };
-  self2.requiredArguments = function requiredArguments(argv2, demandedOptions) {
+  self2.requiredArguments = function requiredArguments(argv, demandedOptions) {
     let missing = null;
     for (const key of Object.keys(demandedOptions)) {
-      if (!Object.prototype.hasOwnProperty.call(argv2, key) || typeof argv2[key] === "undefined") {
+      if (!Object.prototype.hasOwnProperty.call(argv, key) || typeof argv[key] === "undefined") {
         missing = missing || {};
         missing[key] = demandedOptions[key];
       }
@@ -29917,18 +29917,18 @@ ${customMsgs.join("\n")}` : "";
       usage2.fail(__n("Missing required argument: %s", "Missing required arguments: %s", Object.keys(missing).length, Object.keys(missing).join(", ") + customMsg));
     }
   };
-  self2.unknownArguments = function unknownArguments(argv2, aliases, positionalMap, isDefaultCommand, checkPositionals = true) {
+  self2.unknownArguments = function unknownArguments(argv, aliases, positionalMap, isDefaultCommand, checkPositionals = true) {
     var _a2;
     const commandKeys = yargs.getInternalMethods().getCommandInstance().getCommands();
     const unknown = [];
     const currentContext = yargs.getInternalMethods().getContext();
-    Object.keys(argv2).forEach((key) => {
+    Object.keys(argv).forEach((key) => {
       if (!specialKeys.includes(key) && !Object.prototype.hasOwnProperty.call(positionalMap, key) && !Object.prototype.hasOwnProperty.call(yargs.getInternalMethods().getParseContext(), key) && !self2.isValidAndSomeAliasIsNotNew(key, aliases)) {
         unknown.push(key);
       }
     });
     if (checkPositionals && (currentContext.commands.length > 0 || commandKeys.length > 0 || isDefaultCommand)) {
-      argv2._.slice(currentContext.commands.length).forEach((key) => {
+      argv._.slice(currentContext.commands.length).forEach((key) => {
         if (!commandKeys.includes("" + key)) {
           unknown.push("" + key);
         }
@@ -29938,8 +29938,8 @@ ${customMsgs.join("\n")}` : "";
       const demandedCommands = yargs.getDemandedCommands();
       const maxNonOptDemanded = ((_a2 = demandedCommands._) === null || _a2 === void 0 ? void 0 : _a2.max) || 0;
       const expected = currentContext.commands.length + maxNonOptDemanded;
-      if (expected < argv2._.length) {
-        argv2._.slice(expected).forEach((key) => {
+      if (expected < argv._.length) {
+        argv._.slice(expected).forEach((key) => {
           key = String(key);
           if (!currentContext.commands.includes(key) && !unknown.includes(key)) {
             unknown.push(key);
@@ -29951,12 +29951,12 @@ ${customMsgs.join("\n")}` : "";
       usage2.fail(__n("Unknown argument: %s", "Unknown arguments: %s", unknown.length, unknown.map((s) => s.trim() ? s : `"${s}"`).join(", ")));
     }
   };
-  self2.unknownCommands = function unknownCommands(argv2) {
+  self2.unknownCommands = function unknownCommands(argv) {
     const commandKeys = yargs.getInternalMethods().getCommandInstance().getCommands();
     const unknown = [];
     const currentContext = yargs.getInternalMethods().getContext();
     if (currentContext.commands.length > 0 || commandKeys.length > 0) {
-      argv2._.slice(currentContext.commands.length).forEach((key) => {
+      argv._.slice(currentContext.commands.length).forEach((key) => {
         if (!commandKeys.includes("" + key)) {
           unknown.push("" + key);
         }
@@ -29976,14 +29976,14 @@ ${customMsgs.join("\n")}` : "";
     const newAliases = yargs.parsed.newAliases;
     return [key, ...aliases[key]].some((a) => !Object.prototype.hasOwnProperty.call(newAliases, a) || !newAliases[key]);
   };
-  self2.limitedChoices = function limitedChoices(argv2) {
+  self2.limitedChoices = function limitedChoices(argv) {
     const options = yargs.getOptions();
     const invalid = {};
     if (!Object.keys(options.choices).length)
       return;
-    Object.keys(argv2).forEach((key) => {
+    Object.keys(argv).forEach((key) => {
       if (specialKeys.indexOf(key) === -1 && Object.prototype.hasOwnProperty.call(options.choices, key)) {
-        [].concat(argv2[key]).forEach((value) => {
+        [].concat(argv[key]).forEach((value) => {
           if (options.choices[key].indexOf(value) === -1 && value !== void 0) {
             invalid[key] = (invalid[key] || []).concat(value);
           }
@@ -30023,28 +30023,28 @@ ${customMsgs.join("\n")}` : "";
   self2.getImplied = function getImplied() {
     return implied;
   };
-  function keyExists(argv2, val) {
+  function keyExists(argv, val) {
     const num = Number(val);
     val = isNaN(num) ? val : num;
     if (typeof val === "number") {
-      val = argv2._.length >= val;
+      val = argv._.length >= val;
     } else if (val.match(/^--no-.+/)) {
       val = val.match(/^--no-(.+)/)[1];
-      val = !Object.prototype.hasOwnProperty.call(argv2, val);
+      val = !Object.prototype.hasOwnProperty.call(argv, val);
     } else {
-      val = Object.prototype.hasOwnProperty.call(argv2, val);
+      val = Object.prototype.hasOwnProperty.call(argv, val);
     }
     return val;
   }
-  self2.implications = function implications(argv2) {
+  self2.implications = function implications(argv) {
     const implyFail = [];
     Object.keys(implied).forEach((key) => {
       const origKey = key;
       (implied[key] || []).forEach((value) => {
         let key2 = origKey;
         const origValue = value;
-        key2 = keyExists(argv2, key2);
-        value = keyExists(argv2, value);
+        key2 = keyExists(argv, key2);
+        value = keyExists(argv, value);
         if (key2 && !value) {
           implyFail.push(` ${origKey} -> ${origValue}`);
         }
@@ -30079,11 +30079,11 @@ ${customMsgs.join("\n")}` : "";
     }
   };
   self2.getConflicting = () => conflicting;
-  self2.conflicting = function conflictingFn(argv2) {
-    Object.keys(argv2).forEach((key) => {
+  self2.conflicting = function conflictingFn(argv) {
+    Object.keys(argv).forEach((key) => {
       if (conflicting[key]) {
         conflicting[key].forEach((value) => {
-          if (value && argv2[key] !== void 0 && argv2[value] !== void 0) {
+          if (value && argv[key] !== void 0 && argv[value] !== void 0) {
             usage2.fail(__("Arguments %s and %s are mutually exclusive", key, value));
           }
         });
@@ -30092,7 +30092,7 @@ ${customMsgs.join("\n")}` : "";
     if (yargs.getInternalMethods().getParserConfiguration()["strip-dashed"]) {
       Object.keys(conflicting).forEach((key) => {
         conflicting[key].forEach((value) => {
-          if (value && argv2[shim3.Parser.camelCase(key)] !== void 0 && argv2[shim3.Parser.camelCase(value)] !== void 0) {
+          if (value && argv[shim3.Parser.camelCase(key)] !== void 0 && argv[shim3.Parser.camelCase(value)] !== void 0) {
             usage2.fail(__("Arguments %s and %s are mutually exclusive", key, value));
           }
         });
@@ -30388,19 +30388,19 @@ var YargsInstance = class {
   }
   check(f, global2) {
     argsert("<function> [boolean]", [f, global2], arguments.length);
-    this.middleware((argv2, _yargs) => {
+    this.middleware((argv, _yargs) => {
       return maybeAsyncResult(() => {
-        return f(argv2, _yargs.getOptions());
+        return f(argv, _yargs.getOptions());
       }, (result) => {
         if (!result) {
           __classPrivateFieldGet(this, _YargsInstance_usage, "f").fail(__classPrivateFieldGet(this, _YargsInstance_shim, "f").y18n.__("Argument check failed: %s", f.toString()));
         } else if (typeof result === "string" || result instanceof Error) {
           __classPrivateFieldGet(this, _YargsInstance_usage, "f").fail(result.toString(), result);
         }
-        return argv2;
+        return argv;
       }, (err) => {
         __classPrivateFieldGet(this, _YargsInstance_usage, "f").fail(err.message ? err.message : err.toString(), err);
-        return argv2;
+        return argv;
       });
     }, false, global2);
     return this;
@@ -30431,20 +30431,20 @@ var YargsInstance = class {
     }
     const coerceKey = keys;
     __classPrivateFieldGet(this, _YargsInstance_options, "f").key[coerceKey] = true;
-    __classPrivateFieldGet(this, _YargsInstance_globalMiddleware, "f").addCoerceMiddleware((argv2, yargs) => {
+    __classPrivateFieldGet(this, _YargsInstance_globalMiddleware, "f").addCoerceMiddleware((argv, yargs) => {
       var _a2;
       const coerceKeyAliases = (_a2 = yargs.getAliases()[coerceKey]) !== null && _a2 !== void 0 ? _a2 : [];
-      const argvKeys = [coerceKey, ...coerceKeyAliases].filter((key) => Object.prototype.hasOwnProperty.call(argv2, key));
+      const argvKeys = [coerceKey, ...coerceKeyAliases].filter((key) => Object.prototype.hasOwnProperty.call(argv, key));
       if (argvKeys.length === 0) {
-        return argv2;
+        return argv;
       }
       return maybeAsyncResult(() => {
-        return value(argv2[argvKeys[0]]);
+        return value(argv[argvKeys[0]]);
       }, (result) => {
         argvKeys.forEach((key) => {
-          argv2[key] = result;
+          argv[key] = result;
         });
-        return argv2;
+        return argv;
       }, (err) => {
         throw new YError(err.message);
       });
@@ -30904,10 +30904,10 @@ var YargsInstance = class {
     const tmpParsed = this.parsed;
     __classPrivateFieldGet(this, _YargsInstance_completion, "f").setParsed(this.parsed);
     if (isPromise(parsed)) {
-      return parsed.then((argv2) => {
+      return parsed.then((argv) => {
         if (__classPrivateFieldGet(this, _YargsInstance_parseFn, "f"))
-          __classPrivateFieldGet(this, _YargsInstance_parseFn, "f").call(this, __classPrivateFieldGet(this, _YargsInstance_exitError, "f"), argv2, __classPrivateFieldGet(this, _YargsInstance_output, "f"));
-        return argv2;
+          __classPrivateFieldGet(this, _YargsInstance_parseFn, "f").call(this, __classPrivateFieldGet(this, _YargsInstance_exitError, "f"), argv, __classPrivateFieldGet(this, _YargsInstance_output, "f"));
+        return argv;
       }).catch((err) => {
         if (__classPrivateFieldGet(this, _YargsInstance_parseFn, "f")) {
           __classPrivateFieldGet(this, _YargsInstance_parseFn, "f")(err, this.parsed.argv, __classPrivateFieldGet(this, _YargsInstance_output, "f"));
@@ -31148,15 +31148,15 @@ var YargsInstance = class {
     __classPrivateFieldGet(this, _YargsInstance_usage, "f").wrap(cols);
     return this;
   }
-  [(_YargsInstance_command = /* @__PURE__ */ new WeakMap(), _YargsInstance_cwd = /* @__PURE__ */ new WeakMap(), _YargsInstance_context = /* @__PURE__ */ new WeakMap(), _YargsInstance_completion = /* @__PURE__ */ new WeakMap(), _YargsInstance_completionCommand = /* @__PURE__ */ new WeakMap(), _YargsInstance_defaultShowHiddenOpt = /* @__PURE__ */ new WeakMap(), _YargsInstance_exitError = /* @__PURE__ */ new WeakMap(), _YargsInstance_detectLocale = /* @__PURE__ */ new WeakMap(), _YargsInstance_emittedWarnings = /* @__PURE__ */ new WeakMap(), _YargsInstance_exitProcess = /* @__PURE__ */ new WeakMap(), _YargsInstance_frozens = /* @__PURE__ */ new WeakMap(), _YargsInstance_globalMiddleware = /* @__PURE__ */ new WeakMap(), _YargsInstance_groups = /* @__PURE__ */ new WeakMap(), _YargsInstance_hasOutput = /* @__PURE__ */ new WeakMap(), _YargsInstance_helpOpt = /* @__PURE__ */ new WeakMap(), _YargsInstance_isGlobalContext = /* @__PURE__ */ new WeakMap(), _YargsInstance_logger = /* @__PURE__ */ new WeakMap(), _YargsInstance_output = /* @__PURE__ */ new WeakMap(), _YargsInstance_options = /* @__PURE__ */ new WeakMap(), _YargsInstance_parentRequire = /* @__PURE__ */ new WeakMap(), _YargsInstance_parserConfig = /* @__PURE__ */ new WeakMap(), _YargsInstance_parseFn = /* @__PURE__ */ new WeakMap(), _YargsInstance_parseContext = /* @__PURE__ */ new WeakMap(), _YargsInstance_pkgs = /* @__PURE__ */ new WeakMap(), _YargsInstance_preservedGroups = /* @__PURE__ */ new WeakMap(), _YargsInstance_processArgs = /* @__PURE__ */ new WeakMap(), _YargsInstance_recommendCommands = /* @__PURE__ */ new WeakMap(), _YargsInstance_shim = /* @__PURE__ */ new WeakMap(), _YargsInstance_strict = /* @__PURE__ */ new WeakMap(), _YargsInstance_strictCommands = /* @__PURE__ */ new WeakMap(), _YargsInstance_strictOptions = /* @__PURE__ */ new WeakMap(), _YargsInstance_usage = /* @__PURE__ */ new WeakMap(), _YargsInstance_usageConfig = /* @__PURE__ */ new WeakMap(), _YargsInstance_versionOpt = /* @__PURE__ */ new WeakMap(), _YargsInstance_validation = /* @__PURE__ */ new WeakMap(), kCopyDoubleDash)](argv2) {
-    if (!argv2._ || !argv2["--"])
-      return argv2;
-    argv2._.push.apply(argv2._, argv2["--"]);
+  [(_YargsInstance_command = /* @__PURE__ */ new WeakMap(), _YargsInstance_cwd = /* @__PURE__ */ new WeakMap(), _YargsInstance_context = /* @__PURE__ */ new WeakMap(), _YargsInstance_completion = /* @__PURE__ */ new WeakMap(), _YargsInstance_completionCommand = /* @__PURE__ */ new WeakMap(), _YargsInstance_defaultShowHiddenOpt = /* @__PURE__ */ new WeakMap(), _YargsInstance_exitError = /* @__PURE__ */ new WeakMap(), _YargsInstance_detectLocale = /* @__PURE__ */ new WeakMap(), _YargsInstance_emittedWarnings = /* @__PURE__ */ new WeakMap(), _YargsInstance_exitProcess = /* @__PURE__ */ new WeakMap(), _YargsInstance_frozens = /* @__PURE__ */ new WeakMap(), _YargsInstance_globalMiddleware = /* @__PURE__ */ new WeakMap(), _YargsInstance_groups = /* @__PURE__ */ new WeakMap(), _YargsInstance_hasOutput = /* @__PURE__ */ new WeakMap(), _YargsInstance_helpOpt = /* @__PURE__ */ new WeakMap(), _YargsInstance_isGlobalContext = /* @__PURE__ */ new WeakMap(), _YargsInstance_logger = /* @__PURE__ */ new WeakMap(), _YargsInstance_output = /* @__PURE__ */ new WeakMap(), _YargsInstance_options = /* @__PURE__ */ new WeakMap(), _YargsInstance_parentRequire = /* @__PURE__ */ new WeakMap(), _YargsInstance_parserConfig = /* @__PURE__ */ new WeakMap(), _YargsInstance_parseFn = /* @__PURE__ */ new WeakMap(), _YargsInstance_parseContext = /* @__PURE__ */ new WeakMap(), _YargsInstance_pkgs = /* @__PURE__ */ new WeakMap(), _YargsInstance_preservedGroups = /* @__PURE__ */ new WeakMap(), _YargsInstance_processArgs = /* @__PURE__ */ new WeakMap(), _YargsInstance_recommendCommands = /* @__PURE__ */ new WeakMap(), _YargsInstance_shim = /* @__PURE__ */ new WeakMap(), _YargsInstance_strict = /* @__PURE__ */ new WeakMap(), _YargsInstance_strictCommands = /* @__PURE__ */ new WeakMap(), _YargsInstance_strictOptions = /* @__PURE__ */ new WeakMap(), _YargsInstance_usage = /* @__PURE__ */ new WeakMap(), _YargsInstance_usageConfig = /* @__PURE__ */ new WeakMap(), _YargsInstance_versionOpt = /* @__PURE__ */ new WeakMap(), _YargsInstance_validation = /* @__PURE__ */ new WeakMap(), kCopyDoubleDash)](argv) {
+    if (!argv._ || !argv["--"])
+      return argv;
+    argv._.push.apply(argv._, argv["--"]);
     try {
-      delete argv2["--"];
+      delete argv["--"];
     } catch (_err) {
     }
-    return argv2;
+    return argv;
   }
   [kCreateLogger]() {
     return {
@@ -31253,14 +31253,14 @@ var YargsInstance = class {
     const obj = this[kPkgUp]();
     return obj.version || "unknown";
   }
-  [kParsePositionalNumbers](argv2) {
-    const args = argv2["--"] ? argv2["--"] : argv2._;
+  [kParsePositionalNumbers](argv) {
+    const args = argv["--"] ? argv["--"] : argv._;
     for (let i = 0, arg; (arg = args[i]) !== void 0; i++) {
       if (__classPrivateFieldGet(this, _YargsInstance_shim, "f").Parser.looksLikeNumber(arg) && Number.isSafeInteger(Math.floor(parseFloat(`${arg}`)))) {
         args[i] = Number(arg);
       }
     }
-    return argv2;
+    return argv;
   }
   [kPkgUp](rootPath) {
     const npath = rootPath || "*";
@@ -31376,8 +31376,8 @@ var YargsInstance = class {
     __classPrivateFieldGet(this, _YargsInstance_command, "f").unfreeze();
     __classPrivateFieldGet(this, _YargsInstance_globalMiddleware, "f").unfreeze();
   }
-  [kValidateAsync](validation2, argv2) {
-    return maybeAsyncResult(argv2, (result) => {
+  [kValidateAsync](validation2, argv) {
+    return maybeAsyncResult(argv, (result) => {
       validation2(result);
       return result;
     });
@@ -31429,22 +31429,22 @@ var YargsInstance = class {
   [kIsGlobalContext]() {
     return __classPrivateFieldGet(this, _YargsInstance_isGlobalContext, "f");
   }
-  [kPostProcess](argv2, populateDoubleDash, calledFromCommand, runGlobalMiddleware) {
+  [kPostProcess](argv, populateDoubleDash, calledFromCommand, runGlobalMiddleware) {
     if (calledFromCommand)
-      return argv2;
-    if (isPromise(argv2))
-      return argv2;
+      return argv;
+    if (isPromise(argv))
+      return argv;
     if (!populateDoubleDash) {
-      argv2 = this[kCopyDoubleDash](argv2);
+      argv = this[kCopyDoubleDash](argv);
     }
     const parsePositionalNumbers = this[kGetParserConfiguration]()["parse-positional-numbers"] || this[kGetParserConfiguration]()["parse-positional-numbers"] === void 0;
     if (parsePositionalNumbers) {
-      argv2 = this[kParsePositionalNumbers](argv2);
+      argv = this[kParsePositionalNumbers](argv);
     }
     if (runGlobalMiddleware) {
-      argv2 = applyMiddleware(argv2, this, __classPrivateFieldGet(this, _YargsInstance_globalMiddleware, "f").getMiddleware(), false);
+      argv = applyMiddleware(argv, this, __classPrivateFieldGet(this, _YargsInstance_globalMiddleware, "f").getMiddleware(), false);
     }
-    return argv2;
+    return argv;
   }
   [kReset](aliases = {}) {
     __classPrivateFieldSet(this, _YargsInstance_options, __classPrivateFieldGet(this, _YargsInstance_options, "f") || {}, "f");
@@ -31525,19 +31525,19 @@ var YargsInstance = class {
     const parsed = __classPrivateFieldGet(this, _YargsInstance_shim, "f").Parser.detailed(args, Object.assign({}, __classPrivateFieldGet(this, _YargsInstance_options, "f"), {
       configuration: { "parse-positional-numbers": false, ...config }
     }));
-    const argv2 = Object.assign(parsed.argv, __classPrivateFieldGet(this, _YargsInstance_parseContext, "f"));
+    const argv = Object.assign(parsed.argv, __classPrivateFieldGet(this, _YargsInstance_parseContext, "f"));
     let argvPromise = void 0;
     const aliases = parsed.aliases;
     let helpOptSet = false;
     let versionOptSet = false;
-    Object.keys(argv2).forEach((key) => {
-      if (key === __classPrivateFieldGet(this, _YargsInstance_helpOpt, "f") && argv2[key]) {
+    Object.keys(argv).forEach((key) => {
+      if (key === __classPrivateFieldGet(this, _YargsInstance_helpOpt, "f") && argv[key]) {
         helpOptSet = true;
-      } else if (key === __classPrivateFieldGet(this, _YargsInstance_versionOpt, "f") && argv2[key]) {
+      } else if (key === __classPrivateFieldGet(this, _YargsInstance_versionOpt, "f") && argv[key]) {
         versionOptSet = true;
       }
     });
-    argv2.$0 = this.$0;
+    argv.$0 = this.$0;
     this.parsed = parsed;
     if (commandIndex === 0) {
       __classPrivateFieldGet(this, _YargsInstance_usage, "f").clearCachedHelpMessage();
@@ -31545,12 +31545,12 @@ var YargsInstance = class {
     try {
       this[kGuessLocale]();
       if (shortCircuit) {
-        return this[kPostProcess](argv2, populateDoubleDash, !!calledFromCommand, false);
+        return this[kPostProcess](argv, populateDoubleDash, !!calledFromCommand, false);
       }
       if (__classPrivateFieldGet(this, _YargsInstance_helpOpt, "f")) {
         const helpCmds = [__classPrivateFieldGet(this, _YargsInstance_helpOpt, "f")].concat(aliases[__classPrivateFieldGet(this, _YargsInstance_helpOpt, "f")] || []).filter((k) => k.length > 1);
-        if (helpCmds.includes("" + argv2._[argv2._.length - 1])) {
-          argv2._.pop();
+        if (helpCmds.includes("" + argv._[argv._.length - 1])) {
+          argv._.pop();
           helpOptSet = true;
         }
       }
@@ -31559,13 +31559,13 @@ var YargsInstance = class {
       const requestCompletions = ((_a2 = __classPrivateFieldGet(this, _YargsInstance_completion, "f")) === null || _a2 === void 0 ? void 0 : _a2.completionKey) ? [
         (_b2 = __classPrivateFieldGet(this, _YargsInstance_completion, "f")) === null || _b2 === void 0 ? void 0 : _b2.completionKey,
         ...(_d = this.getAliases()[(_c2 = __classPrivateFieldGet(this, _YargsInstance_completion, "f")) === null || _c2 === void 0 ? void 0 : _c2.completionKey]) !== null && _d !== void 0 ? _d : []
-      ].some((key) => Object.prototype.hasOwnProperty.call(argv2, key)) : false;
+      ].some((key) => Object.prototype.hasOwnProperty.call(argv, key)) : false;
       const skipRecommendation = helpOptSet || requestCompletions || helpOnly;
-      if (argv2._.length) {
+      if (argv._.length) {
         if (handlerKeys.length) {
           let firstUnknownCommand;
-          for (let i = commandIndex || 0, cmd; argv2._[i] !== void 0; i++) {
-            cmd = String(argv2._[i]);
+          for (let i = commandIndex || 0, cmd; argv._[i] !== void 0; i++) {
+            cmd = String(argv._[i]);
             if (handlerKeys.includes(cmd) && cmd !== __classPrivateFieldGet(this, _YargsInstance_completionCommand, "f")) {
               const innerArgv = __classPrivateFieldGet(this, _YargsInstance_command, "f").runCommand(cmd, this, parsed, i + 1, helpOnly, helpOptSet || versionOptSet || helpOnly);
               return this[kPostProcess](innerArgv, populateDoubleDash, !!calledFromCommand, false);
@@ -31578,7 +31578,7 @@ var YargsInstance = class {
             __classPrivateFieldGet(this, _YargsInstance_validation, "f").recommendCommands(firstUnknownCommand, handlerKeys);
           }
         }
-        if (__classPrivateFieldGet(this, _YargsInstance_completionCommand, "f") && argv2._.includes(__classPrivateFieldGet(this, _YargsInstance_completionCommand, "f")) && !requestCompletions) {
+        if (__classPrivateFieldGet(this, _YargsInstance_completionCommand, "f") && argv._.includes(__classPrivateFieldGet(this, _YargsInstance_completionCommand, "f")) && !requestCompletions) {
           if (__classPrivateFieldGet(this, _YargsInstance_exitProcess, "f"))
             setBlocking(true);
           this.showCompletionScript();
@@ -31602,7 +31602,7 @@ var YargsInstance = class {
           });
           this.exit(0);
         });
-        return this[kPostProcess](argv2, !populateDoubleDash, !!calledFromCommand, false);
+        return this[kPostProcess](argv, !populateDoubleDash, !!calledFromCommand, false);
       }
       if (!__classPrivateFieldGet(this, _YargsInstance_hasOutput, "f")) {
         if (helpOptSet) {
@@ -31622,7 +31622,7 @@ var YargsInstance = class {
         }
       }
       if (!skipValidation && __classPrivateFieldGet(this, _YargsInstance_options, "f").skipValidation.length > 0) {
-        skipValidation = Object.keys(argv2).some((key) => __classPrivateFieldGet(this, _YargsInstance_options, "f").skipValidation.indexOf(key) >= 0 && argv2[key] === true);
+        skipValidation = Object.keys(argv).some((key) => __classPrivateFieldGet(this, _YargsInstance_options, "f").skipValidation.indexOf(key) >= 0 && argv[key] === true);
       }
       if (!skipValidation) {
         if (parsed.error)
@@ -31630,12 +31630,12 @@ var YargsInstance = class {
         if (!requestCompletions) {
           const validation2 = this[kRunValidation](aliases, {}, parsed.error);
           if (!calledFromCommand) {
-            argvPromise = applyMiddleware(argv2, this, __classPrivateFieldGet(this, _YargsInstance_globalMiddleware, "f").getMiddleware(), true);
+            argvPromise = applyMiddleware(argv, this, __classPrivateFieldGet(this, _YargsInstance_globalMiddleware, "f").getMiddleware(), true);
           }
-          argvPromise = this[kValidateAsync](validation2, argvPromise !== null && argvPromise !== void 0 ? argvPromise : argv2);
+          argvPromise = this[kValidateAsync](validation2, argvPromise !== null && argvPromise !== void 0 ? argvPromise : argv);
           if (isPromise(argvPromise) && !calledFromCommand) {
             argvPromise = argvPromise.then(() => {
-              return applyMiddleware(argv2, this, __classPrivateFieldGet(this, _YargsInstance_globalMiddleware, "f").getMiddleware(), false);
+              return applyMiddleware(argv, this, __classPrivateFieldGet(this, _YargsInstance_globalMiddleware, "f").getMiddleware(), false);
             });
           }
         }
@@ -31646,27 +31646,27 @@ var YargsInstance = class {
       else
         throw err;
     }
-    return this[kPostProcess](argvPromise !== null && argvPromise !== void 0 ? argvPromise : argv2, populateDoubleDash, !!calledFromCommand, true);
+    return this[kPostProcess](argvPromise !== null && argvPromise !== void 0 ? argvPromise : argv, populateDoubleDash, !!calledFromCommand, true);
   }
   [kRunValidation](aliases, positionalMap, parseErrors, isDefaultCommand) {
     const demandedOptions = { ...this.getDemandedOptions() };
-    return (argv2) => {
+    return (argv) => {
       if (parseErrors)
         throw new YError(parseErrors.message);
-      __classPrivateFieldGet(this, _YargsInstance_validation, "f").nonOptionCount(argv2);
-      __classPrivateFieldGet(this, _YargsInstance_validation, "f").requiredArguments(argv2, demandedOptions);
+      __classPrivateFieldGet(this, _YargsInstance_validation, "f").nonOptionCount(argv);
+      __classPrivateFieldGet(this, _YargsInstance_validation, "f").requiredArguments(argv, demandedOptions);
       let failedStrictCommands = false;
       if (__classPrivateFieldGet(this, _YargsInstance_strictCommands, "f")) {
-        failedStrictCommands = __classPrivateFieldGet(this, _YargsInstance_validation, "f").unknownCommands(argv2);
+        failedStrictCommands = __classPrivateFieldGet(this, _YargsInstance_validation, "f").unknownCommands(argv);
       }
       if (__classPrivateFieldGet(this, _YargsInstance_strict, "f") && !failedStrictCommands) {
-        __classPrivateFieldGet(this, _YargsInstance_validation, "f").unknownArguments(argv2, aliases, positionalMap, !!isDefaultCommand);
+        __classPrivateFieldGet(this, _YargsInstance_validation, "f").unknownArguments(argv, aliases, positionalMap, !!isDefaultCommand);
       } else if (__classPrivateFieldGet(this, _YargsInstance_strictOptions, "f")) {
-        __classPrivateFieldGet(this, _YargsInstance_validation, "f").unknownArguments(argv2, aliases, {}, false, false);
+        __classPrivateFieldGet(this, _YargsInstance_validation, "f").unknownArguments(argv, aliases, {}, false, false);
       }
-      __classPrivateFieldGet(this, _YargsInstance_validation, "f").limitedChoices(argv2);
-      __classPrivateFieldGet(this, _YargsInstance_validation, "f").implications(argv2);
-      __classPrivateFieldGet(this, _YargsInstance_validation, "f").conflicting(argv2);
+      __classPrivateFieldGet(this, _YargsInstance_validation, "f").limitedChoices(argv);
+      __classPrivateFieldGet(this, _YargsInstance_validation, "f").implications(argv);
+      __classPrivateFieldGet(this, _YargsInstance_validation, "f").conflicting(argv);
     };
   }
   [kSetHasOutput]() {
@@ -31682,8 +31682,8 @@ var YargsInstance = class {
     }
   }
 };
-function isYargsInstance(y) {
-  return !!y && typeof y.getInternalMethods === "function";
+function isYargsInstance(y2) {
+  return !!y2 && typeof y2.getInternalMethods === "function";
 }
 
 // node_modules/yargs/index.mjs
@@ -31902,11 +31902,11 @@ function embrace(str) {
 function isPadded(el) {
   return /^-?0\d/.test(el);
 }
-function lte(i, y) {
-  return i <= y;
+function lte(i, y2) {
+  return i <= y2;
 }
-function gte(i, y) {
-  return i >= y;
+function gte(i, y2) {
+  return i >= y2;
 }
 function expand_(str, isTop) {
   const expansions = [];
@@ -31947,18 +31947,18 @@ function expand_(str, isTop) {
     let N;
     if (isSequence && n[0] !== void 0 && n[1] !== void 0) {
       const x = numeric(n[0]);
-      const y = numeric(n[1]);
+      const y2 = numeric(n[1]);
       const width = Math.max(n[0].length, n[1].length);
       let incr = n.length === 3 && n[2] !== void 0 ? Math.abs(numeric(n[2])) : 1;
       let test = lte;
-      const reverse = y < x;
+      const reverse = y2 < x;
       if (reverse) {
         incr *= -1;
         test = gte;
       }
       const pad = n.some(isPadded);
       N = [];
-      for (let i = x; test(i, y); i += incr) {
+      for (let i = x; test(i, y2); i += incr) {
         let c;
         if (isAlphaSequence) {
           c = String.fromCharCode(i);
@@ -38928,7 +38928,14 @@ var formatConsolidatedAiTestSummary = (tests, environment, options) => {
     missingEnvProperties,
     customBlocks
   });
-  return createSlackMessage(blocks, COLORS.AI, title, environment, void 0, options);
+  return createSlackMessage(
+    blocks,
+    COLORS.AI,
+    title,
+    environment,
+    void 0,
+    options
+  );
 };
 var formatConsolidatedFailedTestSummary = (tests, environment, options) => {
   const failedTests = tests.filter((test) => test.status === TEST_STATUS.FAILED);
@@ -38946,7 +38953,14 @@ var formatConsolidatedFailedTestSummary = (tests, environment, options) => {
     missingEnvProperties,
     customBlocks
   });
-  return createSlackMessage(blocks, COLORS.FAILED, title, environment, void 0, options);
+  return createSlackMessage(
+    blocks,
+    COLORS.FAILED,
+    title,
+    environment,
+    void 0,
+    options
+  );
 };
 var formatFailedTestSummary = (test, environment, options) => {
   const { name, message, status } = test;
@@ -39087,51 +39101,110 @@ var SlackClient = class {
   webClient;
   webhook;
   options;
+  maxRetries;
   constructor(options) {
     this.options = options;
+    this.maxRetries = options.maxRetries ?? 3;
     if (options.webhookUrl) {
       this.webhook = new import_webhook2.IncomingWebhook(options.webhookUrl);
     } else if (options.oauthToken) {
       this.webClient = new import_web_api2.WebClient(options.oauthToken);
     }
   }
+  /**
+   * Execute an operation with a simple retry mechanism
+   */
+  async withRetry(operation) {
+    let lastError;
+    for (let attempt = 1; attempt <= this.maxRetries; attempt++) {
+      try {
+        return await operation();
+      } catch (error) {
+        lastError = error;
+        const isRateLimited = error?.code === "ratelimited";
+        const isTransient = error?.code === "request_timeout" || error?.code === "network_error";
+        if (attempt < this.maxRetries && (isRateLimited || isTransient)) {
+          const delay = isRateLimited ? (parseInt(error?.retryAfter) || 1) * 1e3 : attempt * 1e3;
+          await new Promise((resolve7) => setTimeout(resolve7, delay));
+          continue;
+        }
+        break;
+      }
+    }
+    throw this.formatError(lastError);
+  }
+  formatError(error) {
+    const slackError = error?.data?.error || error?.error;
+    if (slackError && typeof slackError === "string") {
+      if (slackError === "channel_not_found") {
+        return new Error(
+          `Slack error: Channel "${this.options.channelId}" not found. Ensure the bot is invited to the channel.`
+        );
+      }
+      if (slackError === "invalid_auth") {
+        return new Error("Slack error: Invalid OAuth token provided.");
+      }
+      if (slackError === "not_in_channel") {
+        return new Error(
+          `Slack error: Bot is not in channel "${this.options.channelId}". Please invite the bot to the channel.`
+        );
+      }
+      return new Error(`Slack API error: ${slackError}`);
+    }
+    const message = error instanceof Error ? error.message : String(error);
+    return new Error(`Slack API failure: ${message}`);
+  }
   async sendMessage(message) {
-    if (this.webhook) {
-      const payload = { ...message };
-      if (this.options.threadTs || process.env.SLACK_THREAD_TS) {
-        payload.thread_ts = this.options.threadTs || process.env.SLACK_THREAD_TS;
-      }
-      if (this.options.replyBroadcast) {
-        payload.reply_broadcast = this.options.replyBroadcast;
-      }
-      await this.webhook.send(payload);
-      return void 0;
+    if (this.options.dryRun) {
+      console.log(
+        "[Dry Run] Slack Message Payload:",
+        JSON.stringify(message, null, 2)
+      );
+      return "dry-run-ts";
     }
-    if (this.webClient && this.options.channelId) {
-      let response;
-      const threadTs = this.options.threadTs || process.env.SLACK_THREAD_TS;
-      if (this.options.updateTs) {
-        response = await this.webClient.chat.update({
-          channel: this.options.channelId,
-          ts: this.options.updateTs,
-          ...message
-        });
-      } else {
-        response = await this.webClient.chat.postMessage({
-          channel: this.options.channelId,
-          ...message,
-          thread_ts: threadTs || message.thread_ts,
-          reply_broadcast: this.options.replyBroadcast || message.reply_broadcast
-        });
+    return this.withRetry(async () => {
+      if (this.webhook) {
+        const payload = { ...message };
+        if (this.options.threadTs) {
+          payload.thread_ts = this.options.threadTs;
+        }
+        if (this.options.replyBroadcast) {
+          payload.reply_broadcast = this.options.replyBroadcast;
+        }
+        await this.webhook.send(payload);
+        return void 0;
       }
-      return response.ts;
-    }
-    throw new Error(
-      "Slack configuration is missing. Provide either webhook-url or oauth-token and channel-id."
-    );
+      if (this.webClient && this.options.channelId) {
+        let response;
+        const threadTs = this.options.threadTs;
+        if (this.options.updateTs) {
+          response = await this.webClient.chat.update({
+            channel: this.options.channelId,
+            ts: this.options.updateTs,
+            ...message
+          });
+        } else {
+          response = await this.webClient.chat.postMessage({
+            channel: this.options.channelId,
+            ...message,
+            thread_ts: threadTs || message.thread_ts,
+            reply_broadcast: this.options.replyBroadcast || message.reply_broadcast
+          });
+        }
+        return response.ts;
+      }
+      throw new Error(
+        "Slack configuration is missing. Provide either webhook-url or oauth-token and channel-id."
+      );
+    });
   }
   async addReaction(ts, emoji) {
-    if (this.webClient && this.options.channelId) {
+    if (this.options.dryRun) {
+      console.log(`[Dry Run] Add Reaction: ${emoji} to message ${ts}`);
+      return;
+    }
+    if (!this.webClient || !this.options.channelId) return;
+    await this.withRetry(async () => {
       try {
         await this.webClient.reactions.add({
           channel: this.options.channelId,
@@ -39139,12 +39212,11 @@ var SlackClient = class {
           name: emoji.replace(/:/g, "")
         });
       } catch (error) {
-        const errorMsg = error instanceof Error ? error.message : String(error);
-        if (!errorMsg.includes("already_reacted")) {
-          throw new Error(`Failed to add reaction: ${errorMsg}`);
+        if (!error.message?.includes("already_reacted")) {
+          throw error;
         }
       }
-    }
+    });
   }
 };
 
@@ -42192,7 +42264,19 @@ function compileTemplate(templateSource, data) {
 }
 
 // src/slack-reporter.ts
-async function addStatusReaction(client, report, ts, options) {
+function resolveOptions(options) {
+  return {
+    ...options,
+    title: options.title || process.env.SLACK_TITLE,
+    failedEmoji: options.failedEmoji || process.env.SLACK_FAILED_EMOJI,
+    passedEmoji: options.passedEmoji || process.env.SLACK_PASSED_EMOJI,
+    threadTs: options.threadTs || process.env.SLACK_THREAD_TS,
+    autoThread: options.autoThread ?? process.env.SLACK_AUTO_THREAD !== "false",
+    maxRetries: options.maxRetries ?? parseInt(process.env.SLACK_MAX_RETRIES || "3", 10),
+    dryRun: options.dryRun ?? process.env.SLACK_DRY_RUN === "true"
+  };
+}
+async function addStatusReaction(client, report, ts, options, logs) {
   if (!options.react || !ts || options.updateTs) {
     return;
   }
@@ -42202,155 +42286,145 @@ async function addStatusReaction(client, report, ts, options) {
   try {
     await client.addReaction(ts, emoji);
   } catch (err) {
-    console.error(`Failed to add reaction: ${err instanceof Error ? err.message : String(err)}`);
+    if (logs) {
+      console.log(
+        `Failed to add reaction: ${err instanceof Error ? err.message : String(err)}`
+      );
+    }
   }
 }
+async function dispatchThreadedReports(client, report, options, logs, summaryTitle, testFormatter) {
+  let parentTs;
+  const threadTs = options.threadTs;
+  const autoThread = options.autoThread !== false;
+  if (!threadTs && autoThread && report.results.summary.failed > 1) {
+    const summaryMsg = {
+      text: `*${options.title || summaryTitle}*: ${report.results.summary.failed} tests failed. See thread for details.`
+    };
+    parentTs = await client.sendMessage(summaryMsg);
+    if (logs) console.log(`${summaryTitle} header sent to Slack.`);
+    if (parentTs) {
+      await addStatusReaction(client, report, parentTs, options, logs);
+    }
+  }
+  let firstTimestamp;
+  for (const test of report.results.tests) {
+    if (test.status === "failed") {
+      const message = testFormatter(test, report.results.environment, options);
+      if (message !== null) {
+        const ts = await client.sendMessage({
+          ...message,
+          thread_ts: parentTs || threadTs
+        });
+        if (logs) console.log(`${summaryTitle} detail sent to Slack.`);
+        if (!firstTimestamp) firstTimestamp = ts;
+      } else {
+        if (logs) console.log(`No ${summaryTitle} detected. No message sent`);
+      }
+    }
+  }
+  return parentTs || firstTimestamp;
+}
 async function sendTestResultsToSlack(report, options = {}, logs = false) {
-  if (options.onFailOnly !== void 0 && options.onFailOnly && report.results.summary.failed === 0) {
-    if (logs) console.error("No failed tests. Message not sent.");
+  const resolvedOptions = resolveOptions(options);
+  if (resolvedOptions.onFailOnly !== void 0 && resolvedOptions.onFailOnly && report.results.summary.failed === 0) {
+    if (logs) console.log("No failed tests. Message not sent.");
     return;
   }
-  const client = new SlackClient(options);
-  const message = formatResultsMessage(report, options);
+  const client = new SlackClient(resolvedOptions);
+  const message = formatResultsMessage(report, resolvedOptions);
   const ts = await client.sendMessage(message);
-  if (logs) console.error("Test results message sent to Slack.");
+  if (logs) console.log("Test results message sent to Slack.");
   if (ts) {
-    await addStatusReaction(client, report, ts, options);
+    await addStatusReaction(client, report, ts, resolvedOptions, logs);
   }
-  if (options.returnTs) return ts;
+  if (resolvedOptions.returnTs) return ts;
 }
 async function sendFailedResultsToSlack(report, options = {}, logs = false) {
   if (report.results.summary.failed === 0) {
     return;
   }
   report = stripAnsiFromErrors(report);
-  const client = new SlackClient(options);
-  if (options.consolidated !== void 0 && options.consolidated) {
+  const resolvedOptions = resolveOptions(options);
+  const client = new SlackClient(resolvedOptions);
+  if (resolvedOptions.consolidated !== void 0 && resolvedOptions.consolidated) {
     const message = formatConsolidatedFailedTestSummary(
       report.results.tests,
       report.results.environment,
-      options
+      resolvedOptions
     );
     if (message !== null) {
       const ts = await client.sendMessage(message);
-      if (logs) console.error("Failed test summary sent to Slack.");
+      if (logs) console.log("Failed test summary sent to Slack.");
       if (ts) {
-        await addStatusReaction(client, report, ts, options);
+        await addStatusReaction(client, report, ts, resolvedOptions, logs);
       }
-      if (options.returnTs) return ts;
+      if (resolvedOptions.returnTs) return ts;
     } else {
-      if (logs) console.error("No failed test summary detected. No message sent.");
+      if (logs) console.log("No failed test summary detected. No message sent.");
     }
   } else {
-    let parentTs;
-    const threadTs = options.threadTs || process.env.SLACK_THREAD_TS;
-    const autoThread = options.autoThread !== false;
-    if (!threadTs && autoThread && report.results.summary.failed > 1) {
-      const summaryMsg = {
-        text: `*${options.title || "Test Failures"}*: ${report.results.summary.failed} tests failed. See thread for details.`
-      };
-      parentTs = await client.sendMessage(summaryMsg);
-      if (logs) console.error("Failure summary sent to Slack.");
-      if (parentTs) {
-        await addStatusReaction(client, report, parentTs, options);
-      }
-    }
-    let firstTimestamp;
-    for (const test of report.results.tests) {
-      if (test.status === "failed") {
-        const message = formatFailedTestSummary(
-          test,
-          report.results.environment,
-          options
-        );
-        if (message !== null) {
-          const ts = await client.sendMessage({
-            ...message,
-            thread_ts: parentTs || threadTs
-          });
-          if (logs) console.error("Failed test summary sent to Slack.");
-          if (!firstTimestamp) firstTimestamp = ts;
-        } else {
-          if (logs)
-            console.error("No failed test summary detected. No message sent");
-        }
-      }
-    }
-    if (options.returnTs) return parentTs || firstTimestamp;
+    const ts = await dispatchThreadedReports(
+      client,
+      report,
+      resolvedOptions,
+      logs,
+      "Failed test report",
+      formatFailedTestSummary
+    );
+    if (resolvedOptions.returnTs) return ts;
   }
 }
 async function sendFlakyResultsToSlack(report, options = {}, logs = false) {
-  const message = formatFlakyTestsMessage(report, options);
+  const resolvedOptions = resolveOptions(options);
+  const message = formatFlakyTestsMessage(report, resolvedOptions);
   if (message !== null) {
-    const client = new SlackClient(options);
+    const client = new SlackClient(resolvedOptions);
     const ts = await client.sendMessage(message);
-    if (logs) console.error("Flaky tests message sent to Slack.");
+    if (logs) console.log("Flaky tests message sent to Slack.");
     if (ts) {
-      await addStatusReaction(client, report, ts, options);
+      await addStatusReaction(client, report, ts, resolvedOptions, logs);
     }
-    if (options.returnTs) return ts;
+    if (resolvedOptions.returnTs) return ts;
   } else {
-    if (logs) console.error("No flaky tests detected. No message sent.");
+    if (logs) console.log("No flaky tests detected. No message sent.");
   }
 }
 async function sendAISummaryToSlack(report, options = {}, logs = false) {
-  const client = new SlackClient(options);
-  if (options.consolidated !== void 0 && options.consolidated) {
+  const resolvedOptions = resolveOptions(options);
+  const client = new SlackClient(resolvedOptions);
+  if (resolvedOptions.consolidated !== void 0 && resolvedOptions.consolidated) {
     const message = formatConsolidatedAiTestSummary(
       report.results.tests,
       report.results.environment,
-      options
+      resolvedOptions
     );
     if (message !== null) {
       const ts = await client.sendMessage(message);
-      if (logs) console.error("AI test summary sent to Slack.");
+      if (logs) console.log("AI test summary sent to Slack.");
       if (ts) {
-        await addStatusReaction(client, report, ts, options);
+        await addStatusReaction(client, report, ts, resolvedOptions, logs);
       }
-      if (options.returnTs) return ts;
+      if (resolvedOptions.returnTs) return ts;
     } else {
-      if (logs) console.error("No AI summary detected. No message sent.");
+      if (logs) console.log("No AI summary detected. No message sent.");
     }
   } else {
-    let parentTs;
-    const threadTs = options.threadTs || process.env.SLACK_THREAD_TS;
-    const autoThread = options.autoThread !== false;
-    if (!threadTs && autoThread && report.results.summary.failed > 1) {
-      const summaryMsg = {
-        text: `*AI Test Summary*: Analysis for ${report.results.summary.failed} failures below.`
-      };
-      parentTs = await client.sendMessage(summaryMsg);
-      if (logs) console.error("AI summary header sent to Slack.");
-      if (parentTs) {
-        await addStatusReaction(client, report, parentTs, options);
-      }
-    }
-    let firstTimestamp;
-    for (const test of report.results.tests) {
-      if (test.status === "failed") {
-        const message = formatAiTestSummary(
-          test,
-          report.results.environment,
-          options
-        );
-        if (message !== null) {
-          const ts = await client.sendMessage({
-            ...message,
-            thread_ts: parentTs || threadTs
-          });
-          if (logs) console.error("AI test summary sent to Slack.");
-          if (!firstTimestamp) firstTimestamp = ts;
-        } else {
-          if (logs) console.error("No AI summary detected. No message sent");
-        }
-      }
-    }
-    if (options.returnTs) return parentTs || firstTimestamp;
+    const ts = await dispatchThreadedReports(
+      client,
+      report,
+      resolvedOptions,
+      logs,
+      "AI test summary",
+      formatAiTestSummary
+    );
+    if (resolvedOptions.returnTs) return ts;
   }
 }
 async function sendCustomMarkdownTemplateToSlack(report, templateContent, options = {}, logs = false) {
-  if (options.onFailOnly !== void 0 && options.onFailOnly && report.results.summary.failed === 0) {
-    if (logs) console.error("No failed tests. Message not sent.");
+  const resolvedOptions = resolveOptions(options);
+  if (resolvedOptions.onFailOnly !== void 0 && resolvedOptions.onFailOnly && report.results.summary.failed === 0) {
+    if (logs) console.log("No failed tests. Message not sent.");
     return;
   }
   report = stripAnsiFromErrors(report);
@@ -42359,44 +42433,45 @@ async function sendCustomMarkdownTemplateToSlack(report, templateContent, option
     report,
     compiledContent,
     report.results.environment,
-    options
+    resolvedOptions
   );
   if (message !== null) {
-    const client = new SlackClient(options);
+    const client = new SlackClient(resolvedOptions);
     const ts = await client.sendMessage(message);
-    if (logs) console.error("Custom template message sent to Slack.");
+    if (logs) console.log("Custom template message sent to Slack.");
     if (ts) {
-      await addStatusReaction(client, report, ts, options);
+      await addStatusReaction(client, report, ts, resolvedOptions, logs);
     }
-    if (options.returnTs) return ts;
+    if (resolvedOptions.returnTs) return ts;
   } else {
-    if (logs) console.error("No custom message detected. No message sent.");
+    if (logs) console.log("No custom message detected. No message sent.");
   }
 }
 async function sendCustomBlockKitTemplateToSlack(report, templateContent, options = {}, logs = false) {
-  if (options.onFailOnly !== void 0 && options.onFailOnly && report.results.summary.failed === 0) {
-    if (logs) console.error("No failed tests. Message not sent.");
+  const resolvedOptions = resolveOptions(options);
+  if (resolvedOptions.onFailOnly !== void 0 && resolvedOptions.onFailOnly && report.results.summary.failed === 0) {
+    if (logs) console.log("No failed tests. Message not sent.");
     return;
   }
   report = stripAnsiFromErrors(report);
   const compiledContent = compileTemplate(templateContent, report);
   const blockKit = JSON.parse(compiledContent);
   if (blockKit.blocks.length === 0) {
-    if (logs) console.error("No blocks detected. No message sent.");
+    if (logs) console.log("No blocks detected. No message sent.");
     return;
   }
   const message = formatCustomBlockKitMessage(report, blockKit);
   if (message !== null) {
-    const client = new SlackClient(options);
+    const client = new SlackClient(resolvedOptions);
     const ts = await client.sendMessage(message);
-    if (logs) console.error("Custom Block Kit message sent to Slack.");
+    if (logs) console.log("Custom Block Kit message sent to Slack.");
     if (ts) {
-      await addStatusReaction(client, report, ts, options);
+      await addStatusReaction(client, report, ts, resolvedOptions, logs);
     }
-    if (options.returnTs) return ts;
+    if (resolvedOptions.returnTs) return ts;
   } else {
     if (logs)
-      console.error("No custom Block Kit message detected. No message sent.");
+      console.log("No custom Block Kit message detected. No message sent.");
   }
 }
 
@@ -42463,6 +42538,12 @@ var sharedOptions = {
     type: "string",
     description: "Emoji to use for passed tests reaction",
     default: "white_check_mark"
+  },
+  dryRun: {
+    alias: "dr",
+    type: "boolean",
+    description: "Print the Slack message payload instead of sending it",
+    default: false
   }
 };
 var slackOptions = {
@@ -42492,7 +42573,51 @@ var consolidatedOption = {
     default: false
   }
 };
-var argv = yargs_default(hideBin(process.argv)).options(slackOptions).command(
+function getActionConfig() {
+  const config = {};
+  const mapping = {
+    command: process.env.INPUT_COMMAND,
+    path: process.env.INPUT_PATH,
+    templatePath: process.env.INPUT_TEMPLATE_PATH,
+    title: process.env.INPUT_TITLE,
+    prefix: process.env.INPUT_PREFIX,
+    suffix: process.env.INPUT_SUFFIX,
+    threadTs: process.env.INPUT_THREAD_TS,
+    replyBroadcast: process.env.INPUT_REPLY_BROADCAST,
+    updateTs: process.env.INPUT_UPDATE_TS,
+    react: process.env.INPUT_REACT,
+    onFailOnly: process.env.INPUT_ON_FAIL_ONLY,
+    consolidated: process.env.INPUT_CONSOLIDATED,
+    autoThread: process.env.INPUT_AUTO_THREAD,
+    oauthToken: process.env.INPUT_SLACK_TOKEN,
+    channelId: process.env.INPUT_CHANNEL_ID,
+    webhookUrl: process.env.INPUT_WEBHOOK_URL,
+    maxRetries: process.env.INPUT_MAX_RETRIES,
+    dryRun: process.env.INPUT_DRY_RUN
+  };
+  for (const [key, value] of Object.entries(mapping)) {
+    if (value !== void 0 && value !== "") {
+      if (value === "true") {
+        config[key] = true;
+      } else if (value === "false") {
+        config[key] = false;
+      } else if (!isNaN(Number(value)) && key === "maxRetries") {
+        config[key] = Number(value);
+      } else {
+        config[key] = value;
+      }
+    }
+  }
+  return config;
+}
+function setGithubOutput(key, value) {
+  const outputPath = process.env.GITHUB_OUTPUT;
+  if (outputPath && value) {
+    fs2.appendFileSync(outputPath, `${key}=${value}
+`);
+  }
+}
+var y = yargs_default(hideBin(process.argv)).options(slackOptions).config(getActionConfig()).command(
   "results <path>",
   "Send test results summary to Slack",
   (yargs) => {
@@ -42507,9 +42632,9 @@ var argv = yargs_default(hideBin(process.argv)).options(slackOptions).command(
       default: false
     }).options(sharedOptions);
   },
-  async (argv2) => {
-    await handleCommand(sendTestResultsToSlack, argv2, {
-      onFailOnly: argv2.onFailOnly
+  async (argv) => {
+    await handleCommand(sendTestResultsToSlack, argv, {
+      onFailOnly: argv.onFailOnly
     });
   }
 ).command(
@@ -42522,9 +42647,9 @@ var argv = yargs_default(hideBin(process.argv)).options(slackOptions).command(
       demandOption: true
     }).options(sharedOptions).option(consolidatedOption);
   },
-  async (argv2) => {
-    await handleCommand(sendFailedResultsToSlack, argv2, {
-      consolidated: argv2.consolidated
+  async (argv) => {
+    await handleCommand(sendFailedResultsToSlack, argv, {
+      consolidated: argv.consolidated
     });
   }
 ).command(
@@ -42537,8 +42662,8 @@ var argv = yargs_default(hideBin(process.argv)).options(slackOptions).command(
       demandOption: true
     }).options(sharedOptions);
   },
-  async (argv2) => {
-    await handleCommand(sendFlakyResultsToSlack, argv2);
+  async (argv) => {
+    await handleCommand(sendFlakyResultsToSlack, argv);
   }
 ).command(
   "ai <path>",
@@ -42550,9 +42675,9 @@ var argv = yargs_default(hideBin(process.argv)).options(slackOptions).command(
       demandOption: true
     }).options(sharedOptions).option(consolidatedOption);
   },
-  async (argv2) => {
-    await handleCommand(sendAISummaryToSlack, argv2, {
-      consolidated: argv2.consolidated
+  async (argv) => {
+    await handleCommand(sendAISummaryToSlack, argv, {
+      consolidated: argv.consolidated
     });
   }
 ).command(
@@ -42585,68 +42710,73 @@ var argv = yargs_default(hideBin(process.argv)).options(slackOptions).command(
         description: "template is Block Kit JSON format",
         default: true
       }
-    }).group(["markdown", "blocks"], "Template Format:").check((argv2) => {
-      if (argv2.markdown) {
-        argv2.blockkit = false;
+    }).group(["markdown", "blocks"], "Template Format:").check((argv) => {
+      if (argv.markdown) {
+        argv.blockkit = false;
       }
       return true;
     });
   },
-  async (argv2) => {
+  async (argv) => {
     try {
-      const report = parseCtrfFile(argv2.path);
-      const slackConfig = getEffectiveSlackConfig(argv2);
-      if (!fs2.existsSync(argv2.templatePath)) {
-        console.error("Error: Template file not found:", argv2.templatePath);
+      const report = parseCtrfFile(argv.path);
+      const slackConfig = getEffectiveSlackConfig(argv);
+      if (!fs2.existsSync(argv.templatePath)) {
+        console.error("Error: Template file not found:", argv.templatePath);
         process.exit(1);
       }
       const templateContent = fs2.readFileSync(
-        argv2.templatePath,
+        argv.templatePath,
         "utf-8"
       );
       const options = {
-        title: argv2.title,
-        prefix: argv2.prefix,
-        suffix: argv2.suffix,
-        onFailOnly: argv2.onFailOnly,
-        threadTs: argv2.threadTs,
-        returnTs: argv2.returnTs,
-        replyBroadcast: argv2.replyBroadcast,
-        updateTs: argv2.updateTs,
-        react: argv2.react,
-        autoThread: argv2.autoThread,
-        failedEmoji: argv2.failedEmoji,
-        passedEmoji: argv2.passedEmoji,
+        title: argv.title,
+        prefix: argv.prefix,
+        suffix: argv.suffix,
+        onFailOnly: argv.onFailOnly,
+        threadTs: argv.threadTs,
+        returnTs: argv.returnTs,
+        replyBroadcast: argv.replyBroadcast,
+        updateTs: argv.updateTs,
+        react: argv.react,
+        autoThread: argv.autoThread,
+        failedEmoji: argv.failedEmoji,
+        passedEmoji: argv.passedEmoji,
+        dryRun: argv.dryRun,
         ...slackConfig
       };
       let timestamp;
-      if (argv2.blockkit) {
+      if (argv.blockkit) {
         timestamp = await sendCustomBlockKitTemplateToSlack(
           report,
           templateContent,
           options,
-          true
+          !argv.returnTs
         );
       } else {
         timestamp = await sendCustomMarkdownTemplateToSlack(
           report,
           templateContent,
           options,
-          true
+          !argv.returnTs
         );
       }
-      if (argv2.returnTs && timestamp) {
+      if (argv.returnTs && timestamp) {
         console.log(JSON.stringify({ ts: timestamp }));
       }
+      if (timestamp) {
+        setGithubOutput("ts", timestamp);
+      }
     } catch (error) {
-      console.error("Error:", error.message);
+      const message = error instanceof Error ? error.message : String(error);
+      console.error("Error:", message);
       process.exit(1);
     }
   }
-).check((argv2) => {
-  const token = argv2.oauthToken ?? process.env.SLACK_OAUTH_TOKEN;
-  const channelId = argv2.channelId ?? process.env.SLACK_CHANNEL_ID;
-  const webhookUrl = argv2.webhookUrl ?? process.env.SLACK_WEBHOOK_URL;
+).check((argv) => {
+  const token = argv.oauthToken ?? process.env.SLACK_OAUTH_TOKEN;
+  const channelId = argv.channelId ?? process.env.SLACK_CHANNEL_ID;
+  const webhookUrl = argv.webhookUrl ?? process.env.SLACK_WEBHOOK_URL;
   const usingOAuthToken = Boolean(token);
   const usingWebhook = Boolean(webhookUrl);
   if (usingOAuthToken && usingWebhook) {
@@ -42666,39 +42796,57 @@ var argv = yargs_default(hideBin(process.argv)).options(slackOptions).command(
   throw new Error(
     "Please provide either webhook-url (or SLACK_WEBHOOK_URL env var), OR both oauth-token (or SLACK_OAUTH_TOKEN env var) and --channel-id (or SLACK_CHANNEL_ID env var)."
   );
-}).help().argv;
-async function handleCommand(reporterFn, argv2, extraOptions = {}) {
+}).help();
+if (process.env.INPUT_COMMAND && process.argv.length < 3) {
+  const command2 = process.env.INPUT_COMMAND;
+  const path2 = process.env.INPUT_PATH;
+  if (path2) {
+    const templatePath = process.env.INPUT_TEMPLATE_PATH;
+    const args = templatePath ? [command2, path2, templatePath] : [command2, path2];
+    y.parse(args);
+  } else {
+    y.parse();
+  }
+} else {
+  y.parse();
+}
+async function handleCommand(reporterFn, argv, extraOptions = {}) {
   try {
-    const report = parseCtrfFile(argv2.path);
-    const slackConfig = getEffectiveSlackConfig(argv2);
+    const report = parseCtrfFile(argv.path);
+    const slackConfig = getEffectiveSlackConfig(argv);
     const options = {
-      title: argv2.title,
-      prefix: argv2.prefix,
-      suffix: argv2.suffix,
-      threadTs: argv2.threadTs,
-      returnTs: argv2.returnTs,
-      replyBroadcast: argv2.replyBroadcast,
-      updateTs: argv2.updateTs,
-      react: argv2.react,
-      autoThread: argv2.autoThread,
-      failedEmoji: argv2.failedEmoji,
-      passedEmoji: argv2.passedEmoji,
+      title: argv.title,
+      prefix: argv.prefix,
+      suffix: argv.suffix,
+      threadTs: argv.threadTs,
+      returnTs: argv.returnTs,
+      replyBroadcast: argv.replyBroadcast,
+      updateTs: argv.updateTs,
+      react: argv.react,
+      autoThread: argv.autoThread,
+      failedEmoji: argv.failedEmoji,
+      passedEmoji: argv.passedEmoji,
+      dryRun: argv.dryRun,
       ...extraOptions,
       ...slackConfig
     };
-    const timestamp = await reporterFn(report, options, true);
-    if (argv2.returnTs && timestamp) {
+    const timestamp = await reporterFn(report, options, !argv.returnTs);
+    if (argv.returnTs && timestamp) {
       console.log(JSON.stringify({ ts: timestamp }));
     }
+    if (timestamp) {
+      setGithubOutput("ts", timestamp);
+    }
   } catch (error) {
-    console.error("Error:", error.message);
+    const message = error instanceof Error ? error.message : String(error);
+    console.error("Error:", message);
     process.exit(1);
   }
 }
-function getEffectiveSlackConfig(argv2) {
-  const token = argv2.oauthToken ?? process.env.SLACK_OAUTH_TOKEN;
-  const channelId = argv2.channelId ?? process.env.SLACK_CHANNEL_ID;
-  const webhookUrl = argv2.webhookUrl ?? process.env.SLACK_WEBHOOK_URL;
+function getEffectiveSlackConfig(argv) {
+  const token = argv.oauthToken ?? process.env.SLACK_OAUTH_TOKEN;
+  const channelId = argv.channelId ?? process.env.SLACK_CHANNEL_ID;
+  const webhookUrl = argv.webhookUrl ?? process.env.SLACK_WEBHOOK_URL;
   return { oauthToken: token, channelId, webhookUrl };
 }
 /*! Bundled license information:
