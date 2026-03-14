@@ -175,7 +175,7 @@ export const formatConsolidatedAiTestSummary = (
     customBlocks,
   })
 
-  return createSlackMessage(blocks, COLORS.AI, title, environment)
+  return createSlackMessage(blocks, COLORS.AI, title, environment, undefined, options)
 }
 
 export const formatConsolidatedFailedTestSummary = (
@@ -202,7 +202,7 @@ export const formatConsolidatedFailedTestSummary = (
     customBlocks,
   })
 
-  return createSlackMessage(blocks, COLORS.FAILED, title, environment)
+  return createSlackMessage(blocks, COLORS.FAILED, title, environment, undefined, options)
 }
 
 export const formatFailedTestSummary = (
@@ -294,7 +294,7 @@ export const formatCustomBlockKitMessage = (
   )
 }
 
-export function createSlackMessage(
+export function createSlackMessage(blocks: any[], color: string, title: string, environment?: any, additionalInfo?: string, options?: any) { //
   blocks: unknown[],
   color: string,
   title: string,

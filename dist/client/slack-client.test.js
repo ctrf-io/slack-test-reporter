@@ -1,0 +1,87 @@
+import { expect, describe, it, vi, beforeEach } from 'vitest';
+import { SlackClient } from './slack-client.js';
+import { WebClient } from '@slack/web-api';
+import { IncomingWebhook } from '@slack/webhook';
+vi.mock('@slack/web-api', () => ({
+    WebClient: vi.fn().mockImplementation(() => ({
+        chat: {
+            postMessage: vi.fn().mockResolvedValue({ ok: true, ts: '1234567890.123456' }),
+            update: vi.fn().mockResolvedValue({ ok: true, ts: '1234567890.123456' }),
+        },
+        reactions: {
+            add: vi.fn().mockResolvedValue({ ok: true }),
+        },
+    })),
+}));
+vi.mock('@slack/webhook', () => ({
+    IncomingWebhook: vi.fn().mockImplementation(() => ({
+        send: vi.fn().mockResolvedValue({ text: 'ok' }),
+    })),
+}));
+describe('SlackClient', () => {
+    const oauthOptions = {
+        oauthToken: 'xoxb-token',
+        channelId: 'C12345',
+    };
+    const webhookOptions = {
+        webhookUrl: 'https://hooks.slack.com/services/xxx',
+    };
+    beforeEach(() => {
+        vi.clearAllMocks();
+    });
+    describe('sendMessage', () => {
+        it('should send message via webhook when webhookUrl is provided', async () => {
+            const client = new SlackClient(webhookOptions);
+            await client.sendMessage({ text: 'hello' });
+            const webhookInstance = vi.mocked(IncomingWebhook).mock.results[0]
+                ?.value;
+            expect(webhookInstance.send).toHaveBeenCalledWith(expect.objectContaining({ text: 'hello' }));
+        });
+        it('should send message via web API when oauthToken is provided', async () => {
+            const client = new SlackClient(oauthOptions);
+            const ts = await client.sendMessage({ text: 'hello' });
+            expect(ts).toBe('1234567890.123456');
+            const webClientInstance = vi.mocked(WebClient).mock.results[0]?.value;
+            expect(webClientInstance.chat.postMessage).toHaveBeenCalledWith(expect.objectContaining({
+                channel: 'C12345',
+                text: 'hello',
+            }));
+        });
+        it('should include thread_ts in webhook payload if provided in options', async () => {
+            const client = new SlackClient({ ...webhookOptions, threadTs: '111.222' });
+            await client.sendMessage({ text: 'hello' });
+            const webhookInstance = vi.mocked(IncomingWebhook).mock.results[0]
+                ?.value;
+            expect(webhookInstance.send).toHaveBeenCalledWith(expect.objectContaining({ thread_ts: '111.222' }));
+        });
+        it('should use update API when updateTs is provided', async () => {
+            const client = new SlackClient({ ...oauthOptions, updateTs: '999.888' });
+            await client.sendMessage({ text: 'updated' });
+            const webClientInstance = vi.mocked(WebClient).mock.results[0]?.value;
+            expect(webClientInstance.chat.update).toHaveBeenCalledWith(expect.objectContaining({
+                channel: 'C12345',
+                ts: '999.888',
+                text: 'updated',
+            }));
+        });
+    });
+    describe('addReaction', () => {
+        it('should add reaction via web API', async () => {
+            const client = new SlackClient(oauthOptions);
+            await client.addReaction('123.456', 'rocket');
+            const webClientInstance = vi.mocked(WebClient).mock.results[0]?.value;
+            expect(webClientInstance.reactions.add).toHaveBeenCalledWith({
+                channel: 'C12345',
+                timestamp: '123.456',
+                name: 'rocket',
+            });
+        });
+        it('should strip colons from emoji name', async () => {
+            const client = new SlackClient(oauthOptions);
+            await client.addReaction('123.456', ':fire:');
+            const webClientInstance = vi.mocked(WebClient).mock.results[0]?.value;
+            expect(webClientInstance.reactions.add).toHaveBeenCalledWith(expect.objectContaining({ name: 'fire' }));
+        });
+    });
+});
+//# sourceMappingURL=slack-client.test.js.map

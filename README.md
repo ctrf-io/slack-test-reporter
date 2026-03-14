@@ -333,12 +333,28 @@ npx slack-ctrf results /path/to/ctrf-file.json -s "<\!subteam^0123456789> please
 
 You can post messages as threaded replies to group related messages together (e.g., re-runs or follow-ups).
 
+### Auto-Threading (Default)
+
+When reporting multiple failures (e.g., using the `failed` or `ai` commands), the reporter automatically threads individual failure details under a single summary message. This keeps your Slack channel clean while providing full detail in the thread.
+
+To disable this behavior and send all messages to the main channel, use the `--no-auto-thread` (or `--no-at`) flag.
+
 ### Post to a Thread
 
 Use the `--thread-ts` (or `--tt`) option to reply to an existing thread:
 
 ```sh
 npx slack-ctrf results /path/to/ctrf-report.json --thread-ts "1234567890.123456"
+```
+
+You can also set the `SLACK_THREAD_TS` environment variable. The CLI flag takes precedence over the environment variable.
+
+### Reply Broadcast
+
+To send a threaded reply and also broadcast it to the main channel, use the `--reply-broadcast` (or `--rb`) flag:
+
+```sh
+npx slack-ctrf results /path/to/ctrf-report.json --thread-ts "..." --reply-broadcast
 ```
 
 ### Get Message Timestamp
@@ -355,6 +371,27 @@ npx slack-ctrf results /path/to/ctrf-report.json --thread-ts "$THREAD_TS"
 
 **Note:** The `--return-ts` flag only works when using OAuth token authentication (not webhooks).
 
+### Update an Existing Message
+
+You can update an existing message instead of sending a new one using the `--update-ts` (or `--ut`) option. This is useful for "live" reporting where you replace a placeholder message with final results:
+
+```sh
+npx slack-ctrf results /path/to/ctrf-report.json --update-ts "1234567890.123456"
+```
+
+## Status Reactions
+
+You can automatically add a reaction emoji to your Slack message based on the test results using the `--react` (or `-r`) flag.
+
+- ❌ Added if there are failed tests.
+- ✅ Added if all tests passed.
+
+You can customize these emojis using `--failed-emoji` and `--passed-emoji`:
+
+```sh
+npx slack-ctrf results /path/to/ctrf-report.json --react --failed-emoji "fire" --passed-emoji "rocket"
+```
+
 ## Options
 
 - `--onFailOnly, -f`: Send notification only if there are failed tests.
@@ -366,6 +403,12 @@ npx slack-ctrf results /path/to/ctrf-report.json --thread-ts "$THREAD_TS"
 - `--channel-id, -ch`: Channel ID
 - `--thread-ts, -tt`: Thread timestamp to reply to an existing thread
 - `--return-ts, -rt`: Output the message timestamp (only works with OAuth token)
+- `--reply-broadcast, -rb`: Also send threaded reply to the channel
+- `--update-ts, -ut`: Timestamp of a message to update
+- `--react, -r`: Add a reaction based on test results
+- `--auto-thread, --at`: Automatically thread multi-message reports (default: true)
+- `--failed-emoji`: Custom emoji for failure reaction (default: "x")
+- `--passed-emoji`: Custom emoji for success reaction (default: "white_check_mark")
 
 ## Merge reports
 

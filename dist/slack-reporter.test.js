@@ -1,0 +1,99 @@
+import { expect, describe, it, vi, beforeEach } from 'vitest';
+import { sendFailedResultsToSlack, sendTestResultsToSlack, } from './slack-reporter.js';
+import { SlackClient } from './client/index.js';
+vi.mock('./client/index.js', () => ({
+    SlackClient: vi.fn().mockImplementation(() => ({
+        sendMessage: vi.fn().mockResolvedValue('123.456'),
+        addReaction: vi.fn().mockResolvedValue(undefined),
+    })),
+}));
+const mockReport = {
+    results: {
+        tool: { name: 'vitest' },
+        summary: {
+            passed: 1,
+            failed: 2,
+            skipped: 0,
+            pending: 0,
+            other: 0,
+            tests: 3,
+            start: 0,
+            stop: 0,
+        },
+        tests: [
+            { name: 'test1', status: 'passed', duration: 0 },
+            { name: 'test2', status: 'failed', duration: 0, message: 'error1' },
+            { name: 'test3', status: 'failed', duration: 0, message: 'error2' },
+        ],
+        environment: {},
+    },
+};
+describe('slack-reporter', () => {
+    beforeEach(() => {
+        vi.clearAllMocks();
+    });
+    describe('sendTestResultsToSlack', () => {
+        it('should send a single message and add reaction', async () => {
+            await sendTestResultsToSlack(mockReport, {
+                oauthToken: 't',
+                channelId: 'c',
+                react: true,
+            });
+            const clientInstance = vi.mocked(SlackClient).mock.results[0]?.value;
+            expect(clientInstance.sendMessage).toHaveBeenCalledTimes(1);
+            expect(clientInstance.addReaction).toHaveBeenCalledWith('123.456', 'x');
+        });
+        it('should use custom emojis for reactions', async () => {
+            await sendTestResultsToSlack(mockReport, {
+                oauthToken: 't',
+                channelId: 'c',
+                react: true,
+                failedEmoji: 'fire',
+            });
+            const clientInstance = vi.mocked(SlackClient).mock.results[0]?.value;
+            expect(clientInstance.addReaction).toHaveBeenCalledWith('123.456', 'fire');
+        });
+    });
+    describe('sendFailedResultsToSlack', () => {
+        it('should perform auto-threading when multiple failures and no threadTs', async () => {
+            await sendFailedResultsToSlack(mockReport, {
+                oauthToken: 't',
+                channelId: 'c',
+                autoThread: true,
+            });
+            const clientInstance = vi.mocked(SlackClient).mock.results[0]?.value;
+            // 1 summary header + 2 failure details = 3 calls
+            expect(clientInstance.sendMessage).toHaveBeenCalledTimes(3);
+            // First call is the summary header
+            expect(clientInstance.sendMessage).toHaveBeenNthCalledWith(1, expect.objectContaining({
+                text: expect.stringContaining('2 tests failed'),
+            }));
+            // Subsequent calls should use the parent TS from the first call
+            expect(clientInstance.sendMessage).toHaveBeenNthCalledWith(2, expect.objectContaining({ thread_ts: '123.456' }));
+        });
+        it('should not auto-thread if disabled', async () => {
+            await sendFailedResultsToSlack(mockReport, {
+                oauthToken: 't',
+                channelId: 'c',
+                autoThread: false,
+            });
+            const clientInstance = vi.mocked(SlackClient).mock.results[0]?.value;
+            // Just the 2 failure details
+            expect(clientInstance.sendMessage).toHaveBeenCalledTimes(2);
+            expect(clientInstance.sendMessage).not.toHaveBeenCalledWith(expect.objectContaining({
+                text: expect.stringContaining('See thread for details'),
+            }));
+        });
+        it('should use provided threadTs and not create a summary header', async () => {
+            await sendFailedResultsToSlack(mockReport, {
+                oauthToken: 't',
+                channelId: 'c',
+                threadTs: '999.999',
+            });
+            const clientInstance = vi.mocked(SlackClient).mock.results[0]?.value;
+            expect(clientInstance.sendMessage).toHaveBeenCalledTimes(2);
+            expect(clientInstance.sendMessage).toHaveBeenCalledWith(expect.objectContaining({ thread_ts: '999.999' }));
+        });
+    });
+});
+//# sourceMappingURL=slack-reporter.test.js.map

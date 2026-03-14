@@ -50,6 +50,22 @@ const sharedOptions = {
         description: 'Add a reaction to the parent message based on test results (requires OAuth token)',
         default: false,
     },
+    autoThread: {
+        alias: 'at',
+        type: 'boolean',
+        description: 'Automatically thread individual failure details under a summary message',
+        default: true,
+    },
+    failedEmoji: {
+        type: 'string',
+        description: 'Emoji to use for failed tests reaction',
+        default: 'x',
+    },
+    passedEmoji: {
+        type: 'string',
+        description: 'Emoji to use for passed tests reaction',
+        default: 'white_check_mark',
+    },
 };
 const slackOptions = {
     oauthToken: {
@@ -198,6 +214,9 @@ const argv = yargs(hideBin(process.argv))
             replyBroadcast: argv.replyBroadcast,
             updateTs: argv.updateTs,
             react: argv.react,
+            autoThread: argv.autoThread,
+            failedEmoji: argv.failedEmoji,
+            passedEmoji: argv.passedEmoji,
             ...slackConfig,
         };
         let timestamp;
@@ -253,6 +272,9 @@ async function handleCommand(reporterFn, argv, extraOptions = {}) {
             replyBroadcast: argv.replyBroadcast,
             updateTs: argv.updateTs,
             react: argv.react,
+            autoThread: argv.autoThread,
+            failedEmoji: argv.failedEmoji,
+            passedEmoji: argv.passedEmoji,
             ...extraOptions,
             ...slackConfig,
         };

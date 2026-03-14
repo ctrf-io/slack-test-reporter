@@ -1,0 +1,173 @@
+import { expect, describe, it, vi, beforeEach } from 'vitest'
+import {
+  sendFailedResultsToSlack,
+  sendTestResultsToSlack,
+  sendAISummaryToSlack,
+  sendFlakyResultsToSlack,
+} from './slack-reporter.js'
+import { SlackClient } from './client/index.js'
+import { CtrfReport } from './types/ctrf.js'
+
+vi.mock('./client/index.js', () => ({
+  SlackClient: vi.fn().mockImplementation(() => ({
+    sendMessage: vi.fn().mockResolvedValue('123.456'),
+    addReaction: vi.fn().mockResolvedValue(undefined),
+  })),
+}))
+
+const mockReport: CtrfReport = {
+  results: {
+    tool: { name: 'vitest' },
+    summary: {
+      passed: 1,
+      failed: 2,
+      skipped: 0,
+      pending: 0,
+      other: 0,
+      tests: 3,
+      start: 0,
+      stop: 0,
+    },
+    tests: [
+      { name: 'test1', status: 'passed', duration: 0 },
+      {
+        name: 'test2',
+        status: 'failed',
+        duration: 0,
+        message: 'error1',
+        ai: 'ai-summary',
+      },
+      {
+        name: 'test3',
+        status: 'failed',
+        duration: 0,
+        message: 'error2',
+        ai: 'ai-summary-2',
+      },
+    ],
+    environment: {},
+  },
+}
+
+const mockFlakyReport: CtrfReport = {
+  results: {
+    tool: { name: 'vitest' },
+    summary: {
+      passed: 1,
+      failed: 0,
+      skipped: 0,
+      pending: 0,
+      other: 0,
+      tests: 1,
+      start: 0,
+      stop: 0,
+    },
+    tests: [{ name: 'test1', status: 'passed', duration: 0, flaky: true }],
+    environment: {},
+  },
+}
+
+describe('slack-reporter', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+  })
+
+  describe('sendTestResultsToSlack', () => {
+    it('should send a single message and add reaction', async () => {
+      await sendTestResultsToSlack(mockReport, {
+        oauthToken: 't',
+        channelId: 'c',
+        react: true,
+      })
+
+      const clientInstance = vi.mocked(SlackClient).mock.results[0]?.value as any
+      expect(clientInstance.sendMessage).toHaveBeenCalledTimes(1)
+      expect(clientInstance.addReaction).toHaveBeenCalledWith('123.456', 'x')
+    })
+
+    it('should use custom emojis for reactions', async () => {
+      await sendTestResultsToSlack(mockReport, {
+        oauthToken: 't',
+        channelId: 'c',
+        react: true,
+        failedEmoji: 'fire',
+      })
+
+      const clientInstance = vi.mocked(SlackClient).mock.results[0]?.value as any
+      expect(clientInstance.addReaction).toHaveBeenCalledWith('123.456', 'fire')
+    })
+  })
+
+  describe('sendFailedResultsToSlack', () => {
+    it('should perform auto-threading when multiple failures and no threadTs', async () => {
+      await sendFailedResultsToSlack(mockReport, {
+        oauthToken: 't',
+        channelId: 'c',
+        autoThread: true,
+      })
+
+      const clientInstance = vi.mocked(SlackClient).mock.results[0]?.value as any
+      // 1 summary header + 2 failure details = 3 calls
+      expect(clientInstance.sendMessage).toHaveBeenCalledTimes(3)
+
+      // First call is the summary header
+      expect(clientInstance.sendMessage).toHaveBeenNthCalledWith(
+        1,
+        expect.objectContaining({
+          text: expect.stringContaining('2 tests failed'),
+        })
+      )
+
+      // Subsequent calls should use the parent TS from the first call
+      expect(clientInstance.sendMessage).toHaveBeenNthCalledWith(
+        2,
+        expect.objectContaining({ thread_ts: '123.456' })
+      )
+    })
+
+    it('should not auto-thread if disabled', async () => {
+      await sendFailedResultsToSlack(mockReport, {
+        oauthToken: 't',
+        channelId: 'c',
+        autoThread: false,
+      })
+
+      const clientInstance = vi.mocked(SlackClient).mock.results[0]?.value as any
+      // Just the 2 failure details
+      expect(clientInstance.sendMessage).toHaveBeenCalledTimes(2)
+      expect(clientInstance.sendMessage).not.toHaveBeenCalledWith(
+        expect.objectContaining({
+          text: expect.stringContaining('See thread for details'),
+        })
+      )
+    })
+  })
+
+  describe('sendAISummaryToSlack', () => {
+    it('should perform auto-threading for AI summaries', async () => {
+      await sendAISummaryToSlack(mockReport, {
+        oauthToken: 't',
+        channelId: 'c',
+        autoThread: true,
+      })
+
+      const clientInstance = vi.mocked(SlackClient).mock.results[0]?.value as any
+      // 1 header + 1 AI summary (test2 has AI)
+      // wait, only test2 has AI in mockReport. No, sendAISummaryToSlack iterates all failed tests and formats AI summary.
+      // FormatAiTestSummary handles if AI is missing.
+      expect(clientInstance.sendMessage).toHaveBeenCalledTimes(3)
+    })
+  })
+
+  describe('sendFlakyResultsToSlack', () => {
+    it('should send flaky test results', async () => {
+      await sendFlakyResultsToSlack(mockFlakyReport, {
+        oauthToken: 't',
+        channelId: 'c',
+      })
+
+      const clientInstance = vi.mocked(SlackClient).mock.results[0]?.value as any
+      expect(clientInstance.sendMessage).toHaveBeenCalledTimes(1)
+    })
+  })
+})

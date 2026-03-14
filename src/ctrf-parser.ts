@@ -8,7 +8,7 @@ import { mergeReports, readReportsFromGlobPattern, type Report } from 'ctrf'
  * @returns The parsed CTRF report
  */
 export function parseCtrfFile(pattern: string): CtrfReport {
-  console.log(`Reading CTRF reports from ${pattern}`)
+  console.error(`Reading CTRF reports from ${pattern}`)
   const reports: CtrfReport[] = readReportsFromGlobPattern(
     pattern
   ) as CtrfReport[]
@@ -22,6 +22,6 @@ export function parseCtrfFile(pattern: string): CtrfReport {
       ? (mergeReports(reports as Report[]) as CtrfReport)
       : reports[0]!
   const processedReport = stripAnsiFromErrors(report)
-  console.log(`Read ${reports.length} CTRF reports`)
+  console.error(`Read ${reports.length} CTRF reports`)
   return processedReport
 }
