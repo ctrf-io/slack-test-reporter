@@ -60,7 +60,50 @@ inputs:
 outputs:
   ts:
     description: 'The timestamp of the sent message'
+    value: ${{ steps.run-report.outputs.ts }}
 
 runs:
-  using: 'node20'
-  main: 'dist/slack-ctrf.bundle.js'
+  using: 'composite'
+  steps:
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+
+    - name: Install dependencies and build
+      shell: bash
+      working-directory: ${{ github.action_path }}
+      run: |
+        npm install
+        npm run build
+
+    - name: Run Slack Reporter
+      id: run-report
+      shell: bash
+      working-directory: ${{ github.action_path }}
+      env:
+        SLACK_OAUTH_TOKEN: ${{ inputs.slack-token }}
+        SLACK_CHANNEL_ID: ${{ inputs.channel-id }}
+        SLACK_WEBHOOK_URL: ${{ inputs.webhook-url }}
+      run: |
+        ARGS="${{ inputs.command }} ${{ inputs.path }}"
+        
+        if [ -n "${{ inputs.template-path }}" ]; then ARGS="$ARGS ${{ inputs.template-path }}"; fi
+        if [ -n "${{ inputs.title }}" ]; then ARGS="$ARGS --title \"${{ inputs.title }}\""; fi
+        if [ -n "${{ inputs.prefix }}" ]; then ARGS="$ARGS --prefix \"${{ inputs.prefix }}\""; fi
+        if [ -n "${{ inputs.suffix }}" ]; then ARGS="$ARGS --suffix \"${{ inputs.suffix }}\""; fi
+        if [ -n "${{ inputs.thread-ts }}" ]; then ARGS="$ARGS --threadTs ${{ inputs.thread-ts }}"; fi
+        if [ "${{ inputs.reply-broadcast }}" == "true" ]; then ARGS="$ARGS --replyBroadcast"; fi
+        if [ -n "${{ inputs.update-ts }}" ]; then ARGS="$ARGS --updateTs ${{ inputs.update-ts }}"; fi
+        if [ "${{ inputs.react }}" == "true" ]; then ARGS="$ARGS --react"; fi
+        if [ "${{ inputs.on-fail-only }}" == "true" ]; then ARGS="$ARGS --onFailOnly"; fi
+        if [ "${{ inputs.consolidated }}" == "true" ]; then ARGS="$ARGS --consolidated"; fi
+        if [ "${{ inputs.auto-thread }}" == "false" ]; then ARGS="$ARGS --autoThread false"; fi
+        
+        # Always use returnTs to capture the output
+        # Use the compiled dist/cli.js
+        TS_JSON=$(node dist/cli.js $ARGS --returnTs)
+        echo "TS_JSON=$TS_JSON"
+        
+        TS=$(echo "$TS_JSON" | grep '^{"ts":' | sed 's/.*"ts":"\([^"]*\)".*/\1/')
+        echo "ts=$TS" >> $GITHUB_OUTPUT
