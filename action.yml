@@ -7,7 +7,7 @@ inputs:
     required: true
     default: 'results'
   path:
-    description: 'Path to the CTRF file'
+    description: 'Path to the CTRF file (relative to workspace)'
     required: true
   template-path:
     description: 'Path to the Handlebars template file (for custom command)'
@@ -80,12 +80,15 @@ runs:
     - name: Run Slack Reporter
       id: run-report
       shell: bash
-      working-directory: ${{ github.action_path }}
       env:
         SLACK_OAUTH_TOKEN: ${{ inputs.slack-token }}
         SLACK_CHANNEL_ID: ${{ inputs.channel-id }}
         SLACK_WEBHOOK_URL: ${{ inputs.webhook-url }}
+        ACTION_PATH: ${{ github.action_path }}
       run: |
+        # Use absolute path to the compiled CLI
+        CLI_PATH="${ACTION_PATH}/dist/cli.js"
+        
         ARGS="${{ inputs.command }} ${{ inputs.path }}"
         
         if [ -n "${{ inputs.template-path }}" ]; then ARGS="$ARGS ${{ inputs.template-path }}"; fi
@@ -101,8 +104,7 @@ runs:
         if [ "${{ inputs.auto-thread }}" == "false" ]; then ARGS="$ARGS --autoThread false"; fi
         
         # Always use returnTs to capture the output
-        # Use the compiled dist/cli.js
-        TS_JSON=$(node dist/cli.js $ARGS --returnTs)
+        TS_JSON=$(node "$CLI_PATH" $ARGS --returnTs)
         echo "TS_JSON=$TS_JSON"
         
         TS=$(echo "$TS_JSON" | grep '^{"ts":' | sed 's/.*"ts":"\([^"]*\)".*/\1/')
