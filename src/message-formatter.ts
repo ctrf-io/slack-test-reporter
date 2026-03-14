@@ -3,7 +3,7 @@ import {
   type CtrfReport,
   type CtrfTest,
 } from './types/ctrf.js'
-import { type Options } from './types/reporter.js'
+import { type Options, type SlackMessage, type SlackBlock } from './types/reporter.js'
 import {
   BLOCK_TYPES,
   COLORS,
@@ -31,7 +31,7 @@ import {
 export const formatResultsMessage = (
   ctrf: CtrfReport,
   options?: Options
-): object => {
+): SlackMessage => {
   const { summary, environment, tests = [] } = ctrf.results
   const { failed } = summary
   const { title, prefix, suffix } = normalizeOptions(
@@ -59,10 +59,10 @@ export const formatResultsMessage = (
     failed > 0 ? COLORS.FAILED : COLORS.PASSED,
     title,
     environment,
-    message
+    message,
+    options
   )
 }
-
 /**
  * Format the flaky tests message
  * @param ctrf - The CTRF report
@@ -72,7 +72,7 @@ export const formatResultsMessage = (
 export const formatFlakyTestsMessage = (
   ctrf: CtrfReport,
   options?: Options
-): object | null => {
+): SlackMessage | null => {
   const { environment, tests } = ctrf.results
   const flakyTests = tests.filter(test => test.flaky)
   const { title, prefix, suffix } = normalizeOptions(
@@ -100,7 +100,8 @@ export const formatFlakyTestsMessage = (
     COLORS.FLAKY,
     title,
     environment,
-    'Flaky tests detected'
+    'Flaky tests detected',
+    options
   )
 }
 
@@ -115,7 +116,7 @@ export const formatAiTestSummary = (
   test: CtrfTest,
   environment: CtrfEnvironment | undefined,
   options?: Options
-): object | null => {
+): SlackMessage | null => {
   const { name, ai, status } = test
   const { title, prefix, suffix } = normalizeOptions(
     TITLES.AI_TEST_SUMMARY,
@@ -137,7 +138,7 @@ export const formatAiTestSummary = (
     customBlocks,
   })
 
-  return createSlackMessage(blocks, COLORS.AI, title, environment, name)
+  return createSlackMessage(blocks, COLORS.AI, title, environment, name, options)
 }
 
 /**
@@ -151,7 +152,7 @@ export const formatConsolidatedAiTestSummary = (
   tests: CtrfTest[],
   environment: CtrfEnvironment | undefined,
   options?: Options
-): object | null => {
+): SlackMessage | null => {
   const failedTests = tests.filter(
     test => test.ai !== undefined && test.status === TEST_STATUS.FAILED
   )
@@ -175,14 +176,21 @@ export const formatConsolidatedAiTestSummary = (
     customBlocks,
   })
 
-  return createSlackMessage(blocks, COLORS.AI, title, environment, undefined, options)
+  return createSlackMessage(
+    blocks,
+    COLORS.AI,
+    title,
+    environment,
+    undefined,
+    options
+  )
 }
 
 export const formatConsolidatedFailedTestSummary = (
   tests: CtrfTest[],
   environment: CtrfEnvironment | undefined,
   options?: Options
-): object | null => {
+): SlackMessage | null => {
   const failedTests = tests.filter(test => test.status === TEST_STATUS.FAILED)
   const defaultTitle = options?.title ?? TITLES.FAILED_TEST_REPORT
   const { title, prefix, suffix } = normalizeOptions(defaultTitle, options)
@@ -202,14 +210,21 @@ export const formatConsolidatedFailedTestSummary = (
     customBlocks,
   })
 
-  return createSlackMessage(blocks, COLORS.FAILED, title, environment, undefined, options)
+  return createSlackMessage(
+    blocks,
+    COLORS.FAILED,
+    title,
+    environment,
+    undefined,
+    options
+  )
 }
 
 export const formatFailedTestSummary = (
   test: CtrfTest,
   environment: CtrfEnvironment | undefined,
   options?: Options
-): object | null => {
+): SlackMessage | null => {
   const { name, message, status } = test
   const { title, prefix, suffix } = normalizeOptions(
     TITLES.FAILED_TEST_SUMMARY,
@@ -231,7 +246,7 @@ export const formatFailedTestSummary = (
     customBlocks,
   })
 
-  return createSlackMessage(blocks, COLORS.FAILED, title, environment, name)
+  return createSlackMessage(blocks, COLORS.FAILED, title, environment, name, options)
 }
 
 export const formatCustomMarkdownMessage = (
@@ -239,7 +254,7 @@ export const formatCustomMarkdownMessage = (
   templateContent: string,
   environment: CtrfEnvironment | undefined,
   options?: Options
-): object | null => {
+): SlackMessage | null => {
   const { title, prefix, suffix } = normalizeOptions('', options)
   const { missingEnvProperties } = handleBuildInfo(environment)
 
@@ -265,14 +280,15 @@ export const formatCustomMarkdownMessage = (
     blocks,
     report.results.summary.failed > 0 ? COLORS.FAILED : COLORS.PASSED,
     title,
-    environment
+    environment,
+    undefined,
+    options
   )
 }
-
 export const formatCustomBlockKitMessage = (
   report: CtrfReport,
-  blockKit: any
-): object | null => {
+  blockKit: { blocks: SlackBlock[] }
+): SlackMessage | null => {
   if (!(process.env.CTRF_SKIP_FOOTER === 'true')) {
     blockKit.blocks.push({
       type: BLOCK_TYPES.CONTEXT,
@@ -294,13 +310,14 @@ export const formatCustomBlockKitMessage = (
   )
 }
 
-export function createSlackMessage(blocks: any[], color: string, title: string, environment?: any, additionalInfo?: string, options?: any) { //
-  blocks: unknown[],
+export function createSlackMessage(
+  blocks: SlackBlock[],
   color: string,
   title: string,
   environment?: CtrfEnvironment,
-  additionalInfo?: string
-): object {
+  additionalInfo?: string,
+  options?: Options
+): SlackMessage {
   const notification: string[] = []
   notification.push(title)
 
@@ -323,6 +340,8 @@ export function createSlackMessage(blocks: any[], color: string, title: string, 
         blocks,
       },
     ],
+    thread_ts: options?.threadTs,
+    reply_broadcast: options?.replyBroadcast,
   }
 }
 

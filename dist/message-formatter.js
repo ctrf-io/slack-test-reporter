@@ -21,7 +21,7 @@ export const formatResultsMessage = (ctrf, options) => {
         customBlocks,
     });
     const message = failed > 0 ? `Failed: ${failed}` : 'Passed';
-    return createSlackMessage(blocks, failed > 0 ? COLORS.FAILED : COLORS.PASSED, title, environment, message);
+    return createSlackMessage(blocks, failed > 0 ? COLORS.FAILED : COLORS.PASSED, title, environment, message, options);
 };
 /**
  * Format the flaky tests message
@@ -45,7 +45,7 @@ export const formatFlakyTestsMessage = (ctrf, options) => {
         missingEnvProperties,
         customBlocks,
     });
-    return createSlackMessage(blocks, COLORS.FLAKY, title, environment, 'Flaky tests detected');
+    return createSlackMessage(blocks, COLORS.FLAKY, title, environment, 'Flaky tests detected', options);
 };
 /**
  * Format the AI test summary message
@@ -69,7 +69,7 @@ export const formatAiTestSummary = (test, environment, options) => {
         missingEnvProperties,
         customBlocks,
     });
-    return createSlackMessage(blocks, COLORS.AI, title, environment, name);
+    return createSlackMessage(blocks, COLORS.AI, title, environment, name, options);
 };
 /**
  * Format the consolidated AI test summary message
@@ -93,7 +93,7 @@ export const formatConsolidatedAiTestSummary = (tests, environment, options) => 
         missingEnvProperties,
         customBlocks,
     });
-    return createSlackMessage(blocks, COLORS.AI, title, environment);
+    return createSlackMessage(blocks, COLORS.AI, title, environment, undefined, options);
 };
 export const formatConsolidatedFailedTestSummary = (tests, environment, options) => {
     const failedTests = tests.filter(test => test.status === TEST_STATUS.FAILED);
@@ -111,7 +111,7 @@ export const formatConsolidatedFailedTestSummary = (tests, environment, options)
         missingEnvProperties,
         customBlocks,
     });
-    return createSlackMessage(blocks, COLORS.FAILED, title, environment);
+    return createSlackMessage(blocks, COLORS.FAILED, title, environment, undefined, options);
 };
 export const formatFailedTestSummary = (test, environment, options) => {
     const { name, message, status } = test;
@@ -128,7 +128,7 @@ export const formatFailedTestSummary = (test, environment, options) => {
         missingEnvProperties,
         customBlocks,
     });
-    return createSlackMessage(blocks, COLORS.FAILED, title, environment, name);
+    return createSlackMessage(blocks, COLORS.FAILED, title, environment, name, options);
 };
 export const formatCustomMarkdownMessage = (report, templateContent, environment, options) => {
     const { title, prefix, suffix } = normalizeOptions('', options);
@@ -149,7 +149,7 @@ export const formatCustomMarkdownMessage = (report, templateContent, environment
         customBlocks,
         missingEnvProperties,
     });
-    return createSlackMessage(blocks, report.results.summary.failed > 0 ? COLORS.FAILED : COLORS.PASSED, title, environment);
+    return createSlackMessage(blocks, report.results.summary.failed > 0 ? COLORS.FAILED : COLORS.PASSED, title, environment, undefined, options);
 };
 export const formatCustomBlockKitMessage = (report, blockKit) => {
     if (!(process.env.CTRF_SKIP_FOOTER === 'true')) {
@@ -165,7 +165,7 @@ export const formatCustomBlockKitMessage = (report, blockKit) => {
     }
     return createSlackMessage(blockKit.blocks, report.results.summary.failed > 0 ? COLORS.FAILED : COLORS.PASSED, '', report.results.environment, 'Test Results');
 };
-export function createSlackMessage(blocks, color, title, environment, additionalInfo) {
+export function createSlackMessage(blocks, color, title, environment, additionalInfo, options) {
     const notification = [];
     notification.push(title);
     if (environment !== undefined) {
@@ -185,6 +185,8 @@ export function createSlackMessage(blocks, color, title, environment, additional
                 blocks,
             },
         ],
+        thread_ts: options?.threadTs,
+        reply_broadcast: options?.replyBroadcast,
     };
 }
 /**

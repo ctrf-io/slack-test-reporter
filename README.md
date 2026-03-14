@@ -347,7 +347,17 @@ Use the `--thread-ts` (or `--tt`) option to reply to an existing thread:
 npx slack-ctrf results /path/to/ctrf-report.json --thread-ts "1234567890.123456"
 ```
 
-You can also set the `SLACK_THREAD_TS` environment variable. The CLI flag takes precedence over the environment variable.
+You can also set the following environment variables. CLI flags take precedence over environment variables.
+
+- `SLACK_WEBHOOK_URL`: Incoming webhook URL
+- `SLACK_OAUTH_TOKEN`: OAuth token
+- `SLACK_CHANNEL_ID`: Channel ID
+- `SLACK_THREAD_TS`: Thread timestamp to reply to an existing thread
+- `SLACK_TITLE`: Title of the notification
+- `SLACK_FAILED_EMOJI`: Custom emoji for failure reaction
+- `SLACK_PASSED_EMOJI`: Custom emoji for success reaction
+- `SLACK_AUTO_THREAD`: Set to `false` to disable automatic threading
+- `SLACK_DRY_RUN`: Set to `true` to enable dry run mode
 
 ### Reply Broadcast
 
@@ -409,6 +419,7 @@ npx slack-ctrf results /path/to/ctrf-report.json --react --failed-emoji "fire" -
 - `--auto-thread, --at`: Automatically thread multi-message reports (default: true)
 - `--failed-emoji`: Custom emoji for failure reaction (default: "x")
 - `--passed-emoji`: Custom emoji for success reaction (default: "white_check_mark")
+- `--dry-run, --dr`: Print the Slack message payload instead of sending it
 
 ## Merge reports
 

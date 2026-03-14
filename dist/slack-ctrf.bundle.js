@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-import { createRequire } from 'module'; const require = createRequire(import.meta.url);
+#!/usr/bin/env node
 var __create = Object.create;
 var __defProp = Object.defineProperty;
 var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
@@ -38856,7 +38856,8 @@ var formatResultsMessage = (ctrf, options) => {
     failed > 0 ? COLORS.FAILED : COLORS.PASSED,
     title,
     environment,
-    message
+    message,
+    options
   );
 };
 var formatFlakyTestsMessage = (ctrf, options) => {
@@ -38883,7 +38884,8 @@ var formatFlakyTestsMessage = (ctrf, options) => {
     COLORS.FLAKY,
     title,
     environment,
-    "Flaky tests detected"
+    "Flaky tests detected",
+    options
   );
 };
 var formatAiTestSummary = (test, environment, options) => {
@@ -38904,7 +38906,7 @@ var formatAiTestSummary = (test, environment, options) => {
     missingEnvProperties,
     customBlocks
   });
-  return createSlackMessage(blocks, COLORS.AI, title, environment, name);
+  return createSlackMessage(blocks, COLORS.AI, title, environment, name, options);
 };
 var formatConsolidatedAiTestSummary = (tests, environment, options) => {
   const failedTests = tests.filter(
@@ -38926,7 +38928,7 @@ var formatConsolidatedAiTestSummary = (tests, environment, options) => {
     missingEnvProperties,
     customBlocks
   });
-  return createSlackMessage(blocks, COLORS.AI, title, environment);
+  return createSlackMessage(blocks, COLORS.AI, title, environment, void 0, options);
 };
 var formatConsolidatedFailedTestSummary = (tests, environment, options) => {
   const failedTests = tests.filter((test) => test.status === TEST_STATUS.FAILED);
@@ -38944,7 +38946,7 @@ var formatConsolidatedFailedTestSummary = (tests, environment, options) => {
     missingEnvProperties,
     customBlocks
   });
-  return createSlackMessage(blocks, COLORS.FAILED, title, environment);
+  return createSlackMessage(blocks, COLORS.FAILED, title, environment, void 0, options);
 };
 var formatFailedTestSummary = (test, environment, options) => {
   const { name, message, status } = test;
@@ -38964,7 +38966,7 @@ var formatFailedTestSummary = (test, environment, options) => {
     missingEnvProperties,
     customBlocks
   });
-  return createSlackMessage(blocks, COLORS.FAILED, title, environment, name);
+  return createSlackMessage(blocks, COLORS.FAILED, title, environment, name, options);
 };
 var formatCustomMarkdownMessage = (report, templateContent, environment, options) => {
   const { title, prefix, suffix } = normalizeOptions("", options);
@@ -38989,7 +38991,9 @@ var formatCustomMarkdownMessage = (report, templateContent, environment, options
     blocks,
     report.results.summary.failed > 0 ? COLORS.FAILED : COLORS.PASSED,
     title,
-    environment
+    environment,
+    void 0,
+    options
   );
 };
 var formatCustomBlockKitMessage = (report, blockKit) => {
@@ -39012,7 +39016,7 @@ var formatCustomBlockKitMessage = (report, blockKit) => {
     "Test Results"
   );
 };
-function createSlackMessage(blocks, color, title, environment, additionalInfo) {
+function createSlackMessage(blocks, color, title, environment, additionalInfo, options) {
   const notification = [];
   notification.push(title);
   if (environment !== void 0) {
@@ -39031,7 +39035,9 @@ function createSlackMessage(blocks, color, title, environment, additionalInfo) {
         color,
         blocks
       }
-    ]
+    ],
+    thread_ts: options?.threadTs,
+    reply_broadcast: options?.replyBroadcast
   };
 }
 function handleBuildInfo(environment) {
@@ -42193,17 +42199,21 @@ async function addStatusReaction(client, report, ts, options) {
   const failedEmoji = options.failedEmoji || "x";
   const passedEmoji = options.passedEmoji || "white_check_mark";
   const emoji = report.results.summary.failed > 0 ? failedEmoji : passedEmoji;
-  await client.addReaction(ts, emoji);
+  try {
+    await client.addReaction(ts, emoji);
+  } catch (err) {
+    console.error(`Failed to add reaction: ${err instanceof Error ? err.message : String(err)}`);
+  }
 }
 async function sendTestResultsToSlack(report, options = {}, logs = false) {
   if (options.onFailOnly !== void 0 && options.onFailOnly && report.results.summary.failed === 0) {
-    if (logs) console.log("No failed tests. Message not sent.");
+    if (logs) console.error("No failed tests. Message not sent.");
     return;
   }
   const client = new SlackClient(options);
   const message = formatResultsMessage(report, options);
   const ts = await client.sendMessage(message);
-  if (logs) console.log("Test results message sent to Slack.");
+  if (logs) console.error("Test results message sent to Slack.");
   if (ts) {
     await addStatusReaction(client, report, ts, options);
   }
@@ -42223,13 +42233,13 @@ async function sendFailedResultsToSlack(report, options = {}, logs = false) {
     );
     if (message !== null) {
       const ts = await client.sendMessage(message);
-      if (logs) console.log("Failed test summary sent to Slack.");
+      if (logs) console.error("Failed test summary sent to Slack.");
       if (ts) {
         await addStatusReaction(client, report, ts, options);
       }
       if (options.returnTs) return ts;
     } else {
-      if (logs) console.log("No failed test summary detected. No message sent.");
+      if (logs) console.error("No failed test summary detected. No message sent.");
     }
   } else {
     let parentTs;
@@ -42240,7 +42250,7 @@ async function sendFailedResultsToSlack(report, options = {}, logs = false) {
         text: `*${options.title || "Test Failures"}*: ${report.results.summary.failed} tests failed. See thread for details.`
       };
       parentTs = await client.sendMessage(summaryMsg);
-      if (logs) console.log("Failure summary sent to Slack.");
+      if (logs) console.error("Failure summary sent to Slack.");
       if (parentTs) {
         await addStatusReaction(client, report, parentTs, options);
       }
@@ -42258,11 +42268,11 @@ async function sendFailedResultsToSlack(report, options = {}, logs = false) {
             ...message,
             thread_ts: parentTs || threadTs
           });
-          if (logs) console.log("Failed test summary sent to Slack.");
+          if (logs) console.error("Failed test summary sent to Slack.");
           if (!firstTimestamp) firstTimestamp = ts;
         } else {
           if (logs)
-            console.log("No failed test summary detected. No message sent");
+            console.error("No failed test summary detected. No message sent");
         }
       }
     }
@@ -42274,13 +42284,13 @@ async function sendFlakyResultsToSlack(report, options = {}, logs = false) {
   if (message !== null) {
     const client = new SlackClient(options);
     const ts = await client.sendMessage(message);
-    if (logs) console.log("Flaky tests message sent to Slack.");
+    if (logs) console.error("Flaky tests message sent to Slack.");
     if (ts) {
       await addStatusReaction(client, report, ts, options);
     }
     if (options.returnTs) return ts;
   } else {
-    if (logs) console.log("No flaky tests detected. No message sent.");
+    if (logs) console.error("No flaky tests detected. No message sent.");
   }
 }
 async function sendAISummaryToSlack(report, options = {}, logs = false) {
@@ -42293,13 +42303,13 @@ async function sendAISummaryToSlack(report, options = {}, logs = false) {
     );
     if (message !== null) {
       const ts = await client.sendMessage(message);
-      if (logs) console.log("AI test summary sent to Slack.");
+      if (logs) console.error("AI test summary sent to Slack.");
       if (ts) {
         await addStatusReaction(client, report, ts, options);
       }
       if (options.returnTs) return ts;
     } else {
-      if (logs) console.log("No AI summary detected. No message sent.");
+      if (logs) console.error("No AI summary detected. No message sent.");
     }
   } else {
     let parentTs;
@@ -42310,7 +42320,7 @@ async function sendAISummaryToSlack(report, options = {}, logs = false) {
         text: `*AI Test Summary*: Analysis for ${report.results.summary.failed} failures below.`
       };
       parentTs = await client.sendMessage(summaryMsg);
-      if (logs) console.log("AI summary header sent to Slack.");
+      if (logs) console.error("AI summary header sent to Slack.");
       if (parentTs) {
         await addStatusReaction(client, report, parentTs, options);
       }
@@ -42328,10 +42338,10 @@ async function sendAISummaryToSlack(report, options = {}, logs = false) {
             ...message,
             thread_ts: parentTs || threadTs
           });
-          if (logs) console.log("AI test summary sent to Slack.");
+          if (logs) console.error("AI test summary sent to Slack.");
           if (!firstTimestamp) firstTimestamp = ts;
         } else {
-          if (logs) console.log("No AI summary detected. No message sent");
+          if (logs) console.error("No AI summary detected. No message sent");
         }
       }
     }
@@ -42340,7 +42350,7 @@ async function sendAISummaryToSlack(report, options = {}, logs = false) {
 }
 async function sendCustomMarkdownTemplateToSlack(report, templateContent, options = {}, logs = false) {
   if (options.onFailOnly !== void 0 && options.onFailOnly && report.results.summary.failed === 0) {
-    if (logs) console.log("No failed tests. Message not sent.");
+    if (logs) console.error("No failed tests. Message not sent.");
     return;
   }
   report = stripAnsiFromErrors(report);
@@ -42354,39 +42364,39 @@ async function sendCustomMarkdownTemplateToSlack(report, templateContent, option
   if (message !== null) {
     const client = new SlackClient(options);
     const ts = await client.sendMessage(message);
-    if (logs) console.log("Custom template message sent to Slack.");
+    if (logs) console.error("Custom template message sent to Slack.");
     if (ts) {
       await addStatusReaction(client, report, ts, options);
     }
     if (options.returnTs) return ts;
   } else {
-    if (logs) console.log("No custom message detected. No message sent.");
+    if (logs) console.error("No custom message detected. No message sent.");
   }
 }
 async function sendCustomBlockKitTemplateToSlack(report, templateContent, options = {}, logs = false) {
   if (options.onFailOnly !== void 0 && options.onFailOnly && report.results.summary.failed === 0) {
-    if (logs) console.log("No failed tests. Message not sent.");
+    if (logs) console.error("No failed tests. Message not sent.");
     return;
   }
   report = stripAnsiFromErrors(report);
   const compiledContent = compileTemplate(templateContent, report);
   const blockKit = JSON.parse(compiledContent);
   if (blockKit.blocks.length === 0) {
-    if (logs) console.log("No blocks detected. No message sent.");
+    if (logs) console.error("No blocks detected. No message sent.");
     return;
   }
   const message = formatCustomBlockKitMessage(report, blockKit);
   if (message !== null) {
     const client = new SlackClient(options);
     const ts = await client.sendMessage(message);
-    if (logs) console.log("Custom Block Kit message sent to Slack.");
+    if (logs) console.error("Custom Block Kit message sent to Slack.");
     if (ts) {
       await addStatusReaction(client, report, ts, options);
     }
     if (options.returnTs) return ts;
   } else {
     if (logs)
-      console.log("No custom Block Kit message detected. No message sent.");
+      console.error("No custom Block Kit message detected. No message sent.");
   }
 }
 

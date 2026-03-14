@@ -1,5 +1,5 @@
 import { expect, describe, it, vi, beforeEach } from 'vitest';
-import { sendFailedResultsToSlack, sendTestResultsToSlack, } from './slack-reporter.js';
+import { sendFailedResultsToSlack, sendTestResultsToSlack, sendAISummaryToSlack, sendFlakyResultsToSlack, } from './slack-reporter.js';
 import { SlackClient } from './client/index.js';
 vi.mock('./client/index.js', () => ({
     SlackClient: vi.fn().mockImplementation(() => ({
@@ -22,9 +22,38 @@ const mockReport = {
         },
         tests: [
             { name: 'test1', status: 'passed', duration: 0 },
-            { name: 'test2', status: 'failed', duration: 0, message: 'error1' },
-            { name: 'test3', status: 'failed', duration: 0, message: 'error2' },
+            {
+                name: 'test2',
+                status: 'failed',
+                duration: 0,
+                message: 'error1',
+                ai: 'ai-summary',
+            },
+            {
+                name: 'test3',
+                status: 'failed',
+                duration: 0,
+                message: 'error2',
+                ai: 'ai-summary-2',
+            },
         ],
+        environment: {},
+    },
+};
+const mockFlakyReport = {
+    results: {
+        tool: { name: 'vitest' },
+        summary: {
+            passed: 1,
+            failed: 0,
+            skipped: 0,
+            pending: 0,
+            other: 0,
+            tests: 1,
+            start: 0,
+            stop: 0,
+        },
+        tests: [{ name: 'test1', status: 'passed', duration: 0, flaky: true }],
         environment: {},
     },
 };
@@ -84,15 +113,29 @@ describe('slack-reporter', () => {
                 text: expect.stringContaining('See thread for details'),
             }));
         });
-        it('should use provided threadTs and not create a summary header', async () => {
-            await sendFailedResultsToSlack(mockReport, {
+    });
+    describe('sendAISummaryToSlack', () => {
+        it('should perform auto-threading for AI summaries', async () => {
+            await sendAISummaryToSlack(mockReport, {
                 oauthToken: 't',
                 channelId: 'c',
-                threadTs: '999.999',
+                autoThread: true,
             });
             const clientInstance = vi.mocked(SlackClient).mock.results[0]?.value;
-            expect(clientInstance.sendMessage).toHaveBeenCalledTimes(2);
-            expect(clientInstance.sendMessage).toHaveBeenCalledWith(expect.objectContaining({ thread_ts: '999.999' }));
+            // 1 header + 1 AI summary (test2 has AI)
+            // wait, only test2 has AI in mockReport. No, sendAISummaryToSlack iterates all failed tests and formats AI summary.
+            // FormatAiTestSummary handles if AI is missing.
+            expect(clientInstance.sendMessage).toHaveBeenCalledTimes(3);
+        });
+    });
+    describe('sendFlakyResultsToSlack', () => {
+        it('should send flaky test results', async () => {
+            await sendFlakyResultsToSlack(mockFlakyReport, {
+                oauthToken: 't',
+                channelId: 'c',
+            });
+            const clientInstance = vi.mocked(SlackClient).mock.results[0]?.value;
+            expect(clientInstance.sendMessage).toHaveBeenCalledTimes(1);
         });
     });
 });

@@ -1,19 +1,19 @@
 import { type CtrfEnvironment, type CtrfReport, type CtrfTest } from './types/ctrf.js';
-import { type Options } from './types/reporter.js';
+import { type Options, type SlackMessage, type SlackBlock } from './types/reporter.js';
 /**
  * Format the results message
  * @param ctrf - The CTRF report
  * @param options - The options for the message
  * @returns The formatted message
  */
-export declare const formatResultsMessage: (ctrf: CtrfReport, options?: Options) => object;
+export declare const formatResultsMessage: (ctrf: CtrfReport, options?: Options) => SlackMessage;
 /**
  * Format the flaky tests message
  * @param ctrf - The CTRF report
  * @param options - The options for the message
  * @returns The formatted message
  */
-export declare const formatFlakyTestsMessage: (ctrf: CtrfReport, options?: Options) => object | null;
+export declare const formatFlakyTestsMessage: (ctrf: CtrfReport, options?: Options) => SlackMessage | null;
 /**
  * Format the AI test summary message
  * @param test - The test
@@ -21,7 +21,7 @@ export declare const formatFlakyTestsMessage: (ctrf: CtrfReport, options?: Optio
  * @param options - The options for the message
  * @returns The formatted message
  */
-export declare const formatAiTestSummary: (test: CtrfTest, environment: CtrfEnvironment | undefined, options?: Options) => object | null;
+export declare const formatAiTestSummary: (test: CtrfTest, environment: CtrfEnvironment | undefined, options?: Options) => SlackMessage | null;
 /**
  * Format the consolidated AI test summary message
  * @param tests - The tests
@@ -29,10 +29,12 @@ export declare const formatAiTestSummary: (test: CtrfTest, environment: CtrfEnvi
  * @param options - The options for the message
  * @returns The formatted message
  */
-export declare const formatConsolidatedAiTestSummary: (tests: CtrfTest[], environment: CtrfEnvironment | undefined, options?: Options) => object | null;
-export declare const formatConsolidatedFailedTestSummary: (tests: CtrfTest[], environment: CtrfEnvironment | undefined, options?: Options) => object | null;
-export declare const formatFailedTestSummary: (test: CtrfTest, environment: CtrfEnvironment | undefined, options?: Options) => object | null;
-export declare const formatCustomMarkdownMessage: (report: CtrfReport, templateContent: string, environment: CtrfEnvironment | undefined, options?: Options) => object | null;
-export declare const formatCustomBlockKitMessage: (report: CtrfReport, blockKit: any) => object | null;
-export declare function createSlackMessage(blocks: unknown[], color: string, title: string, environment?: CtrfEnvironment, additionalInfo?: string): object;
+export declare const formatConsolidatedAiTestSummary: (tests: CtrfTest[], environment: CtrfEnvironment | undefined, options?: Options) => SlackMessage | null;
+export declare const formatConsolidatedFailedTestSummary: (tests: CtrfTest[], environment: CtrfEnvironment | undefined, options?: Options) => SlackMessage | null;
+export declare const formatFailedTestSummary: (test: CtrfTest, environment: CtrfEnvironment | undefined, options?: Options) => SlackMessage | null;
+export declare const formatCustomMarkdownMessage: (report: CtrfReport, templateContent: string, environment: CtrfEnvironment | undefined, options?: Options) => SlackMessage | null;
+export declare const formatCustomBlockKitMessage: (report: CtrfReport, blockKit: {
+    blocks: SlackBlock[];
+}) => SlackMessage | null;
+export declare function createSlackMessage(blocks: SlackBlock[], color: string, title: string, environment?: CtrfEnvironment, additionalInfo?: string, options?: Options): SlackMessage;
 //# sourceMappingURL=message-formatter.d.ts.map

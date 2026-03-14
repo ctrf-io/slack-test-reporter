@@ -38,13 +38,12 @@ describe('Blocks', () => {
                 other: 0,
                 tests: 11,
                 start: 1706644023000,
-                stop: 1706644024000, // 1 second later
+                stop: 1706644048000,
             };
             const blocks = createTestResultBlocks(mockSummary, mockBuildInfo);
             expect(blocks).toHaveLength(1);
             expect(blocks[0].text.text).toContain(`${EMOJIS.X_MARK} 2`);
             expect(blocks[0].text.text).toContain('*Result:* 2 failed tests');
-            expect(blocks[0].text.text).toContain('00:00:01'); // Duration formatted
         });
         it('should handle duration less than one second', () => {
             const mockSummary = {

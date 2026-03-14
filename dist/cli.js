@@ -66,6 +66,12 @@ const sharedOptions = {
         description: 'Emoji to use for passed tests reaction',
         default: 'white_check_mark',
     },
+    dryRun: {
+        alias: 'dr',
+        type: 'boolean',
+        description: 'Print the Slack message payload instead of sending it',
+        default: false,
+    },
 };
 const slackOptions = {
     oauthToken: {
@@ -217,21 +223,23 @@ const argv = yargs(hideBin(process.argv))
             autoThread: argv.autoThread,
             failedEmoji: argv.failedEmoji,
             passedEmoji: argv.passedEmoji,
+            dryRun: argv.dryRun,
             ...slackConfig,
         };
         let timestamp;
         if (argv.blockkit) {
-            timestamp = await sendCustomBlockKitTemplateToSlack(report, templateContent, options, true);
+            timestamp = await sendCustomBlockKitTemplateToSlack(report, templateContent, options, !argv.returnTs);
         }
         else {
-            timestamp = await sendCustomMarkdownTemplateToSlack(report, templateContent, options, true);
+            timestamp = await sendCustomMarkdownTemplateToSlack(report, templateContent, options, !argv.returnTs);
         }
         if (argv.returnTs && timestamp) {
             console.log(JSON.stringify({ ts: timestamp }));
         }
     }
     catch (error) {
-        console.error('Error:', error.message);
+        const message = error instanceof Error ? error.message : String(error);
+        console.error('Error:', message);
         process.exit(1);
     }
 })
@@ -275,16 +283,18 @@ async function handleCommand(reporterFn, argv, extraOptions = {}) {
             autoThread: argv.autoThread,
             failedEmoji: argv.failedEmoji,
             passedEmoji: argv.passedEmoji,
+            dryRun: argv.dryRun,
             ...extraOptions,
             ...slackConfig,
         };
-        const timestamp = await reporterFn(report, options, true);
+        const timestamp = await reporterFn(report, options, !argv.returnTs);
         if (argv.returnTs && timestamp) {
             console.log(JSON.stringify({ ts: timestamp }));
         }
     }
     catch (error) {
-        console.error('Error:', error.message);
+        const message = error instanceof Error ? error.message : String(error);
+        console.error('Error:', message);
         process.exit(1);
     }
 }

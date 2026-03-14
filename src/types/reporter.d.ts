@@ -16,12 +16,36 @@ export interface Options {
   autoThread?: boolean
   failedEmoji?: string
   passedEmoji?: string
+  maxRetries?: number
+  dryRun?: boolean
+}
+
+export interface SlackBlock {
+  type: string
+  text?: {
+    type: string
+    text: string
+    emoji?: boolean
+  }
+  accessory?: {
+    type: string
+    image_url: string
+    alt_text: string
+  }
+  elements?: Array<{
+    type: string
+    text: string
+  }>
 }
 
 export interface SlackMessage {
   text?: string
-  blocks?: any[]
-  attachments?: any[]
+  blocks?: SlackBlock[]
+  attachments?: Array<{
+    fallback?: string
+    color?: string
+    blocks?: SlackBlock[]
+  }>
   thread_ts?: string
   reply_broadcast?: boolean
   mrkdwn?: boolean

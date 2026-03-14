@@ -29,15 +29,11 @@ describe('Message Formatter', () => {
       const result = formatResultsMessage(mockCtrfReport as CtrfReport)
 
       expect(result).toBeDefined()
-      // @ts-expect-error - accessing properties for testing
       expect(result.attachments).toBeDefined()
-      // @ts-expect-error - accessing properties for testing
-      expect(result.attachments.length).toBeGreaterThan(0)
-      // @ts-expect-error - accessing properties for testing
-      expect(result.attachments[0].blocks).toBeDefined()
+      expect(result.attachments!.length).toBeGreaterThan(0)
+      expect(result.attachments![0]!.blocks).toBeDefined()
 
-      // @ts-expect-error - accessing properties for testing
-      const titleBlock = result.attachments[0].blocks.find(
+      const titleBlock = result.attachments![0]!.blocks!.find(
         (block: any) =>
           block.type === BLOCK_TYPES.HEADER &&
           block.text?.text?.includes(TITLES.TEST_RESULTS)
@@ -52,8 +48,7 @@ describe('Message Formatter', () => {
         title: customTitle,
       })
 
-      // @ts-expect-error - accessing properties for testing
-      const titleBlock = result.attachments[0].blocks.find(
+      const titleBlock = result.attachments![0]!.blocks!.find(
         (block: any) =>
           block.type === 'header' && block.text?.text?.includes(customTitle)
       )
@@ -63,8 +58,7 @@ describe('Message Formatter', () => {
     it('should include build information when environment is provided', () => {
       const result = formatResultsMessage(mockCtrfReport as CtrfReport)
 
-      // @ts-expect-error - accessing properties for testing
-      const buildInfoText = result.attachments[0].blocks
+      const buildInfoText = result.attachments![0]!.blocks!
         .filter((block: any) => block.type === 'section')
         .map((block: any) => block.text?.text)
         .join(' ')

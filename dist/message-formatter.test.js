@@ -25,13 +25,9 @@ describe('Message Formatter', () => {
         it('should format test results message with default options', () => {
             const result = formatResultsMessage(mockCtrfReport);
             expect(result).toBeDefined();
-            // @ts-expect-error - accessing properties for testing
             expect(result.attachments).toBeDefined();
-            // @ts-expect-error - accessing properties for testing
             expect(result.attachments.length).toBeGreaterThan(0);
-            // @ts-expect-error - accessing properties for testing
             expect(result.attachments[0].blocks).toBeDefined();
-            // @ts-expect-error - accessing properties for testing
             const titleBlock = result.attachments[0].blocks.find((block) => block.type === BLOCK_TYPES.HEADER &&
                 block.text?.text?.includes(TITLES.TEST_RESULTS));
             expect(titleBlock).toBeDefined();
@@ -41,13 +37,11 @@ describe('Message Formatter', () => {
             const result = formatResultsMessage(mockCtrfReport, {
                 title: customTitle,
             });
-            // @ts-expect-error - accessing properties for testing
             const titleBlock = result.attachments[0].blocks.find((block) => block.type === 'header' && block.text?.text?.includes(customTitle));
             expect(titleBlock).toBeDefined();
         });
         it('should include build information when environment is provided', () => {
             const result = formatResultsMessage(mockCtrfReport);
-            // @ts-expect-error - accessing properties for testing
             const buildInfoText = result.attachments[0].blocks
                 .filter((block) => block.type === 'section')
                 .map((block) => block.text?.text)
