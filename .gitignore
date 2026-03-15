@@ -1,3 +1,5 @@
 node_modules
 ctrf
 coverage
+dist
+.plans
