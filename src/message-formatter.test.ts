@@ -95,6 +95,41 @@ describe('Message Formatter', () => {
       expect(text).toContain('Executive Summary')
       expect(text).toContain('Global AI Summary Text')
     })
+
+    it('should format structured JSON AI summary when present', () => {
+      const structuredAi = {
+        summary: 'Total suite failure overview',
+        code_issues: 'Fix line 42',
+        recommendations: 'Restart server',
+      }
+      const reportWithAi = {
+        ...mockCtrfReport,
+        results: {
+          ...mockCtrfReport.results,
+          ai: JSON.stringify(structuredAi),
+        },
+      }
+      const result = formatGlobalAiSummary(reportWithAi as CtrfReport)
+      expect(result).toBeDefined()
+      const blocks = result!.attachments![0]!.blocks!
+
+      const overallBlock = blocks.find((b: any) =>
+        b.text?.text?.includes('📝 Overall Summary')
+      )
+      const codeBlock = blocks.find((b: any) =>
+        b.text?.text?.includes('💻 Code Issues')
+      )
+      const recBlock = blocks.find((b: any) =>
+        b.text?.text?.includes('💡 Recommendations')
+      )
+
+      expect(overallBlock).toBeDefined()
+      expect(overallBlock!.text!.text).toContain('Total suite failure overview')
+      expect(codeBlock).toBeDefined()
+      expect(codeBlock!.text!.text).toContain('Fix line 42')
+      expect(recBlock).toBeDefined()
+      expect(recBlock!.text!.text).toContain('Restart server')
+    })
   })
 
   describe('formatConsolidatedAiTestSummary', () => {
@@ -103,9 +138,7 @@ describe('Message Formatter', () => {
         results: {
           ...mockCtrfReport.results,
           ai: 'Global Analysis',
-          tests: [
-            { name: 'test1', status: 'failed', ai: 'Test 1 Analysis' },
-          ],
+          tests: [{ name: 'test1', status: 'failed', ai: 'Test 1 Analysis' }],
         },
       }
       const result = formatConsolidatedAiTestSummary(reportWithAi as any)

@@ -151,7 +151,17 @@ export const formatGlobalAiSummary = (
   report: CtrfReport,
   options?: Options
 ): SlackMessage | null => {
-  const globalAi = report.results.ai || report.results.summary.ai
+  const results = report.results
+  const summary = report.results.summary
+  const extra = (report.results as any).extra
+
+  const globalAi =
+    results.ai ||
+    summary.ai ||
+    extra?.ai ||
+    extra?.aiSummary ||
+    extra?.structuredAnalysis
+
   if (!globalAi) {
     return null
   }
@@ -164,15 +174,82 @@ export const formatGlobalAiSummary = (
     report.results.environment
   )
 
-  const customBlocks: SlackBlock[] = [
-    {
+  const customBlocks: SlackBlock[] = []
+
+  // Handle structured AI analysis (either as an object or a JSON string)
+  let structured: any = null
+  if (typeof globalAi === 'string') {
+    try {
+      // Check if it's a JSON string (common with --json-analysis)
+      if (globalAi.trim().startsWith('{')) {
+        structured = JSON.parse(globalAi)
+      }
+    } catch (e) {
+      // Not JSON, treat as plain text
+    }
+  } else if (typeof globalAi === 'object') {
+    structured = globalAi
+  }
+
+  if (structured && (structured.summary || structured.overall)) {
+    const overall = structured.summary || structured.overall
+    customBlocks.push({
+      type: BLOCK_TYPES.SECTION,
+      text: {
+        type: TEXT_TYPES.MRKDWN,
+        text: `*📝 Overall Summary*\n${overall}`,
+      },
+    })
+
+    if (structured.code_issues) {
+      customBlocks.push({
+        type: BLOCK_TYPES.SECTION,
+        text: {
+          type: TEXT_TYPES.MRKDWN,
+          text: `*💻 Code Issues*\n${structured.code_issues}`,
+        },
+      })
+    }
+
+    if (structured.timeout_issues) {
+      customBlocks.push({
+        type: BLOCK_TYPES.SECTION,
+        text: {
+          type: TEXT_TYPES.MRKDWN,
+          text: `*⌛ Timeout Issues*\n${structured.timeout_issues}`,
+        },
+      })
+    }
+
+    if (structured.application_issues) {
+      customBlocks.push({
+        type: BLOCK_TYPES.SECTION,
+        text: {
+          type: TEXT_TYPES.MRKDWN,
+          text: `*📱 Application Issues*\n${structured.application_issues}`,
+        },
+      })
+    }
+
+    if (structured.recommendations) {
+      customBlocks.push({
+        type: BLOCK_TYPES.SECTION,
+        text: {
+          type: TEXT_TYPES.MRKDWN,
+          text: `*💡 Recommendations*\n${structured.recommendations}`,
+        },
+      })
+    }
+  } else {
+    // Treat as a plain string
+    customBlocks.push({
       type: BLOCK_TYPES.SECTION,
       text: {
         type: TEXT_TYPES.MRKDWN,
         text: `*Executive Summary*\n${globalAi}`,
       },
-    },
-  ]
+    })
+  }
 
   const blocks = createMessageBlocks({
     title,
@@ -218,20 +295,93 @@ export const formatConsolidatedAiTestSummary = (
 
   const customBlocks = createAiTestBlocks(failedTests, buildInfo, options)
 
-  const globalAi = report.results.ai || report.results.summary.ai
+  const results = report.results
+  const summary = report.results.summary
+  const extra = (report.results as any).extra
+
+  const globalAi =
+    results.ai ||
+    summary.ai ||
+    extra?.ai ||
+    extra?.aiSummary ||
+    extra?.structuredAnalysis
+
   if (globalAi) {
-    customBlocks.unshift(
-      {
+    let structured: any = null
+    if (typeof globalAi === 'string') {
+      try {
+        if (globalAi.trim().startsWith('{')) {
+          structured = JSON.parse(globalAi)
+        }
+      } catch (e) {
+        /* ignore */
+      }
+    } else if (typeof globalAi === 'object') {
+      structured = globalAi
+    }
+
+    if (structured && (structured.summary || structured.overall)) {
+      const overall = structured.summary || structured.overall
+      customBlocks.unshift({
+        type: BLOCK_TYPES.DIVIDER,
+      })
+      if (structured.recommendations) {
+        customBlocks.unshift({
+          type: BLOCK_TYPES.SECTION,
+          text: {
+            type: TEXT_TYPES.MRKDWN,
+            text: `*💡 Recommendations*\n${structured.recommendations}`,
+          },
+        })
+      }
+      if (structured.application_issues) {
+        customBlocks.unshift({
+          type: BLOCK_TYPES.SECTION,
+          text: {
+            type: TEXT_TYPES.MRKDWN,
+            text: `*📱 Application Issues*\n${structured.application_issues}`,
+          },
+        })
+      }
+      if (structured.timeout_issues) {
+        customBlocks.unshift({
+          type: BLOCK_TYPES.SECTION,
+          text: {
+            type: TEXT_TYPES.MRKDWN,
+            text: `*⌛ Timeout Issues*\n${structured.timeout_issues}`,
+          },
+        })
+      }
+      if (structured.code_issues) {
+        customBlocks.unshift({
+          type: BLOCK_TYPES.SECTION,
+          text: {
+            type: TEXT_TYPES.MRKDWN,
+            text: `*💻 Code Issues*\n${structured.code_issues}`,
+          },
+        })
+      }
+      customBlocks.unshift({
         type: BLOCK_TYPES.SECTION,
         text: {
           type: TEXT_TYPES.MRKDWN,
-          text: `*Executive Summary*\n${globalAi}`,
+          text: `*📝 Overall Summary*\n${overall}`,
         },
-      },
-      {
-        type: BLOCK_TYPES.DIVIDER,
-      }
-    )
+      })
+    } else {
+      customBlocks.unshift(
+        {
+          type: BLOCK_TYPES.SECTION,
+          text: {
+            type: TEXT_TYPES.MRKDWN,
+            text: `*Executive Summary*\n${globalAi}`,
+          },
+        },
+        {
+          type: BLOCK_TYPES.DIVIDER,
+        }
+      )
+    }
   }
 
   const blocks = createMessageBlocks({
