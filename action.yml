@@ -47,6 +47,10 @@ inputs:
     description: 'Automatically thread individual failure details'
     required: false
     default: 'true'
+  max-reports:
+    description: 'Maximum number of failed tests to report'
+    required: false
+    default: '10'
   slack-token:
     description: 'Slack API Bot Token'
     required: false

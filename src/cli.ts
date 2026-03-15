@@ -82,6 +82,12 @@ const sharedOptions = {
     description: 'Print the Slack message payload instead of sending it',
     default: false,
   },
+  maxReports: {
+    alias: 'mr',
+    type: 'number',
+    description: 'Maximum number of failed tests to report to Slack',
+    default: 10,
+  },
 } as const
 
 const slackOptions = {
@@ -134,6 +140,7 @@ function getActionConfig(): Record<string, unknown> {
     webhookUrl: process.env.INPUT_WEBHOOK_URL,
     maxRetries: process.env.INPUT_MAX_RETRIES,
     dryRun: process.env.INPUT_DRY_RUN,
+    maxReports: process.env.INPUT_MAX_REPORTS,
   }
 
   for (const [key, value] of Object.entries(mapping)) {
@@ -142,7 +149,7 @@ function getActionConfig(): Record<string, unknown> {
         config[key] = true
       } else if (value === 'false') {
         config[key] = false
-      } else if (!isNaN(Number(value)) && key === 'maxRetries') {
+      } else if (!isNaN(Number(value)) && (key === 'maxRetries' || key === 'maxReports')) {
         config[key] = Number(value)
       } else {
         config[key] = value
@@ -313,6 +320,7 @@ const y = yargs(hideBin(process.argv))
           failedEmoji: argv.failedEmoji as string,
           passedEmoji: argv.passedEmoji as string,
           dryRun: argv.dryRun as boolean,
+          maxReports: argv.maxReports as number,
           ...slackConfig,
         }
 
@@ -421,6 +429,7 @@ async function handleCommand(
       failedEmoji: argv.failedEmoji as string,
       passedEmoji: argv.passedEmoji as string,
       dryRun: argv.dryRun as boolean,
+      maxReports: argv.maxReports as number,
       ...extraOptions,
       ...slackConfig,
     }

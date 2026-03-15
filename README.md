@@ -358,6 +358,7 @@ You can also set the following environment variables. CLI flags take precedence 
 - `SLACK_PASSED_EMOJI`: Custom emoji for success reaction
 - `SLACK_AUTO_THREAD`: Set to `false` to disable automatic threading
 - `SLACK_DRY_RUN`: Set to `true` to enable dry run mode
+- `SLACK_MAX_REPORTS`: Maximum number of failed tests to report (default: 10)
 
 ### Reply Broadcast
 
@@ -420,6 +421,7 @@ npx slack-ctrf results /path/to/ctrf-report.json --react --failed-emoji "fire" -
 - `--failed-emoji`: Custom emoji for failure reaction (default: "x")
 - `--passed-emoji`: Custom emoji for success reaction (default: "white_check_mark")
 - `--dry-run, --dr`: Print the Slack message payload instead of sending it
+- `--max-reports, --mr`: Maximum number of failed tests to report (default: 10)
 
 ## Merge reports
 

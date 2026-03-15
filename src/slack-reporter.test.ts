@@ -146,6 +146,24 @@ describe('slack-reporter', () => {
       )
     })
 
+    it('should respect maxReports limit', async () => {
+      await sendFailedResultsToSlack(mockReport, {
+        oauthToken: 't',
+        channelId: 'c',
+        autoThread: true,
+        maxReports: 1,
+      })
+
+      const clientInstance = vi.mocked(SlackClient).mock.results[0]?.value as any
+      // 1 header + 1 failure detail + 1 notice = 3 calls
+      expect(clientInstance.sendMessage).toHaveBeenCalledTimes(3)
+      expect(clientInstance.sendMessage).toHaveBeenLastCalledWith(
+        expect.objectContaining({
+          text: expect.stringContaining('1 additional failed tests'),
+        })
+      )
+    })
+
     it('should not send summary header for exactly 1 failure', async () => {
       await sendFailedResultsToSlack(mockSingleFailureReport, {
         oauthToken: 't',

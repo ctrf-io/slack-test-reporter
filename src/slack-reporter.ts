@@ -21,6 +21,7 @@ import {
 } from './types/ctrf.js'
 import { stripAnsiFromErrors } from './utils/common.js'
 import { compileTemplate } from './handlebars/core.js'
+import { LIMITS, NOTICES, formatString } from './constants.js'
 
 /**
  * Resolve options by merging provided options with environment variables and defaults
@@ -87,6 +88,7 @@ async function dispatchThreadedReports(
   let parentTs: string | undefined
   const threadTs = options.threadTs
   const autoThread = options.autoThread !== false
+  const maxReports = options.maxReports ?? LIMITS.MAX_FAILED_TESTS
 
   // Send a summary message first to act as the parent if auto-threading is desired
   // and no threadTs was provided.
@@ -112,22 +114,36 @@ async function dispatchThreadedReports(
     }
   }
 
+  const failedTests = report.results.tests.filter(t => t.status === 'failed')
+  const limitedTests = failedTests.slice(0, maxReports)
+
   let firstTimestamp: string | undefined
-  for (const test of report.results.tests) {
-    if (test.status === 'failed') {
-      const message = testFormatter(test, report.results.environment, options)
-      if (message !== null) {
-        const ts = await client.sendMessage({
-          ...message,
-          thread_ts: parentTs || threadTs,
-        })
-        if (logs) console.log(`${summaryTitle} detail sent to Slack.`)
-        if (!firstTimestamp) firstTimestamp = ts
-      } else {
-        if (logs) console.log(`No ${summaryTitle} detected. No message sent`)
-      }
+  for (const test of limitedTests) {
+    const message = testFormatter(test, report.results.environment, options)
+    if (message !== null) {
+      const ts = await client.sendMessage({
+        ...message,
+        thread_ts: parentTs || threadTs,
+      })
+      if (logs) console.log(`${summaryTitle} detail sent to Slack.`)
+      if (!firstTimestamp) firstTimestamp = ts
+    } else {
+      if (logs) console.log(`No ${summaryTitle} detected. No message sent`)
     }
   }
+
+  if (failedTests.length > maxReports) {
+    const noticeMsg = {
+      text: formatString(
+        NOTICES.MAX_TESTS_EXCEEDED,
+        maxReports,
+        failedTests.length - maxReports
+      ),
+      thread_ts: parentTs || threadTs,
+    }
+    await client.sendMessage(noticeMsg)
+  }
+
   return parentTs || firstTimestamp
 }
 

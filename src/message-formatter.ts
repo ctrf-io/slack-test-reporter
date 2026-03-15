@@ -216,7 +216,7 @@ export const formatConsolidatedAiTestSummary = (
     return null
   }
 
-  const customBlocks = createAiTestBlocks(failedTests, buildInfo)
+  const customBlocks = createAiTestBlocks(failedTests, buildInfo, options)
 
   const globalAi = report.results.ai || report.results.summary.ai
   if (globalAi) {
@@ -266,7 +266,7 @@ export const formatConsolidatedFailedTestSummary = (
     return null
   }
 
-  const customBlocks = createFailedTestBlocks(failedTests, buildInfo)
+  const customBlocks = createFailedTestBlocks(failedTests, buildInfo, options)
 
   const blocks = createMessageBlocks({
     title,
