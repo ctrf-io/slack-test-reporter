@@ -8,6 +8,7 @@ export interface Results {
   tests: CtrfTest[]
   environment?: CtrfEnvironment
   extra?: Record<string, unknown>
+  ai?: string
 }
 
 export interface Summary {
@@ -21,6 +22,7 @@ export interface Summary {
   start: number
   stop: number
   extra?: Record<string, unknown>
+  ai?: string
 }
 
 export interface CtrfTest {

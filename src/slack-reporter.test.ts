@@ -182,7 +182,42 @@ describe('slack-reporter', () => {
   })
 
   describe('sendAISummaryToSlack', () => {
-    it('should perform auto-threading for AI summaries', async () => {
+    it('should use global AI summary as header if present', async () => {
+      const reportWithGlobalAi = {
+        ...mockReport,
+        results: {
+          ...mockReport.results,
+          ai: 'Global Executive Summary',
+        },
+      }
+      await sendAISummaryToSlack(reportWithGlobalAi as any, {
+        oauthToken: 't',
+        channelId: 'c',
+        autoThread: true,
+      })
+
+      const clientInstance = vi.mocked(SlackClient).mock.results[0]?.value as any
+      // 1 global summary header + 2 individual failure summaries = 3 calls
+      expect(clientInstance.sendMessage).toHaveBeenCalledTimes(3)
+      expect(clientInstance.sendMessage).toHaveBeenNthCalledWith(
+        1,
+        expect.objectContaining({
+          attachments: expect.arrayContaining([
+            expect.objectContaining({
+              blocks: expect.arrayContaining([
+                expect.objectContaining({
+                  text: expect.objectContaining({
+                    text: expect.stringContaining('Global Executive Summary'),
+                  }),
+                }),
+              ]),
+            }),
+          ]),
+        })
+      )
+    })
+
+    it('should perform auto-threading for AI summaries without global AI', async () => {
       await sendAISummaryToSlack(mockReport, {
         oauthToken: 't',
         channelId: 'c',

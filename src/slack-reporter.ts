@@ -7,6 +7,7 @@ import {
   formatConsolidatedFailedTestSummary,
   formatCustomMarkdownMessage,
   formatCustomBlockKitMessage,
+  formatGlobalAiSummary,
 } from './message-formatter.js'
 import { SlackClient } from './client/index.js'
 import {
@@ -80,7 +81,8 @@ async function dispatchThreadedReports(
     test: CtrfTest,
     env: CtrfEnvironment | undefined,
     opts: Options
-  ) => SlackMessage | null
+  ) => SlackMessage | null,
+  headerFormatter?: (rep: CtrfReport, opts: Options) => SlackMessage | null
 ): Promise<string | undefined> {
   let parentTs: string | undefined
   const threadTs = options.threadTs
@@ -88,14 +90,25 @@ async function dispatchThreadedReports(
 
   // Send a summary message first to act as the parent if auto-threading is desired
   // and no threadTs was provided.
-  if (!threadTs && autoThread && report.results.summary.failed > 1) {
-    const summaryMsg: SlackMessage = {
-      text: `*${options.title || summaryTitle}*: ${report.results.summary.failed} tests failed. See thread for details.`,
+  if (!threadTs && autoThread) {
+    let summaryMsg: SlackMessage | null = null
+
+    if (headerFormatter) {
+      summaryMsg = headerFormatter(report, options)
     }
-    parentTs = await client.sendMessage(summaryMsg)
-    if (logs) console.log(`${summaryTitle} header sent to Slack.`)
-    if (parentTs) {
-      await addStatusReaction(client, report, parentTs, options, logs)
+
+    if (!summaryMsg && report.results.summary.failed > 1) {
+      summaryMsg = {
+        text: `*${options.title || summaryTitle}*: ${report.results.summary.failed} tests failed. See thread for details.`,
+      }
+    }
+
+    if (summaryMsg) {
+      parentTs = await client.sendMessage(summaryMsg)
+      if (logs) console.log(`${summaryTitle} header sent to Slack.`)
+      if (parentTs) {
+        await addStatusReaction(client, report, parentTs, options, logs)
+      }
     }
   }
 
@@ -246,8 +259,7 @@ export async function sendAISummaryToSlack(
 
   if (resolvedOptions.consolidated !== undefined && resolvedOptions.consolidated) {
     const message = formatConsolidatedAiTestSummary(
-      report.results.tests,
-      report.results.environment,
+      report,
       resolvedOptions
     )
     if (message !== null) {
@@ -267,7 +279,8 @@ export async function sendAISummaryToSlack(
       resolvedOptions,
       logs,
       'AI test summary',
-      formatAiTestSummary
+      formatAiTestSummary,
+      formatGlobalAiSummary
     )
     if (resolvedOptions.returnTs) return ts
   }

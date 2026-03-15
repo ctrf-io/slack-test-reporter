@@ -142,17 +142,67 @@ export const formatAiTestSummary = (
 }
 
 /**
+ * Format a global AI summary message
+ * @param report - The CTRF report
+ * @param options - The options for the message
+ * @returns The formatted message or null if no global summary
+ */
+export const formatGlobalAiSummary = (
+  report: CtrfReport,
+  options?: Options
+): SlackMessage | null => {
+  const globalAi = report.results.ai || report.results.summary.ai
+  if (!globalAi) {
+    return null
+  }
+
+  const { title, prefix, suffix } = normalizeOptions(
+    TITLES.AI_TEST_SUMMARY,
+    options
+  )
+  const { buildInfo, missingEnvProperties } = handleBuildInfo(
+    report.results.environment
+  )
+
+  const customBlocks: SlackBlock[] = [
+    {
+      type: BLOCK_TYPES.SECTION,
+      text: {
+        type: TEXT_TYPES.MRKDWN,
+        text: `*Executive Summary*\n${globalAi}`,
+      },
+    },
+  ]
+
+  const blocks = createMessageBlocks({
+    title,
+    prefix,
+    suffix,
+    missingEnvProperties,
+    customBlocks,
+  })
+
+  return createSlackMessage(
+    blocks,
+    COLORS.AI,
+    title,
+    report.results.environment,
+    'Overall AI Analysis',
+    options
+  )
+}
+
+/**
  * Format the consolidated AI test summary message
- * @param tests - The tests
- * @param environment - The environment
+ * @param report - The CTRF report
  * @param options - The options for the message
  * @returns The formatted message
  */
 export const formatConsolidatedAiTestSummary = (
-  tests: CtrfTest[],
-  environment: CtrfEnvironment | undefined,
+  report: CtrfReport,
   options?: Options
 ): SlackMessage | null => {
+  const { tests, environment } = report.results
   const failedTests = tests.filter(
     test => test.ai !== undefined && test.status === TEST_STATUS.FAILED
   )
@@ -167,6 +217,22 @@ export const formatConsolidatedAiTestSummary = (
   }
 
   const customBlocks = createAiTestBlocks(failedTests, buildInfo)
+
+  const globalAi = report.results.ai || report.results.summary.ai
+  if (globalAi) {
+    customBlocks.unshift(
+      {
+        type: BLOCK_TYPES.SECTION,
+        text: {
+          type: TEXT_TYPES.MRKDWN,
+          text: `*Executive Summary*\n${globalAi}`,
+        },
+      },
+      {
+        type: BLOCK_TYPES.DIVIDER,
+      }
+    )
+  }
 
   const blocks = createMessageBlocks({
     title,

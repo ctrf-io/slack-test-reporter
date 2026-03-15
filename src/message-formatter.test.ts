@@ -1,5 +1,9 @@
 import { expect, describe, it } from 'vitest'
-import { formatResultsMessage } from './message-formatter'
+import {
+  formatResultsMessage,
+  formatGlobalAiSummary,
+  formatConsolidatedAiTestSummary,
+} from './message-formatter'
 import { BLOCK_TYPES, TITLES } from './constants'
 import { CtrfReport } from './types/ctrf'
 
@@ -66,6 +70,52 @@ describe('Message Formatter', () => {
       expect(buildInfoText).toContain('ctrf')
       expect(buildInfoText).toContain('123')
       expect(buildInfoText).toContain('https://ctrf.io/')
+    })
+  })
+
+  describe('formatGlobalAiSummary', () => {
+    it('should return null if no global AI summary is present', () => {
+      const result = formatGlobalAiSummary(mockCtrfReport as CtrfReport)
+      expect(result).toBeNull()
+    })
+
+    it('should format global AI summary when present in results', () => {
+      const reportWithAi = {
+        ...mockCtrfReport,
+        results: {
+          ...mockCtrfReport.results,
+          ai: 'Global AI Summary Text',
+        },
+      }
+      const result = formatGlobalAiSummary(reportWithAi as CtrfReport)
+      expect(result).toBeDefined()
+      const text = result!.attachments![0]!.blocks!.map(
+        (b: any) => b.text?.text || ''
+      ).join(' ')
+      expect(text).toContain('Executive Summary')
+      expect(text).toContain('Global AI Summary Text')
+    })
+  })
+
+  describe('formatConsolidatedAiTestSummary', () => {
+    it('should include global summary at the top if present', () => {
+      const reportWithAi = {
+        results: {
+          ...mockCtrfReport.results,
+          ai: 'Global Analysis',
+          tests: [
+            { name: 'test1', status: 'failed', ai: 'Test 1 Analysis' },
+          ],
+        },
+      }
+      const result = formatConsolidatedAiTestSummary(reportWithAi as any)
+      expect(result).toBeDefined()
+      const text = result!.attachments![0]!.blocks!.map(
+        (b: any) => b.text?.text || ''
+      ).join(' ')
+      expect(text).toContain('Executive Summary')
+      expect(text).toContain('Global Analysis')
+      expect(text).toContain('Test 1 Analysis')
     })
   })
 })
