@@ -55,7 +55,7 @@
   "devDependencies": {
     "@d2t/vitest-ctrf-json-reporter": "^1.2.0",
     "@eslint/js": "^9.32.0",
-    "@types/node": "^20.12.7",
+    "@types/node": "^25.5.0",
     "@types/yargs": "^17.0.32",
     "@vitest/coverage-v8": "^3.2.4",
     "eslint": "^9.32.0",
