@@ -10,10 +10,7 @@ import {
   formatGlobalAiSummary,
 } from './message-formatter.js'
 import { SlackClient } from './client/index.js'
-import {
-  type Options,
-  type SlackMessage,
-} from './types/reporter.js'
+import { type Options, type SlackMessage } from './types/reporter.js'
 import {
   type CtrfEnvironment,
   type CtrfReport,
@@ -202,7 +199,10 @@ export async function sendFailedResultsToSlack(
   const resolvedOptions = resolveOptions(options)
   const client = new SlackClient(resolvedOptions)
 
-  if (resolvedOptions.consolidated !== undefined && resolvedOptions.consolidated) {
+  if (
+    resolvedOptions.consolidated !== undefined &&
+    resolvedOptions.consolidated
+  ) {
     const message = formatConsolidatedFailedTestSummary(
       report.results.tests,
       report.results.environment,
@@ -273,11 +273,11 @@ export async function sendAISummaryToSlack(
   const resolvedOptions = resolveOptions(options)
   const client = new SlackClient(resolvedOptions)
 
-  if (resolvedOptions.consolidated !== undefined && resolvedOptions.consolidated) {
-    const message = formatConsolidatedAiTestSummary(
-      report,
-      resolvedOptions
-    )
+  if (
+    resolvedOptions.consolidated !== undefined &&
+    resolvedOptions.consolidated
+  ) {
+    const message = formatConsolidatedAiTestSummary(report, resolvedOptions)
     if (message !== null) {
       const ts = await client.sendMessage(message)
       if (logs) console.log('AI test summary sent to Slack.')

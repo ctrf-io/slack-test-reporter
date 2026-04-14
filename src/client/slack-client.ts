@@ -1,4 +1,4 @@
-import { ChatPostMessageResponse, WebClient } from '@slack/web-api'
+import { WebClient } from '@slack/web-api'
 import { IncomingWebhook } from '@slack/webhook'
 import { type Options, type SlackMessage } from '../types/reporter.js'
 

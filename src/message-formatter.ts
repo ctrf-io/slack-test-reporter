@@ -3,7 +3,11 @@ import {
   type CtrfReport,
   type CtrfTest,
 } from './types/ctrf.js'
-import { type Options, type SlackMessage, type SlackBlock } from './types/reporter.js'
+import {
+  type Options,
+  type SlackMessage,
+  type SlackBlock,
+} from './types/reporter.js'
 import {
   BLOCK_TYPES,
   COLORS,
@@ -138,7 +142,14 @@ export const formatAiTestSummary = (
     customBlocks,
   })
 
-  return createSlackMessage(blocks, COLORS.AI, title, environment, name, options)
+  return createSlackMessage(
+    blocks,
+    COLORS.AI,
+    title,
+    environment,
+    name,
+    options
+  )
 }
 
 /**
@@ -170,9 +181,7 @@ export const formatGlobalAiSummary = (
     TITLES.AI_TEST_SUMMARY,
     options
   )
-  const { buildInfo, missingEnvProperties } = handleBuildInfo(
-    report.results.environment
-  )
+  const { missingEnvProperties } = handleBuildInfo(report.results.environment)
 
   const customBlocks: SlackBlock[] = []
 
@@ -184,7 +193,7 @@ export const formatGlobalAiSummary = (
       if (globalAi.trim().startsWith('{')) {
         structured = JSON.parse(globalAi)
       }
-    } catch (e) {
+    } catch {
       // Not JSON, treat as plain text
     }
   } else if (typeof globalAi === 'object') {
@@ -313,7 +322,7 @@ export const formatConsolidatedAiTestSummary = (
         if (globalAi.trim().startsWith('{')) {
           structured = JSON.parse(globalAi)
         }
-      } catch (e) {
+      } catch {
         /* ignore */
       }
     } else if (typeof globalAi === 'object') {
@@ -462,7 +471,14 @@ export const formatFailedTestSummary = (
     customBlocks,
   })
 
-  return createSlackMessage(blocks, COLORS.FAILED, title, environment, name, options)
+  return createSlackMessage(
+    blocks,
+    COLORS.FAILED,
+    title,
+    environment,
+    name,
+    options
+  )
 }
 
 export const formatCustomMarkdownMessage = (

@@ -1,6 +1,6 @@
 {
   "name": "slack-ctrf",
-  "version": "0.0.31",
+  "version": "0.0.32",
   "description": "Send Slack notifications with test results from popular testing frameworks",
   "type": "module",
   "main": "dist/index.js",
@@ -43,6 +43,9 @@
   "license": "MIT",
   "engines": {
     "node": ">=20.19.0"
+  },
+  "overrides": {
+    "axios": "1.14.0"
   },
   "dependencies": {
     "@slack/web-api": "^7.9.3",

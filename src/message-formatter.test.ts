@@ -62,8 +62,10 @@ describe('Message Formatter', () => {
     it('should include build information when environment is provided', () => {
       const result = formatResultsMessage(mockCtrfReport as CtrfReport)
 
-      const buildInfoText = result.attachments![0]!.blocks!
-        .filter((block: any) => block.type === 'section')
+      const buildInfoText = result
+        .attachments![0]!.blocks!.filter(
+          (block: any) => block.type === 'section'
+        )
         .map((block: any) => block.text?.text)
         .join(' ')
 
@@ -89,9 +91,9 @@ describe('Message Formatter', () => {
       }
       const result = formatGlobalAiSummary(reportWithAi as CtrfReport)
       expect(result).toBeDefined()
-      const text = result!.attachments![0]!.blocks!.map(
-        (b: any) => b.text?.text || ''
-      ).join(' ')
+      const text = result!
+        .attachments![0]!.blocks!.map((b: any) => b.text?.text || '')
+        .join(' ')
       expect(text).toContain('Executive Summary')
       expect(text).toContain('Global AI Summary Text')
     })
@@ -143,9 +145,9 @@ describe('Message Formatter', () => {
       }
       const result = formatConsolidatedAiTestSummary(reportWithAi as any)
       expect(result).toBeDefined()
-      const text = result!.attachments![0]!.blocks!.map(
-        (b: any) => b.text?.text || ''
-      ).join(' ')
+      const text = result!
+        .attachments![0]!.blocks!.map((b: any) => b.text?.text || '')
+        .join(' ')
       expect(text).toContain('Executive Summary')
       expect(text).toContain('Global Analysis')
       expect(text).toContain('Test 1 Analysis')

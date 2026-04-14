@@ -85,7 +85,7 @@ export const postMessage = async (
         text: message,
         thread_ts: threadTs,
         reply_broadcast: replyBroadcast,
-       } as any)
+      } as any)
     } else {
       return await client.chat.postMessage({
         channel,
@@ -129,7 +129,7 @@ export const updateMessage = async (
         channel,
         ts,
         ...message,
-     } as any)) as any
+      } as any)) as any
     }
   } catch (error) {
     throw new Error(
@@ -166,4 +166,3 @@ export const addReaction = async (
     }
   }
 }
-

@@ -46,7 +46,8 @@ const sharedOptions = {
   replyBroadcast: {
     alias: 'rb',
     type: 'boolean',
-    description: 'Also send threaded reply to the channel (requires OAuth token)',
+    description:
+      'Also send threaded reply to the channel (requires OAuth token)',
     default: false,
   },
   updateTs: {
@@ -57,13 +58,15 @@ const sharedOptions = {
   react: {
     alias: 'r',
     type: 'boolean',
-    description: 'Add a reaction to the parent message based on test results (requires OAuth token)',
+    description:
+      'Add a reaction to the parent message based on test results (requires OAuth token)',
     default: false,
   },
   autoThread: {
     alias: 'at',
     type: 'boolean',
-    description: 'Automatically thread individual failure details under a summary message',
+    description:
+      'Automatically thread individual failure details under a summary message',
     default: true,
   },
   failedEmoji: {
@@ -149,7 +152,10 @@ function getActionConfig(): Record<string, unknown> {
         config[key] = true
       } else if (value === 'false') {
         config[key] = false
-      } else if (!isNaN(Number(value)) && (key === 'maxRetries' || key === 'maxReports')) {
+      } else if (
+        !isNaN(Number(value)) &&
+        (key === 'maxRetries' || key === 'maxReports')
+      ) {
         config[key] = Number(value)
       } else {
         config[key] = value
@@ -357,7 +363,8 @@ const y = yargs(hideBin(process.argv))
   .check(argv => {
     const token = (argv.oauthToken as string) ?? process.env.SLACK_OAUTH_TOKEN
     const channelId = (argv.channelId as string) ?? process.env.SLACK_CHANNEL_ID
-    const webhookUrl = (argv.webhookUrl as string) ?? process.env.SLACK_WEBHOOK_URL
+    const webhookUrl =
+      (argv.webhookUrl as string) ?? process.env.SLACK_WEBHOOK_URL
 
     const usingOAuthToken = Boolean(token)
     const usingWebhook = Boolean(webhookUrl)
@@ -450,6 +457,7 @@ async function handleCommand(
 function getEffectiveSlackConfig(argv: Record<string, unknown>): Options {
   const token = (argv.oauthToken as string) ?? process.env.SLACK_OAUTH_TOKEN
   const channelId = (argv.channelId as string) ?? process.env.SLACK_CHANNEL_ID
-  const webhookUrl = (argv.webhookUrl as string) ?? process.env.SLACK_WEBHOOK_URL
+  const webhookUrl =
+    (argv.webhookUrl as string) ?? process.env.SLACK_WEBHOOK_URL
   return { oauthToken: token, channelId, webhookUrl }
 }
