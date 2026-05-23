@@ -97,6 +97,38 @@ describe('SlackClient', () => {
     })
   })
 
+  describe('error formatting', () => {
+    it('should include webhook response body in error message on 400', async () => {
+      const client = new SlackClient(webhookOptions)
+      const webhookInstance = vi.mocked(IncomingWebhook).mock.results[0]
+        ?.value as any
+
+      webhookInstance.send.mockRejectedValueOnce({
+        statusCode: 400,
+        body: 'invalid_blocks',
+      })
+
+      await expect(client.sendMessage({ text: 'bad payload' })).rejects.toThrow(
+        'Slack webhook error (400): invalid_blocks'
+      )
+    })
+
+    it('should stringify a JSON webhook body in the error message', async () => {
+      const client = new SlackClient(webhookOptions)
+      const webhookInstance = vi.mocked(IncomingWebhook).mock.results[0]
+        ?.value as any
+
+      webhookInstance.send.mockRejectedValueOnce({
+        statusCode: 400,
+        body: { error: 'text_too_long', ok: false },
+      })
+
+      await expect(client.sendMessage({ text: 'too long' })).rejects.toThrow(
+        'Slack webhook error (400): {"error":"text_too_long","ok":false}'
+      )
+    })
+  })
+
   describe('retry logic', () => {
     it('should retry on rate limit error', async () => {
       const client = new SlackClient({ ...oauthOptions, maxRetries: 2 })

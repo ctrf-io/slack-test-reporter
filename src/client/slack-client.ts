@@ -66,6 +66,14 @@ export class SlackClient implements ISlackClient {
       return new Error(`Slack API error: ${slackError}`)
     }
 
+    if (error?.statusCode && error?.body !== undefined) {
+      const body =
+        typeof error.body === 'string' ? error.body : JSON.stringify(error.body)
+      return new Error(
+        `Slack webhook error (${error.statusCode}): ${body}`
+      )
+    }
+
     const message = error instanceof Error ? error.message : String(error)
     return new Error(`Slack API failure: ${message}`)
   }
