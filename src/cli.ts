@@ -69,6 +69,12 @@ const sharedOptions = {
     description: 'Maximum number of failed tests to report to Slack',
     default: 10,
   },
+  updateTs: {
+    alias: 'ut',
+    type: 'string',
+    description:
+      'Timestamp of an existing message to update instead of posting a new one (requires OAuth token)',
+  },
 } as const
 
 const slackOptions = {
@@ -328,6 +334,7 @@ async function handleCommand(
       prefix: argv.prefix as string,
       suffix: argv.suffix as string,
       threadTs: argv.threadTs as string,
+      updateTs: argv.updateTs as string,
       returnTs: argv.returnTs as boolean,
       replyBroadcast: argv.replyBroadcast as boolean,
       autoThread: argv.autoThread as boolean,

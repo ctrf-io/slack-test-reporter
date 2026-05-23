@@ -9,6 +9,7 @@ vi.mock('@slack/web-api', () => ({
       postMessage: vi
         .fn()
         .mockResolvedValue({ ok: true, ts: '1234567890.123456' }),
+      update: vi.fn().mockResolvedValue({ ok: true, ts: '999.888' }),
     },
   })),
 }))
@@ -69,6 +70,40 @@ describe('SlackClient', () => {
       expect(webhookInstance.send).toHaveBeenCalledWith(
         expect.objectContaining({ thread_ts: '111.222' })
       )
+    })
+
+    it('should use chat.update when updateTs is provided', async () => {
+      const client = new SlackClient({ ...oauthOptions, updateTs: '999.888' })
+      const ts = await client.sendMessage({ text: 'updated content' })
+
+      expect(ts).toBe('999.888')
+      const webClientInstance = vi.mocked(WebClient).mock.results[0]
+        ?.value as any
+      expect(webClientInstance.chat.update).toHaveBeenCalledWith(
+        expect.objectContaining({
+          channel: 'C12345',
+          ts: '999.888',
+          text: 'updated content',
+        })
+      )
+      expect(webClientInstance.chat.postMessage).not.toHaveBeenCalled()
+    })
+
+    it('should print update payload in dry-run mode when updateTs is set', async () => {
+      const consoleSpy = vi.spyOn(console, 'log').mockImplementation(() => {})
+      const client = new SlackClient({
+        ...oauthOptions,
+        updateTs: '999.888',
+        dryRun: true,
+      })
+      const ts = await client.sendMessage({ text: 'dry update' })
+
+      expect(ts).toBe('999.888')
+      expect(consoleSpy).toHaveBeenCalledWith(
+        expect.stringContaining('[Dry Run] Update Message'),
+        expect.any(String)
+      )
+      consoleSpy.mockRestore()
     })
 
     it('should respect dry-run mode', async () => {

@@ -15,6 +15,7 @@ export interface Options {
   maxRetries?: number
   dryRun?: boolean
   maxReports?: number
+  updateTs?: string
 }
 
 export interface SlackBlock {

@@ -24,6 +24,7 @@ function resolveOptions(options: Options): Options {
   return {
     ...options,
     threadTs: options.threadTs || process.env.SLACK_THREAD_TS,
+    updateTs: options.updateTs || process.env.SLACK_UPDATE_TS,
     autoThread: options.autoThread ?? process.env.SLACK_AUTO_THREAD === 'true',
     maxRetries:
       options.maxRetries ?? parseInt(process.env.SLACK_MAX_RETRIES || '3', 10),

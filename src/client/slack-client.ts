@@ -72,14 +72,21 @@ export class SlackClient implements ISlackClient {
 
   async sendMessage(message: SlackMessage): Promise<string | undefined> {
     if (this.options.dryRun) {
-      console.log(
-        '[Dry Run] Slack Message Payload:',
-        JSON.stringify(message, null, 2)
-      )
-      return 'dry-run-ts'
+      const action = this.options.updateTs ? '[Dry Run] Update Message' : '[Dry Run] Slack Message Payload'
+      console.log(action + ':', JSON.stringify(message, null, 2))
+      return this.options.updateTs ?? 'dry-run-ts'
     }
 
     return this.withRetry(async () => {
+      if (this.options.updateTs && this.webClient && this.options.channelId) {
+        const response = await this.webClient.chat.update({
+          channel: this.options.channelId,
+          ts: this.options.updateTs,
+          ...message,
+        } as any)
+        return response.ts as string
+      }
+
       if (this.webhook) {
         const payload: any = { ...message }
         if (this.options.threadTs) {
