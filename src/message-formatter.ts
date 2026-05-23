@@ -3,7 +3,11 @@ import {
   type CtrfReport,
   type CtrfTest,
 } from './types/ctrf.js'
-import { type Options } from './types/reporter.js'
+import {
+  type Options,
+  type SlackMessage,
+  type SlackBlock,
+} from './types/reporter.js'
 import {
   BLOCK_TYPES,
   COLORS,
@@ -31,7 +35,7 @@ import {
 export const formatResultsMessage = (
   ctrf: CtrfReport,
   options?: Options
-): object => {
+): SlackMessage => {
   const { summary, environment, tests = [] } = ctrf.results
   const { failed } = summary
   const { title, prefix, suffix } = normalizeOptions(
@@ -59,10 +63,10 @@ export const formatResultsMessage = (
     failed > 0 ? COLORS.FAILED : COLORS.PASSED,
     title,
     environment,
-    message
+    message,
+    options
   )
 }
-
 /**
  * Format the flaky tests message
  * @param ctrf - The CTRF report
@@ -72,7 +76,7 @@ export const formatResultsMessage = (
 export const formatFlakyTestsMessage = (
   ctrf: CtrfReport,
   options?: Options
-): object | null => {
+): SlackMessage | null => {
   const { environment, tests } = ctrf.results
   const flakyTests = tests.filter(test => test.flaky)
   const { title, prefix, suffix } = normalizeOptions(
@@ -100,7 +104,8 @@ export const formatFlakyTestsMessage = (
     COLORS.FLAKY,
     title,
     environment,
-    'Flaky tests detected'
+    'Flaky tests detected',
+    options
   )
 }
 
@@ -115,7 +120,7 @@ export const formatAiTestSummary = (
   test: CtrfTest,
   environment: CtrfEnvironment | undefined,
   options?: Options
-): object | null => {
+): SlackMessage | null => {
   const { name, ai, status } = test
   const { title, prefix, suffix } = normalizeOptions(
     TITLES.AI_TEST_SUMMARY,
@@ -137,21 +142,153 @@ export const formatAiTestSummary = (
     customBlocks,
   })
 
-  return createSlackMessage(blocks, COLORS.AI, title, environment, name)
+  return createSlackMessage(
+    blocks,
+    COLORS.AI,
+    title,
+    environment,
+    name,
+    options
+  )
+}
+
+/**
+ * Format a global AI summary message
+ * @param report - The CTRF report
+ * @param options - The options for the message
+ * @returns The formatted message or null if no global summary
+ */
+export const formatGlobalAiSummary = (
+  report: CtrfReport,
+  options?: Options
+): SlackMessage | null => {
+  const results = report.results
+  const summary = report.results.summary
+  const extra = (report.results as any).extra
+
+  const globalAi =
+    results.ai ||
+    summary.ai ||
+    extra?.ai ||
+    extra?.aiSummary ||
+    extra?.structuredAnalysis
+
+  if (!globalAi) {
+    return null
+  }
+
+  const { title, prefix, suffix } = normalizeOptions(
+    TITLES.AI_TEST_SUMMARY,
+    options
+  )
+  const { missingEnvProperties } = handleBuildInfo(report.results.environment)
+
+  const customBlocks: SlackBlock[] = []
+
+  // Handle structured AI analysis (either as an object or a JSON string)
+  let structured: any = null
+  if (typeof globalAi === 'string') {
+    try {
+      // Check if it's a JSON string (common with --json-analysis)
+      if (globalAi.trim().startsWith('{')) {
+        structured = JSON.parse(globalAi)
+      }
+    } catch {
+      // Not JSON, treat as plain text
+    }
+  } else if (typeof globalAi === 'object') {
+    structured = globalAi
+  }
+
+  if (structured && (structured.summary || structured.overall)) {
+    const overall = structured.summary || structured.overall
+    customBlocks.push({
+      type: BLOCK_TYPES.SECTION,
+      text: {
+        type: TEXT_TYPES.MRKDWN,
+        text: `*📝 Overall Summary*\n${overall}`,
+      },
+    })
+
+    if (structured.code_issues) {
+      customBlocks.push({
+        type: BLOCK_TYPES.SECTION,
+        text: {
+          type: TEXT_TYPES.MRKDWN,
+          text: `*💻 Code Issues*\n${structured.code_issues}`,
+        },
+      })
+    }
+
+    if (structured.timeout_issues) {
+      customBlocks.push({
+        type: BLOCK_TYPES.SECTION,
+        text: {
+          type: TEXT_TYPES.MRKDWN,
+          text: `*⌛ Timeout Issues*\n${structured.timeout_issues}`,
+        },
+      })
+    }
+
+    if (structured.application_issues) {
+      customBlocks.push({
+        type: BLOCK_TYPES.SECTION,
+        text: {
+          type: TEXT_TYPES.MRKDWN,
+          text: `*📱 Application Issues*\n${structured.application_issues}`,
+        },
+      })
+    }
+
+    if (structured.recommendations) {
+      customBlocks.push({
+        type: BLOCK_TYPES.SECTION,
+        text: {
+          type: TEXT_TYPES.MRKDWN,
+          text: `*💡 Recommendations*\n${structured.recommendations}`,
+        },
+      })
+    }
+  } else {
+    // Treat as a plain string
+    customBlocks.push({
+      type: BLOCK_TYPES.SECTION,
+      text: {
+        type: TEXT_TYPES.MRKDWN,
+        text: `*Executive Summary*\n${globalAi}`,
+      },
+    })
+  }
+
+  const blocks = createMessageBlocks({
+    title,
+    prefix,
+    suffix,
+    missingEnvProperties,
+    customBlocks,
+  })
+
+  return createSlackMessage(
+    blocks,
+    COLORS.AI,
+    title,
+    report.results.environment,
+    'Overall AI Analysis',
+    options
+  )
 }
 
 /**
  * Format the consolidated AI test summary message
- * @param tests - The tests
- * @param environment - The environment
+ * @param report - The CTRF report
  * @param options - The options for the message
  * @returns The formatted message
  */
 export const formatConsolidatedAiTestSummary = (
-  tests: CtrfTest[],
-  environment: CtrfEnvironment | undefined,
+  report: CtrfReport,
   options?: Options
-): object | null => {
+): SlackMessage | null => {
+  const { tests, environment } = report.results
   const failedTests = tests.filter(
     test => test.ai !== undefined && test.status === TEST_STATUS.FAILED
   )
@@ -165,7 +302,96 @@ export const formatConsolidatedAiTestSummary = (
     return null
   }
 
-  const customBlocks = createAiTestBlocks(failedTests, buildInfo)
+  const customBlocks = createAiTestBlocks(failedTests, buildInfo, options)
+
+  const results = report.results
+  const summary = report.results.summary
+  const extra = (report.results as any).extra
+
+  const globalAi =
+    results.ai ||
+    summary.ai ||
+    extra?.ai ||
+    extra?.aiSummary ||
+    extra?.structuredAnalysis
+
+  if (globalAi) {
+    let structured: any = null
+    if (typeof globalAi === 'string') {
+      try {
+        if (globalAi.trim().startsWith('{')) {
+          structured = JSON.parse(globalAi)
+        }
+      } catch {
+        /* ignore */
+      }
+    } else if (typeof globalAi === 'object') {
+      structured = globalAi
+    }
+
+    if (structured && (structured.summary || structured.overall)) {
+      const overall = structured.summary || structured.overall
+      customBlocks.unshift({
+        type: BLOCK_TYPES.DIVIDER,
+      })
+      if (structured.recommendations) {
+        customBlocks.unshift({
+          type: BLOCK_TYPES.SECTION,
+          text: {
+            type: TEXT_TYPES.MRKDWN,
+            text: `*💡 Recommendations*\n${structured.recommendations}`,
+          },
+        })
+      }
+      if (structured.application_issues) {
+        customBlocks.unshift({
+          type: BLOCK_TYPES.SECTION,
+          text: {
+            type: TEXT_TYPES.MRKDWN,
+            text: `*📱 Application Issues*\n${structured.application_issues}`,
+          },
+        })
+      }
+      if (structured.timeout_issues) {
+        customBlocks.unshift({
+          type: BLOCK_TYPES.SECTION,
+          text: {
+            type: TEXT_TYPES.MRKDWN,
+            text: `*⌛ Timeout Issues*\n${structured.timeout_issues}`,
+          },
+        })
+      }
+      if (structured.code_issues) {
+        customBlocks.unshift({
+          type: BLOCK_TYPES.SECTION,
+          text: {
+            type: TEXT_TYPES.MRKDWN,
+            text: `*💻 Code Issues*\n${structured.code_issues}`,
+          },
+        })
+      }
+      customBlocks.unshift({
+        type: BLOCK_TYPES.SECTION,
+        text: {
+          type: TEXT_TYPES.MRKDWN,
+          text: `*📝 Overall Summary*\n${overall}`,
+        },
+      })
+    } else {
+      customBlocks.unshift(
+        {
+          type: BLOCK_TYPES.SECTION,
+          text: {
+            type: TEXT_TYPES.MRKDWN,
+            text: `*Executive Summary*\n${globalAi}`,
+          },
+        },
+        {
+          type: BLOCK_TYPES.DIVIDER,
+        }
+      )
+    }
+  }
 
   const blocks = createMessageBlocks({
     title,
@@ -175,14 +401,21 @@ export const formatConsolidatedAiTestSummary = (
     customBlocks,
   })
 
-  return createSlackMessage(blocks, COLORS.AI, title, environment)
+  return createSlackMessage(
+    blocks,
+    COLORS.AI,
+    title,
+    environment,
+    undefined,
+    options
+  )
 }
 
 export const formatConsolidatedFailedTestSummary = (
   tests: CtrfTest[],
   environment: CtrfEnvironment | undefined,
   options?: Options
-): object | null => {
+): SlackMessage | null => {
   const failedTests = tests.filter(test => test.status === TEST_STATUS.FAILED)
   const defaultTitle = options?.title ?? TITLES.FAILED_TEST_REPORT
   const { title, prefix, suffix } = normalizeOptions(defaultTitle, options)
@@ -192,7 +425,7 @@ export const formatConsolidatedFailedTestSummary = (
     return null
   }
 
-  const customBlocks = createFailedTestBlocks(failedTests, buildInfo)
+  const customBlocks = createFailedTestBlocks(failedTests, buildInfo, options)
 
   const blocks = createMessageBlocks({
     title,
@@ -202,14 +435,21 @@ export const formatConsolidatedFailedTestSummary = (
     customBlocks,
   })
 
-  return createSlackMessage(blocks, COLORS.FAILED, title, environment)
+  return createSlackMessage(
+    blocks,
+    COLORS.FAILED,
+    title,
+    environment,
+    undefined,
+    options
+  )
 }
 
 export const formatFailedTestSummary = (
   test: CtrfTest,
   environment: CtrfEnvironment | undefined,
   options?: Options
-): object | null => {
+): SlackMessage | null => {
   const { name, message, status } = test
   const { title, prefix, suffix } = normalizeOptions(
     TITLES.FAILED_TEST_SUMMARY,
@@ -231,7 +471,14 @@ export const formatFailedTestSummary = (
     customBlocks,
   })
 
-  return createSlackMessage(blocks, COLORS.FAILED, title, environment, name)
+  return createSlackMessage(
+    blocks,
+    COLORS.FAILED,
+    title,
+    environment,
+    name,
+    options
+  )
 }
 
 export const formatCustomMarkdownMessage = (
@@ -239,7 +486,7 @@ export const formatCustomMarkdownMessage = (
   templateContent: string,
   environment: CtrfEnvironment | undefined,
   options?: Options
-): object | null => {
+): SlackMessage | null => {
   const { title, prefix, suffix } = normalizeOptions('', options)
   const { missingEnvProperties } = handleBuildInfo(environment)
 
@@ -265,14 +512,15 @@ export const formatCustomMarkdownMessage = (
     blocks,
     report.results.summary.failed > 0 ? COLORS.FAILED : COLORS.PASSED,
     title,
-    environment
+    environment,
+    undefined,
+    options
   )
 }
-
 export const formatCustomBlockKitMessage = (
   report: CtrfReport,
-  blockKit: any
-): object | null => {
+  blockKit: { blocks: SlackBlock[] }
+): SlackMessage | null => {
   if (!(process.env.CTRF_SKIP_FOOTER === 'true')) {
     blockKit.blocks.push({
       type: BLOCK_TYPES.CONTEXT,
@@ -295,12 +543,13 @@ export const formatCustomBlockKitMessage = (
 }
 
 export function createSlackMessage(
-  blocks: unknown[],
+  blocks: SlackBlock[],
   color: string,
   title: string,
   environment?: CtrfEnvironment,
-  additionalInfo?: string
-): object {
+  additionalInfo?: string,
+  options?: Options
+): SlackMessage {
   const notification: string[] = []
   notification.push(title)
 
@@ -323,6 +572,8 @@ export function createSlackMessage(
         blocks,
       },
     ],
+    thread_ts: options?.threadTs,
+    reply_broadcast: options?.replyBroadcast,
   }
 }
 
