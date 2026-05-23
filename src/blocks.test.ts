@@ -31,21 +31,21 @@ describe('Blocks', () => {
       const blocks = createTestResultBlocks(mockSummary, mockBuildInfo)
 
       expect(blocks).toHaveLength(1)
-      expect(blocks[0].type).toBe(BLOCK_TYPES.SECTION)
-      expect(blocks[0].text.type).toBe(TEXT_TYPES.MRKDWN)
-      expect(blocks[0].text.text).toContain(`${EMOJIS.TEST_TUBE} 13`)
-      expect(blocks[0].text.text).toContain(`${EMOJIS.CHECK_MARK} 10`)
-      expect(blocks[0].text.text).not.toContain(EMOJIS.FALLEN_LEAF)
+      expect(blocks[0]!.type).toBe(BLOCK_TYPES.SECTION)
+      expect(blocks[0]!.text!.type).toBe(TEXT_TYPES.MRKDWN)
+      expect(blocks[0]!.text!.text).toContain(`${EMOJIS.TEST_TUBE} 13`)
+      expect(blocks[0]!.text!.text).toContain(`${EMOJIS.CHECK_MARK} 10`)
+      expect(blocks[0]!.text!.text).not.toContain(EMOJIS.FALLEN_LEAF)
 
-      expect(blocks[0].accessory).toHaveProperty('alt_text', 'Pie Chart')
-      expect(blocks[0].accessory).toHaveProperty('type', 'image')
-      expect(blocks[0].accessory.image_url).toContain(
+      expect(blocks[0]!.accessory).toHaveProperty('alt_text', 'Pie Chart')
+      expect(blocks[0]!.accessory).toHaveProperty('type', 'image')
+      expect(blocks[0]!.accessory!.image_url).toContain(
         'https://quickchart.io/chart?'
       )
 
-      expect(blocks[0].text.text).toContain(MESSAGES.RESULT_PASSED)
-      expect(blocks[0].text.text).toContain(mockBuildInfo)
-      expect(blocks[0].text.text).toContain('00:00:25') // Duration formatted
+      expect(blocks[0]!.text!.text).toContain(MESSAGES.RESULT_PASSED)
+      expect(blocks[0]!.text!.text).toContain(mockBuildInfo)
+      expect(blocks[0]!.text!.text).toContain('00:00:25') // Duration formatted
     })
 
     it('should create blocks for failed tests', () => {
@@ -57,15 +57,14 @@ describe('Blocks', () => {
         other: 0,
         tests: 11,
         start: 1706644023000,
-        stop: 1706644024000, // 1 second later
+        stop: 1706644048000,
       }
 
       const blocks = createTestResultBlocks(mockSummary, mockBuildInfo)
 
       expect(blocks).toHaveLength(1)
-      expect(blocks[0].text.text).toContain(`${EMOJIS.X_MARK} 2`)
-      expect(blocks[0].text.text).toContain('*Result:* 2 failed tests')
-      expect(blocks[0].text.text).toContain('00:00:01') // Duration formatted
+      expect(blocks[0]!.text!.text).toContain(`${EMOJIS.X_MARK} 2`)
+      expect(blocks[0]!.text!.text).toContain('*Result:* 2 failed tests')
     })
 
     it('should handle duration less than one second', () => {
@@ -82,7 +81,7 @@ describe('Blocks', () => {
 
       const blocks = createTestResultBlocks(mockSummary, mockBuildInfo)
 
-      expect(blocks[0].text.text).toContain(MESSAGES.DURATION_LESS_THAN_ONE)
+      expect(blocks[0]!.text!.text).toContain(MESSAGES.DURATION_LESS_THAN_ONE)
     })
 
     it('should include flaky tests count when provided', () => {
@@ -104,7 +103,7 @@ describe('Blocks', () => {
         flakyCount
       )
 
-      expect(blocks[0].text.text).toContain(
+      expect(blocks[0]!.text!.text).toContain(
         `${EMOJIS.FALLEN_LEAF} ${flakyCount}`
       )
     })
@@ -140,14 +139,14 @@ describe('Blocks', () => {
 
       const blockTexts = blocks
         .filter(block => block.type === BLOCK_TYPES.SECTION)
-        .map(block => block.text.text)
+        .map(block => block.text!.text)
         .join('\n')
 
       expect(blockTexts).toContain(mockBuildInfo)
 
       const allBlockText = blocks
         .filter(block => block.text?.text)
-        .map(block => block.text.text)
+        .map(block => block.text!.text)
         .join('\n')
 
       expect(allBlockText).toContain('Test 1')
@@ -188,8 +187,8 @@ describe('Blocks', () => {
       const blocks = createMessageBlocks(options)
 
       expect(blocks.length).toBeGreaterThan(0)
-      expect(blocks[0].type).toBe(BLOCK_TYPES.HEADER)
-      expect(blocks[0].text.text).toContain('Test Results')
+      expect(blocks[0]!.type).toBe(BLOCK_TYPES.HEADER)
+      expect(blocks[0]!.text!.text).toContain('Test Results')
     })
 
     it('should include prefix and suffix when provided', () => {
@@ -205,7 +204,7 @@ describe('Blocks', () => {
 
       const blockTexts = blocks
         .filter(block => block.type === BLOCK_TYPES.SECTION)
-        .map(block => block.text.text)
+        .map(block => block.text!.text)
         .join('\n')
 
       expect(blockTexts).toContain('Prefix message')
@@ -223,7 +222,7 @@ describe('Blocks', () => {
 
       const blockTexts = blocks
         .filter(block => block.type === BLOCK_TYPES.SECTION)
-        .map(block => block.text.text)
+        .map(block => block.text!.text)
         .join('\n')
 
       expect(blockTexts).toContain('Missing environment properties')
@@ -273,7 +272,7 @@ describe('Blocks', () => {
 
       const blockTexts = blocks
         .filter(block => block.type === BLOCK_TYPES.SECTION)
-        .map(block => block.text.text)
+        .map(block => block.text!.text)
         .join('\n')
 
       expect(blockTexts).toContain(testName)
@@ -294,7 +293,7 @@ describe('Blocks', () => {
 
       const blockTexts = blocks
         .filter(block => block.type === BLOCK_TYPES.SECTION)
-        .map(block => block.text.text)
+        .map(block => block.text!.text)
         .join('\n')
 
       expect(blockTexts).toContain(testName)
@@ -344,7 +343,7 @@ describe('Blocks', () => {
 
       const blockTexts = blocks
         .filter(block => block.type === BLOCK_TYPES.SECTION)
-        .map(block => block.text.text)
+        .map(block => block.text!.text)
         .join('\n')
 
       expect(blockTexts).toContain(testName)
