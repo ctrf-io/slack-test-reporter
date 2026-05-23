@@ -329,6 +329,80 @@ And finally, you can tag a group by using the `\!subteam^` symbol with the group
 npx slack-ctrf results /path/to/ctrf-file.json -s "<\!subteam^0123456789> please review the results"
 ```
 
+## Threading Support
+
+You can post messages as threaded replies to group related messages together (e.g., re-runs or follow-ups).
+
+### Auto-Threading (Default)
+
+When reporting multiple failures (e.g., using the `failed` or `ai` commands), the reporter automatically threads individual failure details under a single summary message. This keeps your Slack channel clean while providing full detail in the thread.
+
+To disable this behavior and send all messages to the main channel, use the `--no-auto-thread` (or `--no-at`) flag.
+
+### Post to a Thread
+
+Use the `--thread-ts` (or `--tt`) option to reply to an existing thread:
+
+```sh
+npx slack-ctrf results /path/to/ctrf-report.json --thread-ts "1234567890.123456"
+```
+
+You can also set the following environment variables. CLI flags take precedence over environment variables.
+
+- `SLACK_WEBHOOK_URL`: Incoming webhook URL
+- `SLACK_OAUTH_TOKEN`: OAuth token
+- `SLACK_CHANNEL_ID`: Channel ID
+- `SLACK_THREAD_TS`: Thread timestamp to reply to an existing thread
+- `SLACK_TITLE`: Title of the notification
+- `SLACK_FAILED_EMOJI`: Custom emoji for failure reaction
+- `SLACK_PASSED_EMOJI`: Custom emoji for success reaction
+- `SLACK_AUTO_THREAD`: Set to `false` to disable automatic threading
+- `SLACK_DRY_RUN`: Set to `true` to enable dry run mode
+- `SLACK_MAX_REPORTS`: Maximum number of failed tests to report (default: 10)
+
+### Reply Broadcast
+
+To send a threaded reply and also broadcast it to the main channel, use the `--reply-broadcast` (or `--rb`) flag:
+
+```sh
+npx slack-ctrf results /path/to/ctrf-report.json --thread-ts "..." --reply-broadcast
+```
+
+### Get Message Timestamp
+
+Use the `--return-ts` (or `--rt`) flag to output the message timestamp. This is useful for capturing the timestamp of the first message to use in subsequent threaded replies:
+
+```sh
+# First message - capture timestamp
+THREAD_TS=$(npx slack-ctrf results /path/to/ctrf-report.json --return-ts | jq -r '.ts')
+
+# Reply to thread
+npx slack-ctrf results /path/to/ctrf-report.json --thread-ts "$THREAD_TS"
+```
+
+**Note:** The `--return-ts` flag only works when using OAuth token authentication (not webhooks).
+
+### Update an Existing Message
+
+You can update an existing message instead of sending a new one using the `--update-ts` (or `--ut`) option. This is useful for "live" reporting where you replace a placeholder message with final results:
+
+```sh
+npx slack-ctrf results /path/to/ctrf-report.json --update-ts "1234567890.123456"
+```
+
+## Status Reactions
+
+You can automatically add a reaction emoji to your Slack message based on the test results using the `--react` (or `-r`) flag.
+
+- ❌ Added if there are failed tests.
+- ✅ Added if all tests passed.
+
+You can customize these emojis using `--failed-emoji` and `--passed-emoji`:
+
+```sh
+npx slack-ctrf results /path/to/ctrf-report.json --react --failed-emoji "fire" --passed-emoji "rocket"
+```
+
 ## Options
 
 - `--onFailOnly, -f`: Send notification only if there are failed tests.
@@ -338,6 +412,16 @@ npx slack-ctrf results /path/to/ctrf-file.json -s "<\!subteam^0123456789> please
 - `--webhook-url, -w`: Incoming webhook URL
 - `--oauth-token, -o`: OAuth token
 - `--channel-id, -ch`: Channel ID
+- `--thread-ts, -tt`: Thread timestamp to reply to an existing thread
+- `--return-ts, -rt`: Output the message timestamp (only works with OAuth token)
+- `--reply-broadcast, -rb`: Also send threaded reply to the channel
+- `--update-ts, -ut`: Timestamp of a message to update
+- `--react, -r`: Add a reaction based on test results
+- `--auto-thread, --at`: Automatically thread multi-message reports (default: true)
+- `--failed-emoji`: Custom emoji for failure reaction (default: "x")
+- `--passed-emoji`: Custom emoji for success reaction (default: "white_check_mark")
+- `--dry-run, --dr`: Print the Slack message payload instead of sending it
+- `--max-reports, --mr`: Maximum number of failed tests to report (default: 10)
 
 ## Merge reports
 
