@@ -39,8 +39,11 @@ Explore more <a href="https://www.ctrf.io/integrations">integrations</a> <br/>
 - **Send AI Test Summary to Slack**: Automatically send AI test summary to a Slack channel.
 - **Send Failed Test Details to Slack**: Automatically send failed test details to a Slack channel.
 - **Build your own Slack message**: Create and customize your own Slack test reports with our flexible templating system.
+- **Threading Support**: Post messages as threaded replies to an existing thread, or auto-thread multi-failure reports.
+- **Message Updates**: Update an existing Slack message in-place for live reporting.
 - **Tagging**: Tag users, channels and groups in the message.
 - **Conditional Notifications**: Use the `--onFailOnly` option to send notifications only if tests fail.
+- **Dry Run**: Preview the Slack message payload without sending it.
 
 ![Example view](assets/results.png)
 
@@ -331,13 +334,7 @@ npx slack-ctrf results /path/to/ctrf-file.json -s "<\!subteam^0123456789> please
 
 ## Threading Support
 
-You can post messages as threaded replies to group related messages together (e.g., re-runs or follow-ups).
-
-### Auto-Threading (Default)
-
-When reporting multiple failures (e.g., using the `failed` or `ai` commands), the reporter automatically threads individual failure details under a single summary message. This keeps your Slack channel clean while providing full detail in the thread.
-
-To disable this behavior and send all messages to the main channel, use the `--no-auto-thread` (or `--no-at`) flag.
+You can post messages as threaded replies to group related messages together.
 
 ### Post to a Thread
 
@@ -347,61 +344,65 @@ Use the `--thread-ts` (or `--tt`) option to reply to an existing thread:
 npx slack-ctrf results /path/to/ctrf-report.json --thread-ts "1234567890.123456"
 ```
 
-You can also set the following environment variables. CLI flags take precedence over environment variables.
+### Get Message Timestamp
 
-- `SLACK_WEBHOOK_URL`: Incoming webhook URL
-- `SLACK_OAUTH_TOKEN`: OAuth token
-- `SLACK_CHANNEL_ID`: Channel ID
-- `SLACK_THREAD_TS`: Thread timestamp to reply to an existing thread
-- `SLACK_TITLE`: Title of the notification
-- `SLACK_FAILED_EMOJI`: Custom emoji for failure reaction
-- `SLACK_PASSED_EMOJI`: Custom emoji for success reaction
-- `SLACK_AUTO_THREAD`: Set to `false` to disable automatic threading
-- `SLACK_DRY_RUN`: Set to `true` to enable dry run mode
-- `SLACK_MAX_REPORTS`: Maximum number of failed tests to report (default: 10)
+Use the `--return-ts` (or `--rt`) flag to output the message timestamp. This is useful for capturing the timestamp of a parent message to thread subsequent commands under it:
+
+```sh
+# Send initial summary and capture its timestamp
+THREAD_TS=$(npx slack-ctrf results /path/to/ctrf-report.json --return-ts)
+
+# Thread a follow-up report
+npx slack-ctrf failed /path/to/ctrf-report.json --thread-ts "$THREAD_TS"
+```
+
+**Note:** `--return-ts` only works with OAuth token authentication (not webhooks).
 
 ### Reply Broadcast
 
 To send a threaded reply and also broadcast it to the main channel, use the `--reply-broadcast` (or `--rb`) flag:
 
 ```sh
-npx slack-ctrf results /path/to/ctrf-report.json --thread-ts "..." --reply-broadcast
+npx slack-ctrf results /path/to/ctrf-report.json --thread-ts "1234567890.123456" --reply-broadcast
 ```
 
-### Get Message Timestamp
+### Auto-Threading
 
-Use the `--return-ts` (or `--rt`) flag to output the message timestamp. This is useful for capturing the timestamp of the first message to use in subsequent threaded replies:
+When using the `failed` or `ai` commands with multiple failures, you can enable auto-threading to automatically post a summary to the channel and thread individual failure details under it. Use the `--auto-thread` (or `--at`) flag to opt in:
 
 ```sh
-# First message - capture timestamp
-THREAD_TS=$(npx slack-ctrf results /path/to/ctrf-report.json --return-ts | jq -r '.ts')
-
-# Reply to thread
-npx slack-ctrf results /path/to/ctrf-report.json --thread-ts "$THREAD_TS"
+npx slack-ctrf failed /path/to/ctrf-report.json --auto-thread
 ```
 
-**Note:** The `--return-ts` flag only works when using OAuth token authentication (not webhooks).
+## Update an Existing Message
 
-### Update an Existing Message
-
-You can update an existing message instead of sending a new one using the `--update-ts` (or `--ut`) option. This is useful for "live" reporting where you replace a placeholder message with final results:
+You can update an existing Slack message in-place using the `--update-ts` (or `--ut`) option. This is useful for "live" reporting where you replace a placeholder or in-progress message with final results:
 
 ```sh
 npx slack-ctrf results /path/to/ctrf-report.json --update-ts "1234567890.123456"
 ```
 
-## Status Reactions
+**Note:** Message updates require OAuth token authentication (not webhooks), and the bot must have the `chat:write` scope.
 
-You can automatically add a reaction emoji to your Slack message based on the test results using the `--react` (or `-r`) flag.
+## Dry Run
 
-- ❌ Added if there are failed tests.
-- ✅ Added if all tests passed.
-
-You can customize these emojis using `--failed-emoji` and `--passed-emoji`:
+To preview the Slack message payload without sending it, use the `--dry-run` (or `--dr`) flag:
 
 ```sh
-npx slack-ctrf results /path/to/ctrf-report.json --react --failed-emoji "fire" --passed-emoji "rocket"
+npx slack-ctrf results /path/to/ctrf-report.json --dry-run
 ```
+
+The payload will be printed to stdout. No message is sent to Slack.
+
+## Limit Failure Reports
+
+When using the `failed` or `ai` commands, you can cap the number of individual failure messages sent with `--max-reports` (or `--mr`):
+
+```sh
+npx slack-ctrf failed /path/to/ctrf-report.json --max-reports 5
+```
+
+Defaults to 10. If more tests fail than the limit, a notice is appended listing the overflow count.
 
 ## Options
 
@@ -412,16 +413,26 @@ npx slack-ctrf results /path/to/ctrf-report.json --react --failed-emoji "fire" -
 - `--webhook-url, -w`: Incoming webhook URL
 - `--oauth-token, -o`: OAuth token
 - `--channel-id, -ch`: Channel ID
-- `--thread-ts, -tt`: Thread timestamp to reply to an existing thread
-- `--return-ts, -rt`: Output the message timestamp (only works with OAuth token)
-- `--reply-broadcast, -rb`: Also send threaded reply to the channel
-- `--update-ts, -ut`: Timestamp of a message to update
-- `--react, -r`: Add a reaction based on test results
-- `--auto-thread, --at`: Automatically thread multi-message reports (default: true)
-- `--failed-emoji`: Custom emoji for failure reaction (default: "x")
-- `--passed-emoji`: Custom emoji for success reaction (default: "white_check_mark")
+- `--thread-ts, --tt`: Thread timestamp to reply to an existing thread
+- `--return-ts, --rt`: Output the message timestamp (OAuth only)
+- `--reply-broadcast, --rb`: Also send threaded reply to the channel
+- `--auto-thread, --at`: Thread multi-message reports under a summary (default: false)
+- `--update-ts, --ut`: Timestamp of a message to update in-place (OAuth only)
 - `--dry-run, --dr`: Print the Slack message payload instead of sending it
-- `--max-reports, --mr`: Maximum number of failed tests to report (default: 10)
+- `--max-reports, --mr`: Maximum number of individual failure messages to send (default: 10)
+- `--max-retries`: Number of retry attempts on rate limit or timeout errors (default: 3)
+
+## Environment Variables
+
+CLI flags take precedence over environment variables.
+
+- `SLACK_WEBHOOK_URL`: Incoming webhook URL
+- `SLACK_OAUTH_TOKEN`: OAuth token
+- `SLACK_CHANNEL_ID`: Channel ID
+- `SLACK_THREAD_TS`: Thread timestamp to reply to an existing thread
+- `SLACK_AUTO_THREAD`: Set to `true` to enable automatic threading
+- `SLACK_DRY_RUN`: Set to `true` to enable dry run mode
+- `SLACK_MAX_RETRIES`: Number of retry attempts (default: 3)
 
 ## Merge reports
 
