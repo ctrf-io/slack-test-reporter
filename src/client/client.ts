@@ -47,7 +47,8 @@ export const sendSlackMessage = async (
     await webhook.send(message)
   } catch (error) {
     throw new Error(
-      `Failed to send Slack message: ${error instanceof Error ? error.message : String(error)}`
+      `Failed to send Slack message: ${error instanceof Error ? error.message : String(error)}`,
+      { cause: error }
     )
   }
 }
@@ -80,7 +81,8 @@ export const postMessage = async (
     }
   } catch (error) {
     throw new Error(
-      `Failed to post message: ${error instanceof Error ? error.message : String(error)}`
+      `Failed to post message: ${error instanceof Error ? error.message : String(error)}`,
+      { cause: error }
     )
   }
 }
