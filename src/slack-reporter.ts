@@ -28,7 +28,24 @@ function resolveOptions(options: Options): Options {
     maxRetries:
       options.maxRetries ?? parseInt(process.env.SLACK_MAX_RETRIES || '3', 10),
     dryRun: options.dryRun ?? process.env.SLACK_DRY_RUN === 'true',
+    react: options.react ?? process.env.SLACK_REACT === 'true',
+    failedEmoji: options.failedEmoji ?? process.env.SLACK_FAILED_EMOJI ?? 'x',
+    passedEmoji:
+      options.passedEmoji ??
+      process.env.SLACK_PASSED_EMOJI ??
+      'white_check_mark',
   }
+}
+
+async function addStatusReaction(
+  client: SlackClient,
+  ts: string | undefined,
+  options: Options,
+  failed: boolean
+): Promise<void> {
+  if (!options.react || !ts) return
+  const emoji = failed ? options.failedEmoji! : options.passedEmoji!
+  await client.addReaction(ts, emoji)
 }
 
 /**
@@ -129,6 +146,12 @@ export async function sendTestResultsToSlack(
   const client = new SlackClient(resolvedOptions)
   const message = formatResultsMessage(report, resolvedOptions)
   const ts = await client.sendMessage(message)
+  await addStatusReaction(
+    client,
+    ts,
+    resolvedOptions,
+    report.results.summary.failed > 0
+  )
 
   if (logs) console.log('Test results message sent to Slack.')
 
@@ -166,6 +189,7 @@ export async function sendFailedResultsToSlack(
     )
     if (message !== null) {
       const ts = await client.sendMessage(message)
+      await addStatusReaction(client, ts, resolvedOptions, true)
       if (logs) console.log('Failed test summary sent to Slack.')
       if (resolvedOptions.returnTs) return ts
     } else {
@@ -180,6 +204,7 @@ export async function sendFailedResultsToSlack(
       'Failed test report',
       formatFailedTestSummary
     )
+    await addStatusReaction(client, ts, resolvedOptions, true)
     if (resolvedOptions.returnTs) return ts
   }
 }
@@ -201,6 +226,7 @@ export async function sendFlakyResultsToSlack(
   if (message !== null) {
     const client = new SlackClient(resolvedOptions)
     const ts = await client.sendMessage(message)
+    await addStatusReaction(client, ts, resolvedOptions, true)
     if (logs) console.log('Flaky tests message sent to Slack.')
     if (resolvedOptions.returnTs) return ts
   } else {
@@ -230,6 +256,12 @@ export async function sendAISummaryToSlack(
     const message = formatConsolidatedAiTestSummary(report, resolvedOptions)
     if (message !== null) {
       const ts = await client.sendMessage(message)
+      await addStatusReaction(
+        client,
+        ts,
+        resolvedOptions,
+        report.results.summary.failed > 0
+      )
       if (logs) console.log('AI test summary sent to Slack.')
       if (resolvedOptions.returnTs) return ts
     } else {
@@ -244,6 +276,12 @@ export async function sendAISummaryToSlack(
       'AI test summary',
       formatAiTestSummary,
       formatGlobalAiSummary
+    )
+    await addStatusReaction(
+      client,
+      ts,
+      resolvedOptions,
+      report.results.summary.failed > 0
     )
     if (resolvedOptions.returnTs) return ts
   }

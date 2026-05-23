@@ -10,6 +10,9 @@ vi.mock('@slack/web-api', () => ({
         .fn()
         .mockResolvedValue({ ok: true, ts: '1234567890.123456' }),
     },
+    reactions: {
+      add: vi.fn().mockResolvedValue({ ok: true }),
+    },
   })),
 }))
 
@@ -79,6 +82,52 @@ describe('SlackClient', () => {
       const webClientInstance = vi.mocked(WebClient).mock.results[0]
         ?.value as any
       expect(webClientInstance.chat.postMessage).not.toHaveBeenCalled()
+    })
+  })
+
+  describe('addReaction', () => {
+    it('should add reaction via web API', async () => {
+      const client = new SlackClient(oauthOptions)
+      await client.addReaction('123.456', 'rocket')
+
+      const webClientInstance = vi.mocked(WebClient).mock.results[0]
+        ?.value as any
+      expect(webClientInstance.reactions.add).toHaveBeenCalledWith({
+        channel: 'C12345',
+        timestamp: '123.456',
+        name: 'rocket',
+      })
+    })
+
+    it('should strip surrounding colons from emoji name', async () => {
+      const client = new SlackClient(oauthOptions)
+      await client.addReaction('123.456', ':fire:')
+
+      const webClientInstance = vi.mocked(WebClient).mock.results[0]
+        ?.value as any
+      expect(webClientInstance.reactions.add).toHaveBeenCalledWith(
+        expect.objectContaining({ name: 'fire' })
+      )
+    })
+
+    it('should print dry-run message and skip API call', async () => {
+      const consoleSpy = vi.spyOn(console, 'log').mockImplementation(() => {})
+      const client = new SlackClient({ ...oauthOptions, dryRun: true })
+      await client.addReaction('123.456', 'rocket')
+
+      const webClientInstance = vi.mocked(WebClient).mock.results[0]
+        ?.value as any
+      expect(webClientInstance.reactions.add).not.toHaveBeenCalled()
+      expect(consoleSpy).toHaveBeenCalledWith(
+        expect.stringContaining('[Dry Run]')
+      )
+      consoleSpy.mockRestore()
+    })
+
+    it('should silently skip when no OAuth client is configured', async () => {
+      const client = new SlackClient(webhookOptions)
+      await expect(client.addReaction('123.456', 'rocket')).resolves.toBeUndefined()
+      expect(vi.mocked(WebClient).mock.instances).toHaveLength(0)
     })
   })
 

@@ -15,6 +15,9 @@ export interface Options {
   maxRetries?: number
   dryRun?: boolean
   maxReports?: number
+  react?: boolean
+  failedEmoji?: string
+  passedEmoji?: string
 }
 
 export interface SlackBlock {

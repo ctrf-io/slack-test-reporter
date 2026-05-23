@@ -4,6 +4,7 @@ import { type Options, type SlackMessage } from '../types/reporter.js'
 
 export interface ISlackClient {
   sendMessage(message: SlackMessage): Promise<string | undefined>
+  addReaction(ts: string, emoji: string): Promise<void>
 }
 
 export class SlackClient implements ISlackClient {
@@ -106,6 +107,27 @@ export class SlackClient implements ISlackClient {
       throw new Error(
         'Slack configuration is missing. Provide either webhook-url or oauth-token and channel-id.'
       )
+    })
+  }
+
+  async addReaction(ts: string, emoji: string): Promise<void> {
+    const name = emoji.replace(/^:|:$/g, '')
+
+    if (this.options.dryRun) {
+      console.log(`[Dry Run] Add reaction :${name}: to message ${ts}`)
+      return
+    }
+
+    if (!this.webClient || !this.options.channelId) {
+      return
+    }
+
+    await this.withRetry(async () => {
+      await this.webClient!.reactions.add({
+        channel: this.options.channelId!,
+        timestamp: ts,
+        name,
+      })
     })
   }
 }

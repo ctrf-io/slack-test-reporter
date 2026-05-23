@@ -69,6 +69,24 @@ const sharedOptions = {
     description: 'Maximum number of failed tests to report to Slack',
     default: 10,
   },
+  react: {
+    alias: 'r',
+    type: 'boolean',
+    description: 'Add an emoji reaction to the message (requires OAuth token)',
+    default: false,
+  },
+  failedEmoji: {
+    alias: 'fe',
+    type: 'string',
+    description: 'Emoji to react with when tests fail',
+    default: 'x',
+  },
+  passedEmoji: {
+    alias: 'pe',
+    type: 'string',
+    description: 'Emoji to react with when tests pass',
+    default: 'white_check_mark',
+  },
 } as const
 
 const slackOptions = {
@@ -333,6 +351,9 @@ async function handleCommand(
       autoThread: argv.autoThread as boolean,
       dryRun: argv.dryRun as boolean,
       maxReports: argv.maxReports as number,
+      react: argv.react as boolean,
+      failedEmoji: argv.failedEmoji as string,
+      passedEmoji: argv.passedEmoji as string,
       ...extraOptions,
       ...slackConfig,
     }
