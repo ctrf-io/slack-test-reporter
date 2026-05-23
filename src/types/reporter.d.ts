@@ -11,11 +11,7 @@ export interface Options {
   threadTs?: string
   returnTs?: boolean
   replyBroadcast?: boolean
-  updateTs?: string
-  react?: boolean
   autoThread?: boolean
-  failedEmoji?: string
-  passedEmoji?: string
   maxRetries?: number
   dryRun?: boolean
   maxReports?: number

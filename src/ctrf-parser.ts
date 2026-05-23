@@ -1,6 +1,8 @@
 import { type CtrfReport } from './types/ctrf.js'
 import { stripAnsiFromErrors } from './utils/common.js'
-import { mergeReports, readReportsFromGlobPattern, type Report } from 'ctrf'
+import { merge, parse, type CTRFReport } from 'ctrf'
+import { globSync } from 'glob'
+import fs from 'fs'
 
 /**
  * Parse a CTRF file
@@ -8,20 +10,34 @@ import { mergeReports, readReportsFromGlobPattern, type Report } from 'ctrf'
  * @returns The parsed CTRF report
  */
 export function parseCtrfFile(pattern: string): CtrfReport {
-  console.error(`Reading CTRF reports from ${pattern}`)
-  const reports: CtrfReport[] = readReportsFromGlobPattern(
-    pattern
-  ) as CtrfReport[]
+  console.log(`Reading CTRF reports from ${pattern}`)
+  const files = globSync(pattern)
 
-  if (reports.length === 0) {
+  if (files.length === 0) {
     throw new Error(`CTRF report not found at: ${pattern}`)
   }
 
-  const report: CtrfReport =
+  const reports: CTRFReport[] = files
+    .map(file => {
+      try {
+        const content = fs.readFileSync(file, 'utf8')
+        return parse(content)
+      } catch (error) {
+        console.warn(`Failed to read or parse file '${file}':`, error)
+        return null
+      }
+    })
+    .filter((report): report is CTRFReport => report !== null)
+
+  if (reports.length === 0) {
+    throw new Error(`No valid CTRF reports found matching: ${pattern}`)
+  }
+
+  const merged: CtrfReport =
     reports.length > 1
-      ? (mergeReports(reports as Report[]) as CtrfReport)
-      : reports[0]!
-  const processedReport = stripAnsiFromErrors(report)
-  console.error(`Read ${reports.length} CTRF reports`)
+      ? (merge(reports) as CtrfReport)
+      : (reports[0] as CtrfReport)
+  const processedReport = stripAnsiFromErrors(merged)
+  console.log(`Read ${reports.length} CTRF reports`)
   return processedReport
 }

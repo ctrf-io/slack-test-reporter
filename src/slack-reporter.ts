@@ -20,49 +20,14 @@ import { stripAnsiFromErrors } from './utils/common.js'
 import { compileTemplate } from './handlebars/core.js'
 import { LIMITS, NOTICES, formatString } from './constants.js'
 
-/**
- * Resolve options by merging provided options with environment variables and defaults
- */
 function resolveOptions(options: Options): Options {
   return {
     ...options,
-    title: options.title || process.env.SLACK_TITLE,
-    failedEmoji: options.failedEmoji || process.env.SLACK_FAILED_EMOJI,
-    passedEmoji: options.passedEmoji || process.env.SLACK_PASSED_EMOJI,
     threadTs: options.threadTs || process.env.SLACK_THREAD_TS,
-    autoThread: options.autoThread ?? process.env.SLACK_AUTO_THREAD !== 'false',
+    autoThread: options.autoThread ?? process.env.SLACK_AUTO_THREAD === 'true',
     maxRetries:
       options.maxRetries ?? parseInt(process.env.SLACK_MAX_RETRIES || '3', 10),
     dryRun: options.dryRun ?? process.env.SLACK_DRY_RUN === 'true',
-  }
-}
-
-/**
- * Add a status reaction to a message based on report results
- */
-async function addStatusReaction(
-  client: SlackClient,
-  report: CtrfReport,
-  ts: string,
-  options: Options,
-  logs: boolean
-): Promise<void> {
-  if (!options.react || !ts || options.updateTs) {
-    return
-  }
-
-  const failedEmoji = options.failedEmoji || 'x'
-  const passedEmoji = options.passedEmoji || 'white_check_mark'
-  const emoji = report.results.summary.failed > 0 ? failedEmoji : passedEmoji
-
-  try {
-    await client.addReaction(ts, emoji)
-  } catch (err) {
-    if (logs) {
-      console.log(
-        `Failed to add reaction: ${err instanceof Error ? err.message : String(err)}`
-      )
-    }
   }
 }
 
@@ -84,11 +49,9 @@ async function dispatchThreadedReports(
 ): Promise<string | undefined> {
   let parentTs: string | undefined
   const threadTs = options.threadTs
-  const autoThread = options.autoThread !== false
+  const autoThread = options.autoThread === true
   const maxReports = options.maxReports ?? LIMITS.MAX_FAILED_TESTS
 
-  // Send a summary message first to act as the parent if auto-threading is desired
-  // and no threadTs was provided.
   if (!threadTs && autoThread) {
     let summaryMsg: SlackMessage | null = null
 
@@ -105,9 +68,6 @@ async function dispatchThreadedReports(
     if (summaryMsg) {
       parentTs = await client.sendMessage(summaryMsg)
       if (logs) console.log(`${summaryTitle} header sent to Slack.`)
-      if (parentTs) {
-        await addStatusReaction(client, report, parentTs, options, logs)
-      }
     }
   }
 
@@ -172,10 +132,6 @@ export async function sendTestResultsToSlack(
 
   if (logs) console.log('Test results message sent to Slack.')
 
-  if (ts) {
-    await addStatusReaction(client, report, ts, resolvedOptions, logs)
-  }
-
   if (resolvedOptions.returnTs) return ts
 }
 
@@ -211,9 +167,6 @@ export async function sendFailedResultsToSlack(
     if (message !== null) {
       const ts = await client.sendMessage(message)
       if (logs) console.log('Failed test summary sent to Slack.')
-      if (ts) {
-        await addStatusReaction(client, report, ts, resolvedOptions, logs)
-      }
       if (resolvedOptions.returnTs) return ts
     } else {
       if (logs) console.log('No failed test summary detected. No message sent.')
@@ -249,9 +202,6 @@ export async function sendFlakyResultsToSlack(
     const client = new SlackClient(resolvedOptions)
     const ts = await client.sendMessage(message)
     if (logs) console.log('Flaky tests message sent to Slack.')
-    if (ts) {
-      await addStatusReaction(client, report, ts, resolvedOptions, logs)
-    }
     if (resolvedOptions.returnTs) return ts
   } else {
     if (logs) console.log('No flaky tests detected. No message sent.')
@@ -281,9 +231,6 @@ export async function sendAISummaryToSlack(
     if (message !== null) {
       const ts = await client.sendMessage(message)
       if (logs) console.log('AI test summary sent to Slack.')
-      if (ts) {
-        await addStatusReaction(client, report, ts, resolvedOptions, logs)
-      }
       if (resolvedOptions.returnTs) return ts
     } else {
       if (logs) console.log('No AI summary detected. No message sent.')
@@ -340,9 +287,6 @@ export async function sendCustomMarkdownTemplateToSlack(
     const client = new SlackClient(resolvedOptions)
     const ts = await client.sendMessage(message)
     if (logs) console.log('Custom template message sent to Slack.')
-    if (ts) {
-      await addStatusReaction(client, report, ts, resolvedOptions, logs)
-    }
     if (resolvedOptions.returnTs) return ts
   } else {
     if (logs) console.log('No custom message detected. No message sent.')
@@ -352,7 +296,7 @@ export async function sendCustomMarkdownTemplateToSlack(
 /**
  * Send a custom Block Kit JSON template to Slack
  * @param report - The CTRF report
- * @param blockKitJson - The Block Kit JSON template content
+ * @param templateContent - The Handlebars template content
  * @param options - The options for the message
  * @param logs - Whether to log the message
  * @returns The message timestamp if returnTs is true and using OAuth, otherwise void
@@ -390,9 +334,6 @@ export async function sendCustomBlockKitTemplateToSlack(
     const client = new SlackClient(resolvedOptions)
     const ts = await client.sendMessage(message)
     if (logs) console.log('Custom Block Kit message sent to Slack.')
-    if (ts) {
-      await addStatusReaction(client, report, ts, resolvedOptions, logs)
-    }
     if (resolvedOptions.returnTs) return ts
   } else {
     if (logs)

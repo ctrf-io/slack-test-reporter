@@ -4,7 +4,6 @@ import { type Options, type SlackMessage } from '../types/reporter.js'
 
 export interface ISlackClient {
   sendMessage(message: SlackMessage): Promise<string | undefined>
-  addReaction(ts: string, emoji: string): Promise<void>
 }
 
 export class SlackClient implements ISlackClient {
@@ -24,9 +23,6 @@ export class SlackClient implements ISlackClient {
     }
   }
 
-  /**
-   * Execute an operation with a simple retry mechanism
-   */
   private async withRetry<T>(operation: () => Promise<T>): Promise<T> {
     let lastError: any
     for (let attempt = 1; attempt <= this.maxRetries; attempt++) {
@@ -52,7 +48,6 @@ export class SlackClient implements ISlackClient {
   }
 
   private formatError(error: any): Error {
-    // Check for Slack Web API error structure
     const slackError = error?.data?.error || error?.error
     if (slackError && typeof slackError === 'string') {
       if (slackError === 'channel_not_found') {
@@ -98,53 +93,19 @@ export class SlackClient implements ISlackClient {
       }
 
       if (this.webClient && this.options.channelId) {
-        let response: any
-        const threadTs = this.options.threadTs
-
-        if (this.options.updateTs) {
-          response = await this.webClient.chat.update({
-            channel: this.options.channelId,
-            ts: this.options.updateTs,
-            ...message,
-          } as any)
-        } else {
-          response = await this.webClient.chat.postMessage({
-            channel: this.options.channelId,
-            ...message,
-            thread_ts: threadTs || message.thread_ts,
-            reply_broadcast:
-              this.options.replyBroadcast || message.reply_broadcast,
-          } as any)
-        }
+        const response = await this.webClient.chat.postMessage({
+          channel: this.options.channelId,
+          ...message,
+          thread_ts: this.options.threadTs || message.thread_ts,
+          reply_broadcast:
+            this.options.replyBroadcast || message.reply_broadcast,
+        } as any)
         return response.ts as string
       }
 
       throw new Error(
         'Slack configuration is missing. Provide either webhook-url or oauth-token and channel-id.'
       )
-    })
-  }
-
-  async addReaction(ts: string, emoji: string): Promise<void> {
-    if (this.options.dryRun) {
-      console.log(`[Dry Run] Add Reaction: ${emoji} to message ${ts}`)
-      return
-    }
-
-    if (!this.webClient || !this.options.channelId) return
-
-    await this.withRetry(async () => {
-      try {
-        await this.webClient!.reactions.add({
-          channel: this.options.channelId!,
-          timestamp: ts,
-          name: emoji.replace(/:/g, ''),
-        })
-      } catch (error: any) {
-        if (!error.message?.includes('already_reacted')) {
-          throw error
-        }
-      }
     })
   }
 }

@@ -50,34 +50,12 @@ const sharedOptions = {
       'Also send threaded reply to the channel (requires OAuth token)',
     default: false,
   },
-  updateTs: {
-    alias: 'ut',
-    type: 'string',
-    description: 'Timestamp of a message to update (requires OAuth token)',
-  },
-  react: {
-    alias: 'r',
-    type: 'boolean',
-    description:
-      'Add a reaction to the parent message based on test results (requires OAuth token)',
-    default: false,
-  },
   autoThread: {
     alias: 'at',
     type: 'boolean',
     description:
       'Automatically thread individual failure details under a summary message',
-    default: true,
-  },
-  failedEmoji: {
-    type: 'string',
-    description: 'Emoji to use for failed tests reaction',
-    default: 'x',
-  },
-  passedEmoji: {
-    type: 'string',
-    description: 'Emoji to use for passed tests reaction',
-    default: 'white_check_mark',
+    default: false,
   },
   dryRun: {
     alias: 'dr',
@@ -122,59 +100,9 @@ const consolidatedOption = {
   },
 } as const
 
-function getActionConfig(): Record<string, unknown> {
-  const config: Record<string, unknown> = {}
-  const mapping: Record<string, string | undefined> = {
-    command: process.env.INPUT_COMMAND,
-    path: process.env.INPUT_PATH,
-    templatePath: process.env.INPUT_TEMPLATE_PATH,
-    title: process.env.INPUT_TITLE,
-    prefix: process.env.INPUT_PREFIX,
-    suffix: process.env.INPUT_SUFFIX,
-    threadTs: process.env.INPUT_THREAD_TS,
-    replyBroadcast: process.env.INPUT_REPLY_BROADCAST,
-    updateTs: process.env.INPUT_UPDATE_TS,
-    react: process.env.INPUT_REACT,
-    onFailOnly: process.env.INPUT_ON_FAIL_ONLY,
-    consolidated: process.env.INPUT_CONSOLIDATED,
-    autoThread: process.env.INPUT_AUTO_THREAD,
-    oauthToken: process.env.INPUT_SLACK_TOKEN,
-    channelId: process.env.INPUT_CHANNEL_ID,
-    webhookUrl: process.env.INPUT_WEBHOOK_URL,
-    maxRetries: process.env.INPUT_MAX_RETRIES,
-    dryRun: process.env.INPUT_DRY_RUN,
-    maxReports: process.env.INPUT_MAX_REPORTS,
-  }
-
-  for (const [key, value] of Object.entries(mapping)) {
-    if (value !== undefined && value !== '') {
-      if (value === 'true') {
-        config[key] = true
-      } else if (value === 'false') {
-        config[key] = false
-      } else if (
-        !isNaN(Number(value)) &&
-        (key === 'maxRetries' || key === 'maxReports')
-      ) {
-        config[key] = Number(value)
-      } else {
-        config[key] = value
-      }
-    }
-  }
-  return config
-}
-
-function setGithubOutput(key: string, value: string): void {
-  const outputPath = process.env.GITHUB_OUTPUT
-  if (outputPath && value) {
-    fs.appendFileSync(outputPath, `${key}=${value}\n`)
-  }
-}
-
-const y = yargs(hideBin(process.argv))
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+const argv = yargs(hideBin(process.argv))
   .options(slackOptions)
-  .config(getActionConfig())
   .command(
     'results <path>',
     'Send test results summary to Slack',
@@ -320,11 +248,7 @@ const y = yargs(hideBin(process.argv))
           threadTs: argv.threadTs as string,
           returnTs: argv.returnTs as boolean,
           replyBroadcast: argv.replyBroadcast as boolean,
-          updateTs: argv.updateTs as string,
-          react: argv.react as boolean,
           autoThread: argv.autoThread as boolean,
-          failedEmoji: argv.failedEmoji as string,
-          passedEmoji: argv.passedEmoji as string,
           dryRun: argv.dryRun as boolean,
           maxReports: argv.maxReports as number,
           ...slackConfig,
@@ -350,21 +274,16 @@ const y = yargs(hideBin(process.argv))
         if (argv.returnTs && timestamp) {
           console.log(JSON.stringify({ ts: timestamp }))
         }
-        if (timestamp) {
-          setGithubOutput('ts', timestamp)
-        }
-      } catch (error: unknown) {
-        const message = error instanceof Error ? error.message : String(error)
-        console.error('Error:', message)
+      } catch (error: any) {
+        console.error('Error:', error.message)
         process.exit(1)
       }
     }
   )
   .check(argv => {
-    const token = (argv.oauthToken as string) ?? process.env.SLACK_OAUTH_TOKEN
-    const channelId = (argv.channelId as string) ?? process.env.SLACK_CHANNEL_ID
-    const webhookUrl =
-      (argv.webhookUrl as string) ?? process.env.SLACK_WEBHOOK_URL
+    const token = argv.oauthToken ?? process.env.SLACK_OAUTH_TOKEN
+    const channelId = argv.channelId ?? process.env.SLACK_CHANNEL_ID
+    const webhookUrl = argv.webhookUrl ?? process.env.SLACK_WEBHOOK_URL
 
     const usingOAuthToken = Boolean(token)
     const usingWebhook = Boolean(webhookUrl)
@@ -390,27 +309,8 @@ const y = yargs(hideBin(process.argv))
       'Please provide either webhook-url (or SLACK_WEBHOOK_URL env var), OR both oauth-token (or SLACK_OAUTH_TOKEN env var) and --channel-id (or SLACK_CHANNEL_ID env var).'
     )
   })
-  .help()
+  .help().argv
 
-// Trigger the CLI
-if (process.env.INPUT_COMMAND && process.argv.length < 3) {
-  const command = process.env.INPUT_COMMAND
-  const path = process.env.INPUT_PATH
-  if (path) {
-    // If it's a custom command, we need the template path too
-    const templatePath = process.env.INPUT_TEMPLATE_PATH
-    const args = templatePath ? [command, path, templatePath] : [command, path]
-    y.parse(args)
-  } else {
-    y.parse()
-  }
-} else {
-  y.parse()
-}
-
-/**
- * Handle command execution with shared logic
- */
 async function handleCommand(
   reporterFn: (
     report: CtrfReport,
@@ -430,11 +330,7 @@ async function handleCommand(
       threadTs: argv.threadTs as string,
       returnTs: argv.returnTs as boolean,
       replyBroadcast: argv.replyBroadcast as boolean,
-      updateTs: argv.updateTs as string,
-      react: argv.react as boolean,
       autoThread: argv.autoThread as boolean,
-      failedEmoji: argv.failedEmoji as string,
-      passedEmoji: argv.passedEmoji as string,
       dryRun: argv.dryRun as boolean,
       maxReports: argv.maxReports as number,
       ...extraOptions,
@@ -444,12 +340,8 @@ async function handleCommand(
     if (argv.returnTs && timestamp) {
       console.log(JSON.stringify({ ts: timestamp }))
     }
-    if (timestamp) {
-      setGithubOutput('ts', timestamp)
-    }
-  } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : String(error)
-    console.error('Error:', message)
+  } catch (error: any) {
+    console.error('Error:', error.message)
     process.exit(1)
   }
 }

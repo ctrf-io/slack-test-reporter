@@ -9,10 +9,6 @@ vi.mock('@slack/web-api', () => ({
       postMessage: vi
         .fn()
         .mockResolvedValue({ ok: true, ts: '1234567890.123456' }),
-      update: vi.fn().mockResolvedValue({ ok: true, ts: '1234567890.123456' }),
-    },
-    reactions: {
-      add: vi.fn().mockResolvedValue({ ok: true }),
     },
   })),
 }))
@@ -75,21 +71,6 @@ describe('SlackClient', () => {
       )
     })
 
-    it('should use update API when updateTs is provided', async () => {
-      const client = new SlackClient({ ...oauthOptions, updateTs: '999.888' })
-      await client.sendMessage({ text: 'updated' })
-
-      const webClientInstance = vi.mocked(WebClient).mock.results[0]
-        ?.value as any
-      expect(webClientInstance.chat.update).toHaveBeenCalledWith(
-        expect.objectContaining({
-          channel: 'C12345',
-          ts: '999.888',
-          text: 'updated',
-        })
-      )
-    })
-
     it('should respect dry-run mode', async () => {
       const client = new SlackClient({ ...oauthOptions, dryRun: true })
       const ts = await client.sendMessage({ text: 'dry run' })
@@ -98,32 +79,6 @@ describe('SlackClient', () => {
       const webClientInstance = vi.mocked(WebClient).mock.results[0]
         ?.value as any
       expect(webClientInstance.chat.postMessage).not.toHaveBeenCalled()
-    })
-  })
-
-  describe('addReaction', () => {
-    it('should add reaction via web API', async () => {
-      const client = new SlackClient(oauthOptions)
-      await client.addReaction('123.456', 'rocket')
-
-      const webClientInstance = vi.mocked(WebClient).mock.results[0]
-        ?.value as any
-      expect(webClientInstance.reactions.add).toHaveBeenCalledWith({
-        channel: 'C12345',
-        timestamp: '123.456',
-        name: 'rocket',
-      })
-    })
-
-    it('should strip colons from emoji name', async () => {
-      const client = new SlackClient(oauthOptions)
-      await client.addReaction('123.456', ':fire:')
-
-      const webClientInstance = vi.mocked(WebClient).mock.results[0]
-        ?.value as any
-      expect(webClientInstance.reactions.add).toHaveBeenCalledWith(
-        expect.objectContaining({ name: 'fire' })
-      )
     })
   })
 

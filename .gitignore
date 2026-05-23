@@ -3,3 +3,5 @@ ctrf
 coverage
 dist
 .plans
+CLAUDE.md
+*.plan

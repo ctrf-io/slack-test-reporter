@@ -11,7 +11,6 @@ import { CtrfReport } from './types/ctrf.js'
 vi.mock('./client/index.js', () => ({
   SlackClient: vi.fn().mockImplementation(() => ({
     sendMessage: vi.fn().mockResolvedValue('123.456'),
-    addReaction: vi.fn().mockResolvedValue(undefined),
   })),
 }))
 
@@ -94,30 +93,15 @@ describe('slack-reporter', () => {
   })
 
   describe('sendTestResultsToSlack', () => {
-    it('should send a single message and add reaction', async () => {
+    it('should send a single message', async () => {
       await sendTestResultsToSlack(mockReport, {
         oauthToken: 't',
         channelId: 'c',
-        react: true,
       })
 
       const clientInstance = vi.mocked(SlackClient).mock.results[0]
         ?.value as any
       expect(clientInstance.sendMessage).toHaveBeenCalledTimes(1)
-      expect(clientInstance.addReaction).toHaveBeenCalledWith('123.456', 'x')
-    })
-
-    it('should use custom emojis for reactions', async () => {
-      await sendTestResultsToSlack(mockReport, {
-        oauthToken: 't',
-        channelId: 'c',
-        react: true,
-        failedEmoji: 'fire',
-      })
-
-      const clientInstance = vi.mocked(SlackClient).mock.results[0]
-        ?.value as any
-      expect(clientInstance.addReaction).toHaveBeenCalledWith('123.456', 'fire')
     })
   })
 
