@@ -47,7 +47,7 @@ export const MESSAGES = {
 }
 
 export const LIMITS = {
-  MAX_FAILED_TESTS: 20,
+  MAX_FAILED_TESTS: 10,
   CHAR_LIMIT: 2950,
 }
 

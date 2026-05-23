@@ -39,8 +39,11 @@ Explore more <a href="https://www.ctrf.io/integrations">integrations</a> <br/>
 - **Send AI Test Summary to Slack**: Automatically send AI test summary to a Slack channel.
 - **Send Failed Test Details to Slack**: Automatically send failed test details to a Slack channel.
 - **Build your own Slack message**: Create and customize your own Slack test reports with our flexible templating system.
+- **Threading Support**: Post messages as threaded replies to an existing thread, or auto-thread multi-failure reports.
+- **Status Reactions**: Automatically add a pass/fail emoji reaction to your Slack message.
 - **Tagging**: Tag users, channels and groups in the message.
 - **Conditional Notifications**: Use the `--onFailOnly` option to send notifications only if tests fail.
+- **Dry Run**: Preview the Slack message payload without sending it.
 
 ![Example view](assets/results.png)
 
@@ -329,6 +332,83 @@ And finally, you can tag a group by using the `\!subteam^` symbol with the group
 npx slack-ctrf results /path/to/ctrf-file.json -s "<\!subteam^0123456789> please review the results"
 ```
 
+## Threading Support
+
+You can post messages as threaded replies to group related messages together.
+
+### Post to a Thread
+
+Use the `--thread-ts` (or `--tt`) option to reply to an existing thread:
+
+```sh
+npx slack-ctrf results /path/to/ctrf-report.json --thread-ts "1234567890.123456"
+```
+
+### Get Message Timestamp
+
+Use the `--return-ts` (or `--rt`) flag to output the message timestamp. This is useful for capturing the timestamp of a parent message to thread subsequent commands under it:
+
+```sh
+# Send initial summary and capture its timestamp
+THREAD_TS=$(npx slack-ctrf results /path/to/ctrf-report.json --return-ts)
+
+# Thread a follow-up report
+npx slack-ctrf failed /path/to/ctrf-report.json --thread-ts "$THREAD_TS"
+```
+
+**Note:** `--return-ts` only works with OAuth token authentication (not webhooks).
+
+### Reply Broadcast
+
+To send a threaded reply and also broadcast it to the main channel, use the `--reply-broadcast` (or `--rb`) flag:
+
+```sh
+npx slack-ctrf results /path/to/ctrf-report.json --thread-ts "1234567890.123456" --reply-broadcast
+```
+
+### Auto-Threading
+
+When using the `failed` or `ai` commands with multiple failures, you can enable auto-threading to automatically post a summary to the channel and thread individual failure details under it. Use the `--auto-thread` (or `--at`) flag to opt in:
+
+```sh
+npx slack-ctrf failed /path/to/ctrf-report.json --auto-thread
+```
+
+## Status Reactions
+
+You can automatically add a reaction emoji to your Slack message based on the test results using the `--react` (or `-r`) flag.
+
+- ❌ Added if there are failed tests.
+- ✅ Added if all tests passed.
+
+You can customize the emojis using `--failed-emoji` and `--passed-emoji`:
+
+```sh
+npx slack-ctrf results /path/to/ctrf-report.json --react --failed-emoji "fire" --passed-emoji "rocket"
+```
+
+**Note:** Reactions require OAuth token authentication (not webhooks), as the `reactions.add` API is not available via webhooks.
+
+## Dry Run
+
+To preview the Slack message payload without sending it, use the `--dry-run` (or `--dr`) flag:
+
+```sh
+npx slack-ctrf results /path/to/ctrf-report.json --dry-run
+```
+
+The payload will be printed to stdout. No message is sent to Slack.
+
+## Limit Failure Reports
+
+When using the `failed` or `ai` commands, you can cap the number of individual failure messages sent with `--max-reports` (or `--mr`):
+
+```sh
+npx slack-ctrf failed /path/to/ctrf-report.json --max-reports 5
+```
+
+Defaults to 10. If more tests fail than the limit, a notice is appended listing the overflow count.
+
 ## Options
 
 - `--onFailOnly, -f`: Send notification only if there are failed tests.
@@ -338,6 +418,31 @@ npx slack-ctrf results /path/to/ctrf-file.json -s "<\!subteam^0123456789> please
 - `--webhook-url, -w`: Incoming webhook URL
 - `--oauth-token, -o`: OAuth token
 - `--channel-id, -ch`: Channel ID
+- `--thread-ts, --tt`: Thread timestamp to reply to an existing thread
+- `--return-ts, --rt`: Output the message timestamp (OAuth only)
+- `--reply-broadcast, --rb`: Also send threaded reply to the channel
+- `--auto-thread, --at`: Thread multi-message reports under a summary (default: false)
+- `--react, -r`: Add a reaction emoji based on pass/fail result (OAuth only)
+- `--failed-emoji`: Emoji name for failed results (default: "x")
+- `--passed-emoji`: Emoji name for passed results (default: "white_check_mark")
+- `--dry-run, --dr`: Print the Slack message payload instead of sending it
+- `--max-reports, --mr`: Maximum number of individual failure messages to send (default: 10)
+- `--max-retries`: Number of retry attempts on rate limit or timeout errors (default: 3)
+
+## Environment Variables
+
+CLI flags take precedence over environment variables.
+
+- `SLACK_WEBHOOK_URL`: Incoming webhook URL
+- `SLACK_OAUTH_TOKEN`: OAuth token
+- `SLACK_CHANNEL_ID`: Channel ID
+- `SLACK_THREAD_TS`: Thread timestamp to reply to an existing thread
+- `SLACK_AUTO_THREAD`: Set to `true` to enable automatic threading
+- `SLACK_REACT`: Set to `true` to enable emoji reactions
+- `SLACK_FAILED_EMOJI`: Emoji name for failed results (default: "x")
+- `SLACK_PASSED_EMOJI`: Emoji name for passed results (default: "white_check_mark")
+- `SLACK_DRY_RUN`: Set to `true` to enable dry run mode
+- `SLACK_MAX_RETRIES`: Number of retry attempts (default: 3)
 
 ## Merge reports
 

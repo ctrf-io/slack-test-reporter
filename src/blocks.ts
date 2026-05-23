@@ -8,6 +8,7 @@ import {
   NOTICES,
 } from './constants.js'
 import { type Summary, type CtrfTest } from './types/ctrf.js'
+import { type Options, type SlackBlock } from './types/reporter.js'
 
 /**
  * Create blocks for test result summary
@@ -20,7 +21,7 @@ export function createTestResultBlocks(
   summary: Summary,
   buildInfo: string,
   flakyCount: number = 0
-): any[] {
+): SlackBlock[] {
   const { passed, failed, skipped, pending, other, tests } = summary
   const resultText =
     failed > 0
@@ -53,7 +54,7 @@ export function createTestResultBlocks(
     testSummary += ` | ${EMOJIS.FALLEN_LEAF} ${flakyCount}`
   }
 
-  const block: any = {
+  const block: SlackBlock = {
     type: BLOCK_TYPES.SECTION,
     text: {
       type: TEXT_TYPES.MRKDWN,
@@ -129,13 +130,15 @@ export function createChartImage(summary: Summary): string {
  * Create blocks for failed tests
  * @param failedTests - The failed tests
  * @param buildInfo - The build information
+ * @param options - The options for the message
  * @returns The blocks for the failed tests
  */
 export function createFailedTestBlocks(
   failedTests: CtrfTest[],
-  buildInfo: string
-): any[] {
-  const blocks: any[] = [
+  buildInfo: string,
+  options?: Options
+): SlackBlock[] {
+  const blocks: SlackBlock[] = [
     {
       type: BLOCK_TYPES.SECTION,
       text: {
@@ -155,7 +158,8 @@ export function createFailedTestBlocks(
     },
   ]
 
-  const limitedFailedTests = failedTests.slice(0, LIMITS.MAX_FAILED_TESTS)
+  const maxReports = options?.maxReports ?? LIMITS.MAX_FAILED_TESTS
+  const limitedFailedTests = failedTests.slice(0, maxReports)
 
   limitedFailedTests.forEach(test => {
     const failSummary =
@@ -184,15 +188,15 @@ export function createFailedTestBlocks(
     })
   })
 
-  if (failedTests.length > LIMITS.MAX_FAILED_TESTS) {
+  if (failedTests.length > maxReports) {
     blocks.push({
       type: BLOCK_TYPES.SECTION,
       text: {
         type: TEXT_TYPES.MRKDWN,
         text: formatString(
           NOTICES.MAX_TESTS_EXCEEDED,
-          LIMITS.MAX_FAILED_TESTS,
-          failedTests.length - LIMITS.MAX_FAILED_TESTS
+          maxReports,
+          failedTests.length - maxReports
         ),
       },
     })
@@ -205,13 +209,15 @@ export function createFailedTestBlocks(
  * Create blocks for AI tests
  * @param failedTests - The failed tests
  * @param buildInfo - The build information
+ * @param options - The options for the message
  * @returns The blocks for the AI tests
  */
 export function createAiTestBlocks(
   failedTests: CtrfTest[],
-  buildInfo: string
-): any[] {
-  const blocks: any[] = [
+  buildInfo: string,
+  options?: Options
+): SlackBlock[] {
+  const blocks: SlackBlock[] = [
     {
       type: BLOCK_TYPES.SECTION,
       text: {
@@ -231,7 +237,8 @@ export function createAiTestBlocks(
     },
   ]
 
-  const limitedFailedTests = failedTests.slice(0, LIMITS.MAX_FAILED_TESTS)
+  const maxReports = options?.maxReports ?? LIMITS.MAX_FAILED_TESTS
+  const limitedFailedTests = failedTests.slice(0, maxReports)
 
   limitedFailedTests.forEach(test => {
     const aiSummary = `${test.ai}`
@@ -254,15 +261,15 @@ export function createAiTestBlocks(
     })
   })
 
-  if (failedTests.length > LIMITS.MAX_FAILED_TESTS) {
+  if (failedTests.length > maxReports) {
     blocks.push({
       type: BLOCK_TYPES.SECTION,
       text: {
         type: TEXT_TYPES.MRKDWN,
         text: formatString(
           NOTICES.MAX_TESTS_EXCEEDED,
-          LIMITS.MAX_FAILED_TESTS,
-          failedTests.length - LIMITS.MAX_FAILED_TESTS
+          maxReports,
+          failedTests.length - maxReports
         ),
       },
     })
@@ -281,8 +288,8 @@ export function createMessageBlocks(options: {
   prefix?: string | null
   suffix?: string | null
   missingEnvProperties: string[]
-  customBlocks: any[]
-}): any[] {
+  customBlocks: SlackBlock[]
+}): SlackBlock[] {
   const {
     title,
     prefix = null,
@@ -291,7 +298,7 @@ export function createMessageBlocks(options: {
     customBlocks = [],
   } = options
 
-  const blocks: any[] = []
+  const blocks: SlackBlock[] = []
 
   if (title !== '' && title !== null) {
     blocks.push({
@@ -366,7 +373,7 @@ export function createMessageBlocks(options: {
 export function createFlakyTestBlocks(
   flakyTests: CtrfTest[],
   buildInfo: string
-): any[] {
+): SlackBlock[] {
   const flakyTestsText = flakyTests.map(test => `- ${test.name}`).join('\n')
 
   return [
@@ -396,7 +403,7 @@ export function createFlakyTestBlocks(
 export function createSingleAiTestBlocks(
   testName: string,
   aiSummary: string
-): any[] {
+): SlackBlock[] {
   const formattedAiSummary = formatString(MESSAGES.AI_SUMMARY, aiSummary)
 
   return [
@@ -428,7 +435,7 @@ export function createSingleFailedTestBlocks(
   testName: string,
   message: string | undefined,
   buildInfo: string
-): any[] {
+): SlackBlock[] {
   const enrichedMessage =
     message !== undefined && message.length > LIMITS.CHAR_LIMIT
       ? message.substring(

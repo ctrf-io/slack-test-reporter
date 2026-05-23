@@ -12,6 +12,7 @@ import {
 } from './slack-reporter.js'
 import fs from 'fs'
 import { type Options } from './types/reporter.js'
+import { type CtrfReport } from './types/ctrf.js'
 
 const sharedOptions = {
   title: {
@@ -30,6 +31,61 @@ const sharedOptions = {
     type: 'string',
     description: 'Custom text to add as a suffix to the message',
     default: '',
+  },
+  threadTs: {
+    alias: 'tt',
+    type: 'string',
+    description: 'Thread timestamp to reply to an existing thread',
+  },
+  returnTs: {
+    alias: 'rt',
+    type: 'boolean',
+    description: 'Output the message timestamp (only works with OAuth token)',
+    default: false,
+  },
+  replyBroadcast: {
+    alias: 'rb',
+    type: 'boolean',
+    description:
+      'Also send threaded reply to the channel (requires OAuth token)',
+    default: false,
+  },
+  autoThread: {
+    alias: 'at',
+    type: 'boolean',
+    description:
+      'Automatically thread individual failure details under a summary message',
+    default: false,
+  },
+  dryRun: {
+    alias: 'dr',
+    type: 'boolean',
+    description: 'Print the Slack message payload instead of sending it',
+    default: false,
+  },
+  maxReports: {
+    alias: 'mr',
+    type: 'number',
+    description: 'Maximum number of failed tests to report to Slack',
+    default: 10,
+  },
+  react: {
+    alias: 'r',
+    type: 'boolean',
+    description: 'Add an emoji reaction to the message (requires OAuth token)',
+    default: false,
+  },
+  failedEmoji: {
+    alias: 'fe',
+    type: 'string',
+    description: 'Emoji to react with when tests fail',
+    default: 'x',
+  },
+  passedEmoji: {
+    alias: 'pe',
+    type: 'string',
+    description: 'Emoji to react with when tests pass',
+    default: 'white_check_mark',
   },
 } as const
 
@@ -84,24 +140,9 @@ const argv = yargs(hideBin(process.argv))
         .options(sharedOptions)
     },
     async argv => {
-      try {
-        const report = parseCtrfFile(argv.path)
-        const slackConfig = getEffectiveSlackConfig(argv)
-        await sendTestResultsToSlack(
-          report,
-          {
-            title: argv.title,
-            prefix: argv.prefix,
-            suffix: argv.suffix,
-            onFailOnly: argv.onFailOnly,
-            ...slackConfig,
-          },
-          true
-        )
-      } catch (error: any) {
-        console.error('Error:', error.message)
-        process.exit(1)
-      }
+      await handleCommand(sendTestResultsToSlack, argv, {
+        onFailOnly: argv.onFailOnly as boolean,
+      })
     }
   )
   .command(
@@ -118,24 +159,9 @@ const argv = yargs(hideBin(process.argv))
         .option(consolidatedOption)
     },
     async argv => {
-      try {
-        const report = parseCtrfFile(argv.path)
-        const slackConfig = getEffectiveSlackConfig(argv)
-        await sendFailedResultsToSlack(
-          report,
-          {
-            title: argv.title,
-            prefix: argv.prefix,
-            suffix: argv.suffix,
-            consolidated: argv.consolidated,
-            ...slackConfig,
-          },
-          true
-        )
-      } catch (error: any) {
-        console.error('Error:', error.message)
-        process.exit(1)
-      }
+      await handleCommand(sendFailedResultsToSlack, argv, {
+        consolidated: argv.consolidated as boolean,
+      })
     }
   )
   .command(
@@ -151,23 +177,7 @@ const argv = yargs(hideBin(process.argv))
         .options(sharedOptions)
     },
     async argv => {
-      try {
-        const report = parseCtrfFile(argv.path)
-        const slackConfig = getEffectiveSlackConfig(argv)
-        await sendFlakyResultsToSlack(
-          report,
-          {
-            title: argv.title,
-            prefix: argv.prefix,
-            suffix: argv.suffix,
-            ...slackConfig,
-          },
-          true
-        )
-      } catch (error: any) {
-        console.error('Error:', error.message)
-        process.exit(1)
-      }
+      await handleCommand(sendFlakyResultsToSlack, argv)
     }
   )
   .command(
@@ -184,24 +194,9 @@ const argv = yargs(hideBin(process.argv))
         .option(consolidatedOption)
     },
     async argv => {
-      try {
-        const report = parseCtrfFile(argv.path)
-        const slackConfig = getEffectiveSlackConfig(argv)
-        await sendAISummaryToSlack(
-          report,
-          {
-            title: argv.title,
-            prefix: argv.prefix,
-            suffix: argv.suffix,
-            consolidated: argv.consolidated,
-            ...slackConfig,
-          },
-          true
-        )
-      } catch (error: any) {
-        console.error('Error:', error.message)
-        process.exit(1)
-      }
+      await handleCommand(sendAISummaryToSlack, argv, {
+        consolidated: argv.consolidated as boolean,
+      })
     }
   )
   .command(
@@ -250,39 +245,52 @@ const argv = yargs(hideBin(process.argv))
     },
     async argv => {
       try {
-        const report = parseCtrfFile(argv.path)
+        const report = parseCtrfFile(argv.path as string)
         const slackConfig = getEffectiveSlackConfig(argv)
 
-        if (!fs.existsSync(argv.templatePath)) {
+        if (!fs.existsSync(argv.templatePath as string)) {
           console.error('Error: Template file not found:', argv.templatePath)
           process.exit(1)
         }
 
-        const templateContent = fs.readFileSync(argv.templatePath, 'utf-8')
+        const templateContent = fs.readFileSync(
+          argv.templatePath as string,
+          'utf-8'
+        )
 
+        const options: Options = {
+          title: argv.title as string,
+          prefix: argv.prefix as string,
+          suffix: argv.suffix as string,
+          onFailOnly: argv.onFailOnly as boolean,
+          threadTs: argv.threadTs as string,
+          returnTs: argv.returnTs as boolean,
+          replyBroadcast: argv.replyBroadcast as boolean,
+          autoThread: argv.autoThread as boolean,
+          dryRun: argv.dryRun as boolean,
+          maxReports: argv.maxReports as number,
+          ...slackConfig,
+        }
+
+        let timestamp: string | void
         if (argv.blockkit) {
-          await sendCustomBlockKitTemplateToSlack(
+          timestamp = await sendCustomBlockKitTemplateToSlack(
             report,
             templateContent,
-            {
-              onFailOnly: argv.onFailOnly,
-              ...slackConfig,
-            },
-            true
+            options,
+            !argv.returnTs
           )
         } else {
-          await sendCustomMarkdownTemplateToSlack(
+          timestamp = await sendCustomMarkdownTemplateToSlack(
             report,
             templateContent,
-            {
-              title: argv.title,
-              prefix: argv.prefix,
-              suffix: argv.suffix,
-              onFailOnly: argv.onFailOnly,
-              ...slackConfig,
-            },
-            true
+            options,
+            !argv.returnTs
           )
+        }
+
+        if (argv.returnTs && timestamp) {
+          console.log(JSON.stringify({ ts: timestamp }))
         }
       } catch (error: any) {
         console.error('Error:', error.message)
@@ -321,9 +329,48 @@ const argv = yargs(hideBin(process.argv))
   })
   .help().argv
 
-function getEffectiveSlackConfig(argv: any): Options {
-  const token = argv.oauthToken ?? process.env.SLACK_OAUTH_TOKEN
-  const channelId = argv.channelId ?? process.env.SLACK_CHANNEL_ID
-  const webhookUrl = argv.webhookUrl ?? process.env.SLACK_WEBHOOK_URL
+async function handleCommand(
+  reporterFn: (
+    report: CtrfReport,
+    options: Options,
+    logs: boolean
+  ) => Promise<string | void>,
+  argv: Record<string, unknown>,
+  extraOptions: Partial<Options> = {}
+) {
+  try {
+    const report = parseCtrfFile(argv.path as string)
+    const slackConfig = getEffectiveSlackConfig(argv)
+    const options: Options = {
+      title: argv.title as string,
+      prefix: argv.prefix as string,
+      suffix: argv.suffix as string,
+      threadTs: argv.threadTs as string,
+      returnTs: argv.returnTs as boolean,
+      replyBroadcast: argv.replyBroadcast as boolean,
+      autoThread: argv.autoThread as boolean,
+      dryRun: argv.dryRun as boolean,
+      maxReports: argv.maxReports as number,
+      react: argv.react as boolean,
+      failedEmoji: argv.failedEmoji as string,
+      passedEmoji: argv.passedEmoji as string,
+      ...extraOptions,
+      ...slackConfig,
+    }
+    const timestamp = await reporterFn(report, options, !argv.returnTs)
+    if (argv.returnTs && timestamp) {
+      console.log(JSON.stringify({ ts: timestamp }))
+    }
+  } catch (error: any) {
+    console.error('Error:', error.message)
+    process.exit(1)
+  }
+}
+
+function getEffectiveSlackConfig(argv: Record<string, unknown>): Options {
+  const token = (argv.oauthToken as string) ?? process.env.SLACK_OAUTH_TOKEN
+  const channelId = (argv.channelId as string) ?? process.env.SLACK_CHANNEL_ID
+  const webhookUrl =
+    (argv.webhookUrl as string) ?? process.env.SLACK_WEBHOOK_URL
   return { oauthToken: token, channelId, webhookUrl }
 }
