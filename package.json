@@ -58,7 +58,7 @@
     "@types/node": "^25.5.0",
     "@types/yargs": "^17.0.32",
     "@vitest/coverage-v8": "^4.1.7",
-    "eslint": "^9.32.0",
+    "eslint": "^10.4.1",
     "prettier": "^3.5.3",
     "typedoc": "^0.28.9",
     "typedoc-plugin-markdown": "^4.8.0",
