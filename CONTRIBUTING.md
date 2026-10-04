@@ -24,6 +24,9 @@ npm install
 npm run build
 ```
 
+The library and CLI are built as ESM with tsup. Biome handles linting and formatting.
+Development requires Node.js 22.12.0 or newer for Vitest.
+
 ### Testing
 
 ```bash

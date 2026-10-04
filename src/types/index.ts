@@ -1,2 +1,2 @@
-export * from './ctrf.js'
-export * from './reporter.js'
+export type * from "./ctrf.js";
+export type * from "./reporter.js";

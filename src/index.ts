@@ -1,19 +1,19 @@
 import {
-  sendTestResultsToSlack,
-  sendFailedResultsToSlack,
-  sendFlakyResultsToSlack,
-  sendAISummaryToSlack,
-  sendCustomMarkdownTemplateToSlack,
-  sendCustomBlockKitTemplateToSlack,
-} from './slack-reporter.js'
+	sendTestResultsToSlack,
+	sendFailedResultsToSlack,
+	sendFlakyResultsToSlack,
+	sendAISummaryToSlack,
+	sendCustomMarkdownTemplateToSlack,
+	sendCustomBlockKitTemplateToSlack,
+} from "./slack-reporter.js";
 
 export {
-  sendTestResultsToSlack,
-  sendFailedResultsToSlack,
-  sendFlakyResultsToSlack,
-  sendAISummaryToSlack,
-  sendCustomMarkdownTemplateToSlack,
-  sendCustomBlockKitTemplateToSlack,
-}
+	sendTestResultsToSlack,
+	sendFailedResultsToSlack,
+	sendFlakyResultsToSlack,
+	sendAISummaryToSlack,
+	sendCustomMarkdownTemplateToSlack,
+	sendCustomBlockKitTemplateToSlack,
+};
 
-export * from './types/index.js'
+export type * from "./types/index.js";

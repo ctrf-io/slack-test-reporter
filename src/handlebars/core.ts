@@ -1,7 +1,7 @@
-import Handlebars from 'handlebars'
-import { registerAllHelpers } from './helpers/index.js'
-import { type CtrfReport } from '../types/index.js'
-import { loadHelpers } from 'handlebars-helpers-ctrf'
+import Handlebars from "handlebars";
+import { registerAllHelpers } from "./helpers/index.js";
+import { type CtrfReport } from "../types/index.js";
+import { loadHelpers } from "handlebars-helpers-ctrf";
 /**
  * Generates markdown content from a Handlebars template and provided data.
  *
@@ -10,10 +10,10 @@ import { loadHelpers } from 'handlebars-helpers-ctrf'
  * @returns The generated markdown string.
  */
 export function generateMarkdown(
-  templateSource: string,
-  report: CtrfReport
+	templateSource: string,
+	report: CtrfReport,
 ): string {
-  return compileTemplate(templateSource, report)
+	return compileTemplate(templateSource, report);
 }
 
 /**
@@ -27,15 +27,15 @@ export function generateMarkdown(
  * @returns The compiled markdown string based on the template and data.
  */
 export function compileTemplate(
-  templateSource: string,
-  data: CtrfReport
+	templateSource: string,
+	data: CtrfReport,
 ): string {
-  registerAllHelpers()
-  loadHelpers(Handlebars)
-  const context = { ctrf: data.results }
-  const template = Handlebars.compile(templateSource, {
-    preventIndent: true,
-  })
+	registerAllHelpers();
+	loadHelpers(Handlebars);
+	const context = { ctrf: data.results };
+	const template = Handlebars.compile(templateSource, {
+		preventIndent: true,
+	});
 
-  return template(context)
+	return template(context);
 }
