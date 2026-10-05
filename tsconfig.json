@@ -4,7 +4,6 @@
 		"module": "ESNext",
 		"moduleResolution": "bundler",
 		"strict": true,
-		"esModuleInterop": true,
 		"allowSyntheticDefaultImports": true,
 		"outDir": "./dist",
 		"rootDir": "./src",
@@ -12,14 +11,12 @@
 		"declarationMap": true,
 		"sourceMap": true,
 		"skipLibCheck": true,
-		"forceConsistentCasingInFileNames": true,
 		"resolveJsonModule": true,
 		"isolatedModules": true,
 		"noImplicitReturns": true,
 		"noFallthroughCasesInSwitch": true,
 		"noUncheckedIndexedAccess": true,
-		"types": ["node"],
-		"ignoreDeprecations": "6.0"
+		"types": ["node"]
 	},
 	"include": ["src/**/*"],
 	"exclude": [
