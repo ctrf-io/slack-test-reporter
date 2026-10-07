@@ -428,3 +428,9 @@ CTRF is a universal JSON test report schema that addresses the lack of a standar
 
 If you find this project useful, consider giving it a GitHub star ⭐ It means a lot to us.
 
+
+## Identity and lineage
+
+CTRF identity fields are preserved when reading and presenting reports: document `reportId`, logical `runId`, environment `shardId`, test `testId`/`executionId`, retry `attemptId` and attachment `attachmentId`. Existing reports without these optional fields remain supported. Display labels are independent of identity.
+
+Merged documents receive a new artifact ID. A shared run ID is retained; a single source shard label is removed when the aggregate contains different shard labels. Nested execution, retry and attachment identities remain unchanged.

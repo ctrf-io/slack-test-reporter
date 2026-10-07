@@ -38,6 +38,17 @@ export function parseCtrfFile(pattern: string): CtrfReport {
 			? (merge(reports) as CtrfReport)
 			: (reports[0] as CtrfReport);
 	const processedReport = stripAnsiFromErrors(merged);
+	if (
+		reports.length > 1 &&
+		processedReport.results.environment &&
+		!reports.every(
+			(source) =>
+				source.results.environment?.shardId ===
+				reports[0]?.results.environment?.shardId,
+		)
+	) {
+		delete processedReport.results.environment.shardId;
+	}
 	console.log(`Read ${reports.length} CTRF reports`);
 	return processedReport;
 }
