@@ -125,7 +125,7 @@ export function formatDurationStartStopToHumanHelper(): void {
 			return "not captured";
 		}
 
-		if (Number.isNaN(start) || Number.isNaN(stop)) {
+		if (Number.isNaN(Number(start)) || Number.isNaN(Number(stop))) {
 			return "not captured";
 		}
 
@@ -157,7 +157,7 @@ export function formatDurationStartStopToHumanHelper(): void {
  */
 export function formatDurationMsToHumanHelper(): void {
 	Handlebars.registerHelper("formatDurationMs", (duration: number) => {
-		if (Number.isNaN(duration)) {
+		if (Number.isNaN(Number(duration))) {
 			return "not captured";
 		}
 
