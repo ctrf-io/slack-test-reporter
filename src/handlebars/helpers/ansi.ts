@@ -1,5 +1,5 @@
-import Handlebars from 'handlebars'
-import { stripAnsi } from '../../utils/common.js'
+import Handlebars from "handlebars";
+import { stripAnsi } from "../../utils/common.js";
 
 /**
  * Strips ANSI escape codes from the given message.
@@ -13,9 +13,9 @@ import { stripAnsi } from '../../utils/common.js'
  * @returns {string} The string with all ANSI escape codes removed.
  */
 export function stripAnsiHelper(): void {
-  Handlebars.registerHelper('stripAnsi', (message: string) => {
-    return stripAnsi(message)
-  })
+	Handlebars.registerHelper("stripAnsi", (message: string) => {
+		return stripAnsi(message);
+	});
 }
 
 /**
@@ -31,7 +31,7 @@ export function stripAnsiHelper(): void {
  * @returns {string} An HTML-formatted string, with ANSI codes removed and line breaks replaced.
  */
 export function formatMessageHelper(): void {
-  Handlebars.registerHelper('formatMessage', (text: string) => {
-    return stripAnsi(text ?? 'No message available')
-  })
+	Handlebars.registerHelper("formatMessage", (text: string) => {
+		return stripAnsi(text ?? "No message available");
+	});
 }
