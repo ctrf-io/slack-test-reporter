@@ -68,4 +68,4 @@ After running the E2E tests, check your Slack channel to verify:
 - Formatting appears as expected
 - All tested features are working properly
 
-This provides comprehensive validation that your slack-ctrf installation and configuration are working correctly in a real-world scenario. 
+This provides comprehensive validation that your slack-ctrf installation and configuration are working correctly in a real-world scenario.
