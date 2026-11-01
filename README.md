@@ -371,6 +371,12 @@ npm install slack-ctrf
 
 see [API documentation](docs/functions) for more details.
 
+The public report types are derived from the shared `ctrf` package. You can pass
+its `CTRFReport` directly to every send function. Existing Slack type names and
+legacy inputs remain supported, including reports without version headers,
+string suites, string build numbers and nested `attempts`. These compatibility
+types do not convert report data or change validation.
+
 ## Configuration
 
 You can skip features by using environment variables.
