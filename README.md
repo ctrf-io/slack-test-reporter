@@ -198,22 +198,22 @@ The Block Kit JSON template can include Handlebars syntax to access test report 
 
 ```json
 {
-  "blocks": [
-    {
-      "type": "header",
-      "text": {
-        "type": "plain_text",
-        "text": "Test Results: {{ctrf.summary.total}} tests run"
-      }
-    },
-    {
-      "type": "section",
-      "text": {
-        "type": "mrkdwn",
-        "text": "*Passed:* {{ctrf.summary.passed}}\n*Failed:* {{ctrf.summary.failed}}"
-      }
-    }
-  ]
+	"blocks": [
+		{
+			"type": "header",
+			"text": {
+				"type": "plain_text",
+				"text": "Test Results: {{ctrf.summary.total}} tests run"
+			}
+		},
+		{
+			"type": "section",
+			"text": {
+				"type": "mrkdwn",
+				"text": "*Passed:* {{ctrf.summary.passed}}\n*Failed:* {{ctrf.summary.failed}}"
+			}
+		}
+	]
 }
 ```
 
