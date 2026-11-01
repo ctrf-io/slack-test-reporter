@@ -1,4 +1,3 @@
-import { type CtrfReport } from "./types/ctrf.js";
 import { stripAnsiFromErrors } from "./utils/common.js";
 import { merge, parse, type CTRFReport } from "ctrf";
 import { globSync } from "glob";
@@ -9,7 +8,7 @@ import fs from "fs";
  * @param pattern - The pattern to read the CTRF reports from
  * @returns The parsed CTRF report
  */
-export function parseCtrfFile(pattern: string): CtrfReport {
+export function parseCtrfFile(pattern: string): CTRFReport {
 	console.log(`Reading CTRF reports from ${pattern}`);
 	const files = globSync(pattern);
 
@@ -29,14 +28,12 @@ export function parseCtrfFile(pattern: string): CtrfReport {
 		})
 		.filter((report): report is CTRFReport => report !== null);
 
-	if (reports.length === 0) {
+	const firstReport = reports[0];
+	if (firstReport === undefined) {
 		throw new Error(`No valid CTRF reports found matching: ${pattern}`);
 	}
 
-	const merged: CtrfReport =
-		reports.length > 1
-			? (merge(reports) as CtrfReport)
-			: (reports[0] as CtrfReport);
+	const merged = reports.length > 1 ? merge(reports) : firstReport;
 	const processedReport = stripAnsiFromErrors(merged);
 	if (
 		reports.length > 1 &&
