@@ -64,6 +64,7 @@ The script performs the following tests:
 ## Monitoring Results
 
 After running the E2E tests, check your Slack channel to verify:
+
 - Messages were received correctly
 - Formatting appears as expected
 - All tested features are working properly
